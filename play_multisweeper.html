@@ -7,14 +7,34 @@
 <script src="scripts/minefield.js"></script>
 </head>
 
-<body>
+<body onLoad="debug();">
 	<!-- Updating Blocker -->
 	<!-- Sign In prompt -->
     <!-- Sign Up for next game prompt -->
     <!-- Canvas for game -->
-    <canvas id="gameArea" height="840" width="1200">Your browser does not support the canvas element. Please use a HTML5 compatible browser.</canvas>
+    <canvas id="gameArea" height="720" width="1200">Your browser does not support the canvas element. Please use a HTML5 compatible browser.</canvas>
     
    	<!-- Current Players -->
     <!-- Chat area -->
+    
+    <script type="text/javascript">
+		function debug() {
+			testInput = [];
+			
+			testInput.push([0, 0, -2]);
+			testInput.push([7, 1, 0]);
+			testInput.push([8, 12, 1]);
+			testInput.push([10, 5, 9]);
+			testInput.push([11, 5, 6]);
+			testInput.push([3, 1, -2]);
+			testInput.push([0, 2, 4]);
+			testInput.push([8, 12, 1]);
+			testInput.push([12, 1, 4]);
+			testInput.push([0, 2, 8]);
+			testInput.push([12, 5, 0]);
+			
+			initMinefield(testInput);	
+		}
+	</script>
 </body>
 </html>
