@@ -93,6 +93,9 @@ function initMinefieldDisplay(input) {
 	}
 }
 
+/*
+	Initializes various mouse functionality with the minefield.
+*/
 function initMinefieldInterface() {
 	document.getElementById("gameArea").addEventListener('mousemove', function(evt) {
 		updateHover(evt);
@@ -113,6 +116,9 @@ function drawMinefield() {
 	}
 }
 
+/*
+	Returns an array of all tile coordinates with the given value
+*/
 function getAllTilesWithValue(value) {
 	var ret = [];
 	for (var i = 0; i < minefield.length; i++) {
@@ -136,6 +142,9 @@ function drawTileAtCoordinates(value, x, y) {
 	minefieldContext.drawImage(minefieldImages[val], realX, realY);
 }
 
+/*
+	Returns tile coordinates from real coordinates.
+*/
 function getTileCoordinatesFromRealCoordinates(x, y) {
 	return [Math.floor(x / squareSize), Math.floor(y / squareSize)];	
 }
@@ -160,6 +169,9 @@ function getTileValueString(value) {
 	return temp;
 }
 
+/*
+	Changes the status of the clicked-on tile to "selected".
+*/
 function selectTile(evt) {	
 	var cur = getTileCoordinatesFromRealCoordinates(evt.clientX, evt.clientY);
 	
@@ -176,6 +188,9 @@ function selectTile(evt) {
 	}
 }
 
+/*
+	Draws the "hover" tile over the currently hovered over tile.
+*/
 function updateHover(evt) {
 	if (previousHoverCoords !== null) {
 		drawTileAtCoordinates(minefield[previousHoverCoords[0]][previousHoverCoords[1]], previousHoverCoords[0], previousHoverCoords[1]);
