@@ -1,0 +1,63 @@
+CREATE SCHEMA `multisweeper` ;
+
+CREATE TABLE `multisweeper`.`players` (
+  `playerID` INT NOT NULL AUTO_INCREMENT,
+  `username` VARCHAR(45) NOT NULL,
+  `password` VARCHAR(45) NOT NULL,
+  PRIMARY KEY (`playerID`),
+  UNIQUE INDEX `username_UNIQUE` (`username` ASC));
+
+CREATE TABLE `multisweeper`.`games` (
+  `gameID` INT NOT NULL AUTO_INCREMENT,
+  `map` VARCHAR(2000) NOT NULL,
+  `visibility` VARCHAR(2000) NOT NULL,
+  `height` INT NOT NULL,
+  `width` INT NOT NULL,
+  `status` VARCHAR(45) NOT NULL,
+  PRIMARY KEY (`gameID`));
+
+CREATE TABLE `multisweeper`.`playerstatus` (
+  `status` BIT(1) NOT NULL DEFAULT 1,
+  `awaitingAction` BIT(1) NOT NULL,
+  `gameID` INT NOT NULL,
+  `playerID` INT NOT NULL,
+  INDEX `gameID_idx` (`gameID` ASC),
+  INDEX `playerID_idx` (`playerID` ASC),
+  CONSTRAINT `gameID`
+    FOREIGN KEY (`gameID`)
+    REFERENCES `multisweeper`.`games` (`gameID`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION,
+  CONSTRAINT `playerID`
+    FOREIGN KEY (`playerID`)
+    REFERENCES `multisweeper`.`players` (`playerID`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION);
+
+CREATE TABLE `multisweeper`.`actionqueue` (
+  `gameID` INT NOT NULL,
+  `playerID` INT NOT NULL,
+  `actionType` BIT(1) NOT NULL,
+  `xCoord` INT NOT NULL,
+  `yCoord` INT NOT NULL,
+  INDEX `gameID_idx` (`gameID` ASC),
+  INDEX `playerID_idx` (`playerID` ASC),
+  CONSTRAINT `gameID`
+    FOREIGN KEY (`gameIDx`)
+    REFERENCES `multisweeper`.`games` (`gameID`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION,
+  CONSTRAINT `playerID`
+    FOREIGN KEY (`playerIDx`)
+    REFERENCES `multisweeper`.`players` (`playerID`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION);
+
+CREATE TABLE `multisweeper`.`upcomingsignup` (
+  `playerID` INT NOT NULL,
+  INDEX `playerIDy_idx` (`playerID` ASC),
+  CONSTRAINT `playerIDy`
+    FOREIGN KEY (`playerID`)
+    REFERENCES `multisweeper`.`players` (`playerID`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION);

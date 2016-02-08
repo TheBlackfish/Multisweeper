@@ -2,14 +2,7 @@ An Explanation of how the MySQL schema should be set up.
 
 Tables:
 
-constants
-
-	A table containing various constant values that cannot be stored elsewhere.
-	Fields:
-		currentGameID (Double)
-			The ID of the game currently being run. This is used to determine, by default, what game to display. Foreign key to games.gameID.
-
-games
+*games
 
 	A table containing each game's data in terms of the minefield layout, visibility, etc.
 	Fields:
@@ -23,8 +16,10 @@ games
 			A integer that denotes the height of the minefield in the game.
 		width (int)
 			A integer that denotes the width of the minefield in the game.
+		status (String)
+			A string that denotes the current status of the game.
 
-players
+*players
 
 	A table with all player information.
 	Fields:
@@ -35,7 +30,7 @@ players
 		password (String)
 			The password of the player they use to log in.
 
-playerStatus
+*playerStatus
 
 	A table corresponding to games & players.
 	Fields:
@@ -48,7 +43,7 @@ playerStatus
 		awaitingSubmission (bool)
 			False if the player has not submitted an action yet, true if they have.
 
-actionQueue
+*actionQueue
 
 	A table corresponding to player actions submitted to the game
 	Fields:
@@ -62,3 +57,10 @@ actionQueue
 			The x coordinate on the map of where to perform the action.
 		yCoord (int)
 			The y coordinate on the map of where to perform the action.
+
+*upcomingSignUp
+
+	A table corresponding to all players who wish to sign up for the next game.
+	Fields:
+		playerID (Double)
+			Foreign key referring to the player attempting to sign up.s

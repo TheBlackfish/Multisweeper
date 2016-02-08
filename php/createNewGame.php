@@ -1,11 +1,18 @@
 <?php
 
 require_once('../../../../database.php');
-require_once('mineGameConstants.php')
+require_once('mineGameConstants.php');
+require_once('translateData.php');
 
 //Takes the various parameters of the minefield width, height, and number of mines.
 //Does not return anything, but does alter the MySQL database
 function createNewGame($width, $height, $numMines) {
+	//Initialize connections
+	$conn = new mysqli($sqlhost, $sqlusername, $sqlpassword);
+	if ($conn->connect_error) {
+		die("Connection failed: " . $conn->connect_error);
+	}
+
 	//Initialize various arrays for the base 
 	$minefield = array_fill(0, $width, array_fill(0, $height, 0));
 
@@ -23,8 +30,25 @@ function createNewGame($width, $height, $numMines) {
 	$minefield = _updateMinefieldNumbers($minefield);
 
 	//Translate to form MySQL can store it
+	$result = translateMinefieldToMySQL($minefield);
+
+	$visibility = str_pad("", str_len($result), "0");
+
 	//Upload to MySQL
-	//Set current game index in MySQL to newest version
+	$query = "INSERT INTO multisweeper.games (map, visibility, height, width, status) VALUES (";
+	$query = $query . '"' . $results . '"' . ",";
+	$query = $query . '"' . $visibility . '"' . ",";
+	$query = $query . $height . ",";
+	$query = $query . $width . ",";
+	$query = $query . '"' . "OPEN" . '"' . ");";
+
+	if ($conn->query($query) === FALSE) {
+		error_log("Error: " . $query . "<br>" . $conn->error);
+		die("Unable to continue with game creation, exiting.");
+	}
+
+	//Create player statuses for all players currently signed up
+	$waiting
 }
 
 //Goes through each space in the 2-dimensional array provided.

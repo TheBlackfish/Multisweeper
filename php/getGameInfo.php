@@ -16,8 +16,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 	$root = $doc->createElement('stats');
 	$root = $doc->appendChild($root);
 	
-	/*
-	$sql = "SELECT playername, lpad(score,60,'0') as sc FROM pythongame.scores ORDER BY sc DESC LIMIT 100";
+	/*$sql = "SELECT playername, lpad(score,60,'0') as sc FROM pythongame.scores ORDER BY sc DESC LIMIT 100";
 	$result = $conn->query($sql);
 	
 	while ($row = mysqli_fetch_row($result)) {
@@ -33,8 +32,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 		$exeN = $newrow->appendChild($exeN);
 		$exe = $doc->createTextNode($row[1]);
 		$exe = $exeN->appendChild($exe);
-	}
-	*/
+	}*/
 	
 	$r = $doc->saveXML();
 	echo $r;
