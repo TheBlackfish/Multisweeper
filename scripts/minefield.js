@@ -17,7 +17,8 @@ var previousSelectCoords = null;
 	-1	Unrevealed
 	0-8	Number of adjacent mines
 	9	Flag placed
-	10	Selection
+	10	Shovel selection
+	11	Flag selection
 */
 
 /*
@@ -38,7 +39,7 @@ function finishInitMinefield() {
 	Loads all images needed into the images array for later use.
 */
 function initImages() {
-	var allImages = ["mine", "unrevealed", "0", "1", "2", "3", "4", "5", "6", "7", "8", "flag", "selection", "hover"];
+	var allImages = ["mine", "unrevealed", "0", "1", "2", "3", "4", "5", "6", "7", "8", "flag", "shovel", "plantflag", "hover"];
 	for (var i = 0; i < allImages.length; i++) {
 		var img = new Image();
 		img.onload = function() {
@@ -161,7 +162,9 @@ function getTileValueString(value) {
 	} else if (temp === 9) {
 		temp = "flag";
 	} else if (temp === 10) {
-		temp = "selection";	
+		temp = "shovel";	
+	} else if (temp === 11) {
+		temp = "plantflag";
 	}
 	
 	temp = temp + "";
@@ -170,7 +173,7 @@ function getTileValueString(value) {
 }
 
 /*
-	Changes the status of the clicked-on tile to "selected".
+	Changes the status of the clicked-on tile to "shovel" if not currently selected. If it was previously selected, it becomes "plantflag" instead.
 */
 function selectTile(evt) {	
 	var cur = getTileCoordinatesFromRealCoordinates(evt.clientX, evt.clientY);
@@ -182,9 +185,22 @@ function selectTile(evt) {
 			minefield[toChange[0]][toChange[1]] = -1;
 			drawTileAtCoordinates(-1, toChange[0], toChange[1]);
 		}
+
+		prev = getAllTilesWithValue(11);
+		for (var i = 0; i < prev.length; i++) {
+			var toChange = prev[i];
+			minefield[toChange[0]][toChange[1]] = -1;
+			drawTileAtCoordinates(-1, toChange[0], toChange[1]);
+		}
 		
-		minefield[cur[0]][cur[1]] = 10;
-		drawTileAtCoordinates("selection", cur[0], cur[1]);
+		if (minefield[cur[0]][cur[1]] != 10) {
+			minefield[cur[0]][cur[1]] = 10;
+			drawTileAtCoordinates("shovel", cur[0], cur[1]);
+		} else {
+			minefield[cur[0]][cur[1]] = 11;
+			drawTileAtCoordinates("plantflag", cur[0], cur[1]);
+		}
+		
 	}
 }
 

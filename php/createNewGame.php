@@ -31,7 +31,6 @@ function createNewGame($width, $height, $numMines) {
 
 	//Translate to form MySQL can store it
 	$result = translateMinefieldToMySQL($minefield);
-
 	$visibility = str_pad("", str_len($result), "0");
 
 	//Upload to MySQL
@@ -47,8 +46,46 @@ function createNewGame($width, $height, $numMines) {
 		die("Unable to continue with game creation, exiting.");
 	}
 
+	//Get game ID
+	$gameID = -1;
+	$query = "SELECT gameID FROM multisweeper.games WHERE map = '" . $results . "' AND status = 'OPEN' LIMIT 1";
+	$idResults = $conn->query($query);
+	if ($idResults->num_rows > 0) {
+		while ($row = mysqli_fetch_row($idResults)) {
+			$gameID = $row[0];
+		}
+	} else {
+		error_log("Error: Unable to get ID for new game after uploading. Exiting.");
+		die("Unable to continue with game creation, exiting.");
+	}
+
+	if ($gameID == -1) {
+		error_log("Error: Game was not created by time we needed it. Exiting.");
+		die("Unable to continue with game creation, exiting.");
+	}
+
 	//Create player statuses for all players currently signed up
-	$waiting
+	$query = "SELECT playerID FROM multisweeper.upcomingsignup;"
+	$wResults = $conn->query($query);
+	if ($wResults->num_rows > 0) {
+		$playerQuery = "INSERT INTO multisweeper.playerstatus (gameID, playerID, awaitingAction) VALUES ("
+		while ($row = mysqli_fetch_row($wResults)) {
+			$playerQuery = $playerQuery . "'" . $gameID . "',";
+			$playerQuery = $playerQuery . "'" . $row[0] . "',1),";
+		}
+		$playerQuery = rtrim($query, ',');
+		$playerQuery .= ";";
+
+		if ($conn->query($query) === FALSE) {
+			error_log("Error: " . $playerQuery . "<br>" . $conn->error);
+			die("Unable to continue with game creation, exiting.");
+		}
+	} else {
+		error_log("Error: Did not find any players for game. Exiting.");
+		die("Unable to continue with game creation, exiting.");
+	}
+
+	error_log("New game successfully created, ID=" . $gameID);
 }
 
 //Goes through each space in the 2-dimensional array provided.
@@ -56,17 +93,6 @@ function createNewGame($width, $height, $numMines) {
 function _updateMinefieldNumbers($minefield) {
 	$width = count($minefield);
 	$height = count($minefield[0]);
-
-	$adjacencies = array(
-		array(0, -1),
-		array(1, -1),
-		array(1, 0),
-		array(1, 1),
-		array(0, 1),
-		array(-1, 1),
-		array(-1, 0),
-		array(-1, 1)
-	);
 
 	for ($x = 0; $x < $width; $x++) {
 		for ($y = 0; $y < $height; $y++) {
