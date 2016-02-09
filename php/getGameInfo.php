@@ -1,7 +1,8 @@
 <?php
 
-require_once('../../../../database.php');
-require_once('translateGameState.php');
+require('../../../database.php');
+require('minefieldController.php');
+require('translateData.php');
 
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
 	header('Content-Type: text/xml');
@@ -13,26 +14,30 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 	
 	$doc = new DOMDocument('1.0');
 	$doc->formatOutput = true;
-	$root = $doc->createElement('stats');
-	$root = $doc->appendChild($root);
-	
-	/*$sql = "SELECT playername, lpad(score,60,'0') as sc FROM pythongame.scores ORDER BY sc DESC LIMIT 100";
-	$result = $conn->query($sql);
-	
+
+	$query = "SELECT map, visibility, height, width FROM multisweeper.games WHERE status = 'OPEN' ORDER BY gameID DESC LIMIT 1;";
+	$result = $conn->query($query);
+
 	while ($row = mysqli_fetch_row($result)) {
-		$newrow = $doc->createElement('info');
-		$newrow = $root->appendChild($newrow);
-			
-		$name = $doc->createElement('name');
-		$name = $newrow->appendChild($name);
-		$tick = $doc->createTextNode($row[0]);
-		$tick = $name->appendChild($tick);
-		
-		$exeN = $doc->createElement('score');
-		$exeN = $newrow->appendChild($exeN);
-		$exe = $doc->createTextNode($row[1]);
-		$exe = $exeN->appendChild($exe);
-	}*/
+		$finalMap = getMinefieldWithVisibility($row[0], $row[1]);
+
+		$newrow = $doc->createElement('minefield')
+
+		$nodeA = $doc->createElement('map');
+		$nodeA = $newrow->appendChild($nodeA);
+		$nodeAText = $doc->createTextNode($finalMap);
+		$nodeAText = $nodeA->appendChild($nodeAText);
+
+		$nodeB = $doc->createElement('height');
+		$nodeB = $newrow->appendChild($nodeB);
+		$nodeBText = $doc->createTextNode($row[2]);
+		$nodeBText = $nodeB->appendChild($nodeBText);
+
+		$nodeC = $doc->createElement('width');
+		$nodeC = $newrow->appendChild($nodeC);
+		$nodeCText = $doc->createTextNode($row[3]);
+		$nodeCText = $nodeC->appendChild($nodeCText);
+	}
 	
 	$r = $doc->saveXML();
 	echo $r;
