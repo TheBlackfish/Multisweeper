@@ -5,6 +5,7 @@
 <title>Multisweeper</title>
 <link rel="stylesheet" type="text/css" href="style/multisweeper.css" />
 <script src="scripts/minefield.js"></script>
+<script src="scripts/dataController.js"></script>
 </head>
 
 <body onLoad="debug();">
@@ -19,7 +20,9 @@
     
     <script type="text/javascript">
 		function debug() {		
-			initMinefield(testInput);	
+			setTimeout( function(){
+				getMinefieldData();
+			}, 8000);	
 		}
 	</script>
 </body>

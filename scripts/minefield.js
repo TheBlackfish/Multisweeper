@@ -1,7 +1,7 @@
 var squareSize = 24;
 var minefield = [];
-var minefieldWidth = 50;
-var minefieldHeight = 30;
+var minefieldHeight = 1;
+var minefieldWidth = 1;
 var minefieldContext = null;
 var minefieldImages = new Array();
 var minefieldImagesLoaded = 0;
@@ -24,8 +24,10 @@ var previousSelectCoords = null;
 /*
 	Initializes the necessary variables for minefield.js
 */
-function initMinefield(input) {
+function initMinefield(input, h, w) {
 	minefieldInput = input;
+	minefieldHeight = h;
+	minefieldWidth = w;
 	initImages();		
 }
 
@@ -55,40 +57,20 @@ function initImages() {
 
 /*
 	Initializes the minefield on the screen using the input given.
-	input - An array of parsed values from the server about the current game state.
-			Each object in the input should be a 3-length array with the following values:
-				The x-position on the grid of the tile.
-				The y-position on the grid of the tile.
-				The numerical value of the tile.
+	input - A string straight from the php response, post-cleaning for transportation s.
+	h - The height of the minefield.
+	w - The width of the minefield.
 */
 function initMinefieldDisplay(input) {
 	minefieldContext = document.getElementById("gameArea").getContext("2d");
 	
-	for (var i = 0; i < minefieldWidth; i++) {
-		minefield.push([]);
-		for (var j = 0; j < minefieldHeight; j++) {
-			minefield[i].push(-1);
-		}
-	}
-	
-	for (var k = 0; k < input.length; k++) {
-		var nextInput = input[k];
-		if (nextInput.length === 3) {
-			var x = nextInput[0];
-			var y = nextInput[1];
-			var value = nextInput[2];
-			
-			var canBeParsed = false;
-			if ((x >= 0) && (x < minefieldWidth)) {
-				if ((y >= 0) && (y < minefieldHeight)) {
-					if ((value >= -2) && (value <= 9)) {
-						canBeParsed = true;	
-					}
-				}
-			}
-			
-			if (canBeParsed) {
-				minefield[x][y] = value;
+	if (input.length !== (minefieldHeight*minefieldWidth)) {
+		console.log("Input is not of the correct size, aborting initMinefieldDisplay");
+	} else {
+		for (var x = 0; x < minefieldWidth; x++) {
+			minefield.push([]);
+			for (var y = 0; y < minefieldHeight; y++) {
+				minefield[x].push(input.shift());
 			}
 		}
 	}

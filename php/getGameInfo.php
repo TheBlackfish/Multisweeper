@@ -1,8 +1,8 @@
 <?php
 
-require('../../../database.php');
-require('minefieldController.php');
-require('translateData.php');
+require_once('../../../database.php');
+require_once('minefieldController.php');
+require_once('translateData.php');
 
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
 	header('Content-Type: text/xml');
@@ -15,13 +15,19 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 	$doc = new DOMDocument('1.0');
 	$doc->formatOutput = true;
 
-	$query = "SELECT map, visibility, height, width FROM multisweeper.games WHERE status = 'OPEN' ORDER BY gameID DESC LIMIT 1;";
+	$query = "SELECT map, visibility, height, width, gameID FROM multisweeper.games WHERE status = 'OPEN' ORDER BY gameID DESC LIMIT 1;";
 	$result = $conn->query($query);
 
 	while ($row = mysqli_fetch_row($result)) {
-		$finalMap = getMinefieldWithVisibility($row[0], $row[1]);
+		$finalMap = translateMinefieldToMySQL(getMinefieldWithVisibility($row[0], $row[1]));
 
-		$newrow = $doc->createElement('minefield')
+		$newrow = $doc->createElement('minefield');
+		$newrow = $doc->appendChild($newrow);
+
+		$nodeID = $doc->createElement('id');
+		$nodeID = $newrow->appendChild($nodeID);
+		$nodeIDText = $doc->createTextNode($row[4]);
+		$nodeIDText = $nodeID->appendChild($nodeIDText);
 
 		$nodeA = $doc->createElement('map');
 		$nodeA = $newrow->appendChild($nodeA);
@@ -40,6 +46,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 	}
 	
 	$r = $doc->saveXML();
+	error_log($r);
 	echo $r;
 }
 ?>

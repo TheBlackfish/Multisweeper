@@ -3,9 +3,9 @@
 //Takes the various parameters of the minefield width, height, and number of mines.
 //Does not return anything, but does alter the MySQL database
 function createNewGame($width, $height, $numMines) {
-	require('../../../database.php');
-	require('mineGameConstants.php');
-	require('translateData.php');
+	require_once('../../../database.php');
+	require_once('mineGameConstants.php');
+	require_once('translateData.php');
 
 	//Initialize connections
 	$conn = new mysqli($sqlhost, $sqlusername, $sqlpassword);
@@ -123,7 +123,7 @@ function createNewGame($width, $height, $numMines) {
 //Goes through each space in the 2-dimensional array provided.
 //In each space, the value becomes the number of adjacent "M" values if the space did not have a value of "M" already.
 function _updateMinefieldNumbers($minefield) {
-	require('mineGameConstants.php');
+	require_once('mineGameConstants.php');
 
 	$width = count($minefield);
 	$height = count($minefield[0]);
