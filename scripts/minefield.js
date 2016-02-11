@@ -6,6 +6,7 @@ var minefieldContext = null;
 var minefieldImages = new Array();
 var minefieldImagesLoaded = 0;
 var minefieldInput = null;
+var minefieldInitialized = false;
 var hoverFPS = Math.floor(1000/30);
 
 var previousHoverCoords = null;
@@ -32,9 +33,12 @@ function initMinefield(input, h, w) {
 }
 
 function finishInitMinefield() {
-	initMinefieldDisplay(minefieldInput);
-	drawMinefield();
-	initMinefieldInterface();
+	if (!minefieldInitialized) {
+		minefieldInitialized = true;
+		initMinefieldDisplay(minefieldInput);
+		drawMinefield();
+		initMinefieldInterface();
+	}
 }
 
 /*
@@ -160,7 +164,7 @@ function getTileValueString(value) {
 function selectTile(evt) {	
 	var cur = getTileCoordinatesFromRealCoordinates(evt.clientX, evt.clientY);
 	
-	if (minefield[cur[0]][cur[1]] == -1) {
+	if (minefield[cur[0]][cur[1]] == -1 || minefield[cur[0]][cur[1]] == 10) {
 		var prev = getAllTilesWithValue(10);
 		for (var i = 0; i < prev.length; i++) {
 			var toChange = prev[i];

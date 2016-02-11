@@ -22,8 +22,7 @@ function getMinefieldData() {
 }
 
 function processMinefieldData(response) {
-	debugger;
-	var allInfo = response.getElementsByTagName("minefield");
+	var allInfo = response.getElementsByTagName("minefield")[0];
 	
 	currentGameID = allInfo.getElementsByTagName("id")[0].childNodes[0].nodeValue;
 
@@ -41,6 +40,9 @@ function preprocessMinefieldMap(input) {
 			result[i] = -1;
 		} else if (result[i] === "M") {
 			result[i] = -2;
-		} 
+		} else if (result[i] === "F") {
+			result[i] = 9;
+ 		}
 	}
+	return result;
 }

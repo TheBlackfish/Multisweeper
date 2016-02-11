@@ -11,6 +11,15 @@
 <body onLoad="debug();">
 	<!-- Updating Blocker -->
 	<!-- Sign In prompt -->
+	<div id="loginPrompt">
+		Username:
+		<input type='text' name='username'><br>
+		Password:
+		<input type='password' name='password'><br>
+		<div onclick="attemptLogIn();"><p>Log In</p></div><br>
+		<p id="logInError"></p>
+	</div>
+
     <!-- Sign Up for next game prompt -->
     <!-- Canvas for game -->
     <canvas id="gameArea" height="720" width="1200">Your browser does not support the canvas element. Please use a HTML5 compatible browser.</canvas>

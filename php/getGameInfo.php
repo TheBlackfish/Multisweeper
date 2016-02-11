@@ -19,7 +19,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 	$result = $conn->query($query);
 
 	while ($row = mysqli_fetch_row($result)) {
-		$finalMap = translateMinefieldToMySQL(getMinefieldWithVisibility($row[0], $row[1]));
+		$finalMap = translateMinefieldToMySQL(getMinefieldWithVisibility(translateMinefieldToPHP($row[0], $row[2], $row[3]), translateMinefieldToPHP($row[1], $row[2], $row[3])));
 
 		$newrow = $doc->createElement('minefield');
 		$newrow = $doc->appendChild($newrow);
