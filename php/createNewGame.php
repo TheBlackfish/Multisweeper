@@ -63,9 +63,6 @@ function createNewGame($width, $height, $numMines) {
 	$query = $query . $width . ",";
 	$query = $query . '"' . "OPEN" . '"' . ");";
 
-	echo "Insert:<br>";
-	echo $query . "<br>";
-
 	if ($conn->query($query) === FALSE) {
 		error_log("Error: " . $query . "<br>" . $conn->error);
 		die("Unable to continue with game creation, exiting.");
@@ -74,9 +71,6 @@ function createNewGame($width, $height, $numMines) {
 	//Get game ID
 	$gameID = -1;
 	$query = "SELECT gameID FROM multisweeper.games WHERE map = '" . $result . "' AND status = 'OPEN' LIMIT 1;";
-	
-	echo "Select:<br>";
-	echo $query . "<br>";
 
 	$idResults = $conn->query($query);
 	if ($idResults->num_rows > 0) {

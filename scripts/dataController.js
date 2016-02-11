@@ -1,7 +1,6 @@
 var currentGameID = null;
 
 function getMinefieldData() {
-	console.log("Requesting map information...");
 	var xmlhttp = new XMLHttpRequest();
 	if ("withCredentials" in xmlhttp) {
 		xmlhttp.open("POST", "./php/getGameInfo.php", true);	
