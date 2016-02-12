@@ -12,9 +12,7 @@ function translateMinefieldToPHP($data, $height, $width) {
 
 	for ($x = 0; $x < count($chunks); $x++) {
 		$currentChunk = $chunks[$x];
-		#error_log("translateMinefieldToPHP - processing chunk #" . $x . ", value: " . $currentChunk);
 		$tempArray = str_split($currentChunk, 1);
-		error_log("translateMinefieldToPHP - tempArray value = " . implode(",", $tempArray));
 		array_push($result, $tempArray);
 	}
 

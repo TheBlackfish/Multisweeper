@@ -27,6 +27,7 @@ function attemptLogIn() {
 	xmlhttp.send(loginXML);
 }
 
+//Handles player information after logging in.
 function handleLogIn(response) {
 	var playerInfo = response.getElementsByTagName("login")[0];
 
@@ -37,8 +38,20 @@ function handleLogIn(response) {
 		}
 	} else {
 		currentPlayerID = playerInfo.getElementsByTagName("id")[0].childNodes[0].nodeValue;
-		currentUserName = playerInfo.getElementsByTagName("name")[0].childNodes[0].nodeValue;
+		currentUserName = playerInfo.getElementsByTagName("username")[0].childNodes[0].nodeValue;
 
-		//Update cosmetically on page???
+		updatePlayerInfo();
+
+		getMinefieldData();
 	}
+}
+
+//Updates the player information box with information after the player logs in.
+function updatePlayerInfo() {
+	var inner = "";
+
+	inner = "Welcome, " + currentUserName;
+
+	document.getElementById("userInfo").innerHTML = inner;
+	document.getElementById("loginPrompt").className += " hidden";
 }

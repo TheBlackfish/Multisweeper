@@ -43,7 +43,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 				$name = $result->createElement('username');
 				$name = $resultBase->appendChild($name);
 				$nameText = $result->createTextNode($xml->username);
-				$nameText = $correct->appendChild($nameText);
+				$nameText = $name->appendChild($nameText);
 			} else {
 				if ($verify = $conn->prepare("SELECT COUNT(*) FROM multisweeper.players where username=?")) {
 					$verify->bind_param("s", $xml->username);
@@ -74,6 +74,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 	}
 
 	$r = $result->SaveXML();
+	error_log($r);
 	echo $r;
 }
 

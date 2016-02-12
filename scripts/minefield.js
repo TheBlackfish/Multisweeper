@@ -162,9 +162,10 @@ function getTileValueString(value) {
 	Changes the status of the clicked-on tile to "shovel" if not currently selected. If it was previously selected, it becomes "plantflag" instead.
 */
 function selectTile(evt) {	
-	var cur = getTileCoordinatesFromRealCoordinates(evt.clientX, evt.clientY);
+	var pos = calculateMousePosition(evt.clientX, evt.clientY);
+	var cur = getTileCoordinatesFromRealCoordinates(pos[0], pos[1]);
 	
-	if (minefield[cur[0]][cur[1]] == -1 || minefield[cur[0]][cur[1]] == 10) {
+	if (minefield[cur[0]][cur[1]] == -1) {
 		var prev = getAllTilesWithValue(10);
 		for (var i = 0; i < prev.length; i++) {
 			var toChange = prev[i];
@@ -182,11 +183,7 @@ function selectTile(evt) {
 		if (minefield[cur[0]][cur[1]] != 10) {
 			minefield[cur[0]][cur[1]] = 10;
 			drawTileAtCoordinates("shovel", cur[0], cur[1]);
-		} else {
-			minefield[cur[0]][cur[1]] = 11;
-			drawTileAtCoordinates("plantflag", cur[0], cur[1]);
 		}
-		
 	}
 }
 
@@ -198,11 +195,18 @@ function updateHover(evt) {
 		drawTileAtCoordinates(minefield[previousHoverCoords[0]][previousHoverCoords[1]], previousHoverCoords[0], previousHoverCoords[1]);
 	}
 	
-	var cur = getTileCoordinatesFromRealCoordinates(evt.clientX, evt.clientY);
+	var pos = calculateMousePosition(evt.clientX, evt.clientY);
+	var cur = getTileCoordinatesFromRealCoordinates(pos[0], pos[1]);
 	
 	if (minefield[cur[0]][cur[1]] == -1) {
 		drawTileAtCoordinates("hover", cur[0], cur[1]);
 	}
 	
 	previousHoverCoords = [cur[0], cur[1]];
+}
+
+function calculateMousePosition(x, y) {
+	var realX = x - document.getElementById("gameArea").getBoundingClientRect().left;
+	var realY = y - document.getElementById("gameArea").getBoundingClientRect().top;
+	return [realX, realY];
 }
