@@ -28,5 +28,17 @@ function attemptLogIn() {
 }
 
 function handleLogIn(response) {
-	
+	var playerInfo = response.getElementsByTagName("login")[0];
+
+	if (playerInfo.getElementsByTagName("error").length > 0) {
+		var errors = playerInfo.getElementsByTagName("error");
+		for (var i = 0; i < errors.length; i++) {
+			document.getElementById("logInError").innerHTML += "<br>" + errors[i].childNodes[0].nodeValue;
+		}
+	} else {
+		currentPlayerID = playerInfo.getElementsByTagName("id")[0].childNodes[0].nodeValue;
+		currentUserName = playerInfo.getElementsByTagName("name")[0].childNodes[0].nodeValue;
+
+		//Update cosmetically on page???
+	}
 }

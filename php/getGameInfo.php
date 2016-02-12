@@ -46,7 +46,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 	}
 	
 	$r = $doc->saveXML();
-	error_log($r);
 	echo $r;
 }
 ?>
