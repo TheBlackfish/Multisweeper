@@ -1,12 +1,12 @@
 var currentGameID = null;
 
-function getMinefieldData() {
+function handleDataWithPHP(data, phpFileName, responseFunction) {
 	var xmlhttp = new XMLHttpRequest();
 	if ("withCredentials" in xmlhttp) {
-		xmlhttp.open("POST", "./php/getGameInfo.php", true);	
+		xmlhttp.open("POST", "./php/" + phpFileName + ".php", true);	
 	} else if (typeof XDomainRequest != "undefined") {
 		xmlhttp = new XDomainRequest();
-		xmlhttp.open("POST", "./php/getGameInfo.php", true);	
+		xmlhttp.open("POST", "./php/" + phpFileName + ".php", true);	
 	} else {
 		xmlhttp = null;
 		console.log("CORS not supported");	
@@ -14,10 +14,18 @@ function getMinefieldData() {
 	xmlhttp.setRequestHeader('Content-Type', 'text/xml');
 	xmlhttp.onreadystatechange = function(){
 		if (xmlhttp.readyState===4 && xmlhttp.status===200) {
-			processMinefieldData(xmlhttp.responseXML);
+			responseFunction(xmlhttp.responseXML);
 		}
 	}
-	xmlhttp.send();
+	if (data.length === 0) {
+		xmlhttp.send();
+	} else {
+		xmlhttp.send(data);
+	}
+}
+
+function getMinefieldData() {
+	handleDataWithPHP("", "getGameInfo", processMinefieldData);
 }
 
 function processMinefieldData(response) {
@@ -44,4 +52,8 @@ function preprocessMinefieldMap(input) {
  		}
 	}
 	return result;
+}
+
+function getGameID() {
+	return currentGameID;
 }

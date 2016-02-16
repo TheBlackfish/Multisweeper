@@ -4,6 +4,7 @@
 <meta charset="utf-8">
 <title>Multisweeper</title>
 <link rel="stylesheet" type="text/css" href="style/multisweeper.css" />
+<script src="scripts/actionController.js"></script>
 <script src="scripts/dataController.js"></script>
 <script src="scripts/minefield.js"></script>
 <script src="scripts/playerController.js"></script>
@@ -31,7 +32,10 @@
     <canvas id="gameArea" height="720" width="1200">Your browser does not support the canvas element. Please use a HTML5 compatible browser.</canvas>
 
     <!-- Submit button -->
-    <div onclick="submitAction();"><p>Submit Move</p></div>
+    <div id="submitArea">
+    	<div onclick="submitAction();"><p>Submit Move</p></div>
+    	<p id="submitMessage">Press the Submit button to submit your action.</p>
+    </div>
     
    	<!-- Current Players -->
     <!-- Chat area -->

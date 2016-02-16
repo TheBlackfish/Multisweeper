@@ -1,9 +1,10 @@
 <?php
 
+require_once('../../../database.php');
 require_once('mineGameConstants.php');
 require_once('translateData.php');
 
-function resolveAllActions(gameID) {
+function resolveAllActions($gameID) {
 	//Prepare MySQL connection
 	$conn = new mysqli($sqlhost, $sqlusername, $sqlpassword);
 	if ($conn->connect_error) {
@@ -16,6 +17,7 @@ function resolveAllActions(gameID) {
 		$stmt->execute();
 		$stmt->bind_result($m, $v, $h, $w);
 		if ($stmt->fetch()) {
+			$stmt->close();
 			$minefield = translateMinefieldToPHP($m, $h, $w);
 			$visibility = translateMinefieldToPHP($v, $h, $w);
 			
@@ -38,6 +40,8 @@ function resolveAllActions(gameID) {
 					array_push($actionqueue, $temp);
 				}
 
+				$actionStmt->close();
+
 				if (count($actionqueue) > 0) {
 					
 					//For each action,
@@ -45,7 +49,7 @@ function resolveAllActions(gameID) {
 						$cur = array_shift($actionqueue);
 
 						//Add player to player status with alive status if they are not currently in there.
-						if (!array_key_exists($cur["playerID", $playerstatus)) {
+						if (!array_key_exists($cur["playerID"], $playerstatus)) {
 							$playerstatus[$cur["playerID"]] = 1;
 						}
 
@@ -97,9 +101,10 @@ function resolveAllActions(gameID) {
 					if ($updateStmt = $conn->prepare("UPDATE multisweeper.games SET map=?, visibility=? WHERE gameID=?")) {
 						$updateStmt->bind_param("ssi", translateMinefieldToMySQL($minefield), translateMinefieldToMySQL($visibility), $gameID);
 						$updated = $updateStmt->execute();
+						$updateStmt->close();
 
 						if ($updated === false) {
-							error_log("Error occurred during map update, full text: " . $updateStmt->error);
+							error_log("Error occurred during map update, full text: " . $conn->error);
 						} else {
 
 							//Update all remaining players in game to be awaiting actions.
@@ -107,29 +112,43 @@ function resolveAllActions(gameID) {
 								if ($updatePlayer = $conn->prepare("UPDATE multisweeper.playerstatus SET status=?, awaitingAction=1 WHERE gameID=? AND playerID=?")) {
 									$updatePlayer->bind_param("iii", $isAlive, $gameID, $id);
 									$updated = $updatePlayer->execute();
+									$updatePlayer->close();
 
 									if ($updated === false) {
-										error_log("Error occurred during player status update, full text: " . $updatePlayer->error);
+										error_log("Error occurred during player status update. " . $conn->errno . ": " . $conn->error);
 									}
 								} else {
-									error_log("Unable to prepare player status update after resolving action queue.");
+									error_log("Unable to prepare player status update after resolving action queue. " . $conn->errno . ": " . $conn->error);
 								}
+							}
+
+							//Delete all player actions from the action queue.
+							if ($deleteStmt = $conn->prepare("DELETE FROM multisweeper.actionqueue WHERE gameID=?")) {
+								$deleteStmt->bind_param("i", $gameID);
+								$updated = $deleteStmt->execute();
+								$deleteStmt->close();
+
+								if ($updated === false) {
+									error_log("Error occurred during action queue clean up. " . $conn->errno . ": " . $conn->error);
+								}
+							} else {
+								error_log("Unable to prepare delete statement. " . $conn->errno . ": " . $conn->error);
 							}
 						}
 					} else {
-						error_log("Unable to prepare map update after resolving action queue.");
+						error_log("Unable to prepare map update after resolving action queue. " . $conn->errno . ": " . $conn->error);
 					}
 				} else {
 					error_log("Found 0 actions in queue! Most likely something went terribly wrong!");
 				}
 			} else {
-				error_log("Unable to prepare action statement for resolving action queue.");
+				error_log("Unable to prepare action statement for resolving action queue. " . $conn->errno . ": " . $conn->error);
 			}
 		} else {
-			error_log("Unable to resolve map statement for resolving action queue.");
+			error_log("Unable to resolve map statement for resolving action queue. " . $conn->errno . ": " . $conn->error);
 		}
 	} else {
-		error_log("Unable to prepare map statement for resolving action queue.");
+		error_log("Unable to prepare map statement for resolving action queue. " . $conn->errno . ": " . $conn->error);
 	}
 }
 

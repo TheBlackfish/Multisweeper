@@ -104,6 +104,26 @@ function drawMinefield() {
 }
 
 /*
+	Returns an array with the following values:
+		x: The x-coordinate of the selected tile.
+		y: The y-coordinate of the selected tile.
+		action: The action to perform on the selected tile.
+*/
+function getSelectedTile() {
+	var temp = getAllTilesWithValue(10);
+	if (temp.length >= 1) {
+		var cur = temp[0];
+		var ret = [];
+		ret["x"] = cur[0];
+		ret["y"] = cur[1];
+		ret["action"] = 0;
+		return ret;
+	} else {
+		return null;
+	}
+}
+
+/*
 	Returns an array of all tile coordinates with the given value
 */
 function getAllTilesWithValue(value) {
@@ -205,6 +225,9 @@ function updateHover(evt) {
 	previousHoverCoords = [cur[0], cur[1]];
 }
 
+/*
+	Corrects incorrect mouse positioning on the canvas.
+*/
 function calculateMousePosition(x, y) {
 	var realX = x - document.getElementById("gameArea").getBoundingClientRect().left;
 	var realY = y - document.getElementById("gameArea").getBoundingClientRect().top;

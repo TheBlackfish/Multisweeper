@@ -8,23 +8,7 @@ function attemptLogIn() {
 
 	var loginXML = "<login><username>" + inputUserName + "</username><password>" + inputPassword + "</password></login>";
 
-	var xmlhttp = new XMLHttpRequest();
-	if ("withCredentials" in xmlhttp) {
-		xmlhttp.open("POST", "./php/logInPlayer.php", true);	
-	} else if (typeof XDomainRequest != "undefined") {
-		xmlhttp = new XDomainRequest();
-		xmlhttp.open("POST", "./php/logInPlayer.php", true);	
-	} else {
-		xmlhttp = null;
-		console.log("CORS not supported");	
-	}
-	xmlhttp.setRequestHeader('Content-Type', 'text/xml');
-	xmlhttp.onreadystatechange = function(){
-		if (xmlhttp.readyState===4 && xmlhttp.status===200) {
-			handleLogIn(xmlhttp.responseXML);
-		}
-	}
-	xmlhttp.send(loginXML);
+	handleDataWithPHP(loginXML, 'logInPlayer', handleLogIn);
 }
 
 //Handles player information after logging in.
@@ -54,4 +38,8 @@ function updatePlayerInfo() {
 
 	document.getElementById("userInfo").innerHTML = inner;
 	document.getElementById("loginPrompt").className += " hidden";
+}
+
+function getPlayerID() {
+	return currentPlayerID;	
 }
