@@ -30,6 +30,19 @@ function handleLogIn(response) {
 	}
 }
 
+function attemptRegister() {
+	var inputUserName = document.getElementById("loginUsername").value;
+	var inputPassword = document.getElementById("loginPassword").value;
+
+	var loginXML = "<login><username>" + inputUserName + "</username><password>" + inputPassword + "</password></login>";
+
+	handleDataWithPHP(loginXML, 'registerPlayer', handleLogIn);
+}
+
+function handleRegister(response) {
+
+}
+
 //Updates the player information box with information after the player logs in.
 function updatePlayerInfo() {
 	var inner = "";

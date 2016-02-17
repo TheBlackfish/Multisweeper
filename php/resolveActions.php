@@ -5,6 +5,10 @@ require_once('mineGameConstants.php');
 require_once('translateData.php');
 
 function resolveAllActions($gameID) {
+	global $sqlhost, $sqlusername, $sqlpassword, $adjacencies;
+
+	error_log("Attempting to resolve action queue.");
+
 	//Prepare MySQL connection
 	$conn = new mysqli($sqlhost, $sqlusername, $sqlpassword);
 	if ($conn->connect_error) {
@@ -37,6 +41,7 @@ function resolveAllActions($gameID) {
 						"x"				=>	$xCoord,
 						"y"				=>	$yCoord
 					);
+					error_log("Found action at " . $xCoord . "," . $yCoord);
 					array_push($actionqueue, $temp);
 				}
 
@@ -55,16 +60,22 @@ function resolveAllActions($gameID) {
 
 						//If shovel action
 						if ($cur["actionType"] == 0) {
+							error_log("Resolving dig at " . $cur["x"] . "," . $cur["y"]);
+
 							//Reveal tile at coordinates
 							$visibility[$cur["x"]][$cur["y"]] = 2;
 
+							error_log("Visibility at the coordinate now " . $visibility[$cur["x"]][$cur["y"]]);
+							error_log("Map value there is " . $minefield[$cur["x"]][$cur["y"]]);
+
 							//If tile value is a mine,
-							if ($minefield[$cur["x"]][$cur["y"]] == "M") {
+							if ($minefield[$cur["x"]][$cur["y"]] === "M") {
+								error_log("Mine encountered!");
 								//Kill player
 								$playerstatus[$cur["playerID"]] = 0;
-
 							//If tile value is 0,
 							} else if ($minefield[$cur["x"]][$cur["y"]] == 0) {
+								error_log("Zero encountered!");
 								//Add actions to queue that reveal all adjacent tiles
 								foreach ($adjacencies as $adj) {
 									$targetX = $cur["x"] + $adj[0];
@@ -75,18 +86,21 @@ function resolveAllActions($gameID) {
 									if (($targetX < 0) or ($targetX >= $w)) {
 										$shouldAdd = false;
 									}
-									if (($targetY < 0) or ($targetY >= $height)) {
+									if (($targetY < 0) or ($targetY >= $h)) {
 										$shouldAdd = false;
 									}
 
+
 									if ($shouldAdd) {
-										$newAction = array(
-											"playerID"		=> $cur["playerID"],
-											"actionType"	=> $cur["actionType"],
-											"x"				=> $targetX,
-											"y"				=> $targetY
-										);
-										array_push($actionqueue, $newAction);
+										if ($visibility[$targetX][$targetY] == 0) {
+											$newAction = array(
+												"playerID"		=> $cur["playerID"],
+												"actionType"	=> $cur["actionType"],
+												"x"				=> $targetX,
+												"y"				=> $targetY
+											);
+											array_push($actionqueue, $newAction);
+										}
 									}
 								}
 							}
@@ -101,22 +115,23 @@ function resolveAllActions($gameID) {
 					if ($updateStmt = $conn->prepare("UPDATE multisweeper.games SET map=?, visibility=? WHERE gameID=?")) {
 						$updateStmt->bind_param("ssi", translateMinefieldToMySQL($minefield), translateMinefieldToMySQL($visibility), $gameID);
 						$updated = $updateStmt->execute();
-						$updateStmt->close();
+						
 
 						if ($updated === false) {
-							error_log("Error occurred during map update, full text: " . $conn->error);
+							error_log("Error occurred during map update. " . $updateStmt->errno . ": " . $updateStmt->error);
+							$updateStmt->close();
 						} else {
+							$updateStmt->close();
 
 							//Update all remaining players in game to be awaiting actions.
 							foreach ($playerstatus as $id => $isAlive) {
 								if ($updatePlayer = $conn->prepare("UPDATE multisweeper.playerstatus SET status=?, awaitingAction=1 WHERE gameID=? AND playerID=?")) {
 									$updatePlayer->bind_param("iii", $isAlive, $gameID, $id);
 									$updated = $updatePlayer->execute();
-									$updatePlayer->close();
-
 									if ($updated === false) {
-										error_log("Error occurred during player status update. " . $conn->errno . ": " . $conn->error);
+										error_log("Error occurred during player status update. " . $updatePlayer->errno . ": " . $updatePlayer->error);
 									}
+									$updatePlayer->close();
 								} else {
 									error_log("Unable to prepare player status update after resolving action queue. " . $conn->errno . ": " . $conn->error);
 								}
@@ -126,11 +141,10 @@ function resolveAllActions($gameID) {
 							if ($deleteStmt = $conn->prepare("DELETE FROM multisweeper.actionqueue WHERE gameID=?")) {
 								$deleteStmt->bind_param("i", $gameID);
 								$updated = $deleteStmt->execute();
-								$deleteStmt->close();
-
 								if ($updated === false) {
-									error_log("Error occurred during action queue clean up. " . $conn->errno . ": " . $conn->error);
+									error_log("Error occurred during action queue clean up. " . $deleteStmt->errno . ": " . $deleteStmt->error);
 								}
+								$deleteStmt->close();
 							} else {
 								error_log("Unable to prepare delete statement. " . $conn->errno . ": " . $conn->error);
 							}

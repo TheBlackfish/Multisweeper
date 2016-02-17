@@ -1,5 +1,4 @@
 function submitAction() {
-	debugger;
 	document.getElementById("submitMessage").innerHTML = "Submitting...";
 
 	var selectionTile = getSelectedTile();
@@ -20,7 +19,6 @@ function submitAction() {
 }
 
 function resolveActionSubmission(response) {
-	debugger;
 	var text = "Unexpected client error!";
 
 	allInfo = response.getElementsByTagName("submission");

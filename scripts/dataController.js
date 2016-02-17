@@ -36,7 +36,7 @@ function processMinefieldData(response) {
 	var map = preprocessMinefieldMap(allInfo.getElementsByTagName("map")[0].childNodes[0].nodeValue);
 	var h = allInfo.getElementsByTagName("height")[0].childNodes[0].nodeValue;
 	var w = allInfo.getElementsByTagName("width")[0].childNodes[0].nodeValue;
-
+	
 	initMinefield(map, h, w);
 }
 

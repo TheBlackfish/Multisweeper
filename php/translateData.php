@@ -6,7 +6,7 @@ function translateMinefieldToPHP($data, $height, $width) {
 		throw new Exception("translateMinefieldToPHP - Data provided does not match size given!", 1);
 	}
 
-	$chunks = str_split($data, $width);
+	$chunks = str_split($data, $height);
 
 	$result = array();
 

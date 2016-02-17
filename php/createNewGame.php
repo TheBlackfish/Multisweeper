@@ -1,11 +1,13 @@
 <?php
 
+require_once('../../../database.php');
+require_once('mineGameConstants.php');
+require_once('translateData.php');
+
 //Takes the various parameters of the minefield width, height, and number of mines.
 //Does not return anything, but does alter the MySQL database
 function createNewGame($width, $height, $numMines) {
-	require_once('../../../database.php');
-	require_once('mineGameConstants.php');
-	require_once('translateData.php');
+	global $sqlhost, $sqlusername, $sqlpassword;
 
 	//Initialize connections
 	$conn = new mysqli($sqlhost, $sqlusername, $sqlpassword);
@@ -34,12 +36,12 @@ function createNewGame($width, $height, $numMines) {
 	$visibility = str_pad("", strlen($result), "0");
 
 	//Upload to MySQL
-	if ($insertStmt = $conn->prepare("INSERT INTO multisweeper.games (map, visibility, height, width, status) VALUES (?, ?, ?, ?, ?)")) {
-		$insertStmt->bind_param("ssiis", $result, $visibilty, $height, $width, "OPEN");
+	if ($insertStmt = $conn->prepare("INSERT INTO multisweeper.games (map, visibility, height, width, status) VALUES (?,?,?,?,'OPEN')")) {
+		$insertStmt->bind_param("ssii", $result, $visibility, $height, $width);
 		$inserted = $insertStmt->execute();
-		$insertStmt->close();
-
+	
 		if ($inserted) {
+			$insertStmt->close();
 
 			//Get game ID
 			if ($idStmt = $conn->prepare("SELECT gameID FROM multisweeper.games WHERE map=? AND status='OPEN' LIMIT 1")) {
@@ -64,9 +66,9 @@ function createNewGame($width, $height, $numMines) {
 						if (count($playerIDs) === 0) {
 							error_log("No players for new game.");
 						} else {
-							if ($statusStmt = $conn->prepare("INSERT INTO multisweeper.playerstatus (gameID, playerID, awaitingAction) VALUES (?, ?, ?)")) {
+							if ($statusStmt = $conn->prepare("INSERT INTO multisweeper.playerstatus (gameID, playerID, awaitingAction) VALUES (?, ?, 1)")) {
 								for ($i=0; $i < count($playerIDs); $i++) { 
-									$statusStmt->bind_param("iii", $gameID, $playerIDs[$i], 1);
+									$statusStmt->bind_param("ii", $gameID, $playerIDs[$i]);
 									$statusStmt->execute();
 								}
 								$statusStmt->close();
@@ -87,13 +89,13 @@ function createNewGame($width, $height, $numMines) {
 						error_log("Unable to prepare sign-up statement. " . $conn->errno . ": " . $conn->error);
 					}
 				} else {
-					error_log("Unexpected results from ID statement. " . $conn->errno . ": " . $conn->error);
+					error_log("Unexpected results from ID statement. " . $idStmt->errno . ": " . $idStmt->error);
 				}
 			} else {
 				error_log("Unable to prepare ID statement. " . $conn->errno . ": " . $conn->error);
 			}
 		} else {
-			error_log("Unable to insert game during creation. " . $conn->errno . ": " . $conn->error);
+			error_log("Unable to insert game during creation. " . $insertStmt->errno . ": " . $insertStmt->error);
 		}
 	} else {
 		error_log("Unable to prepare game insertation statement. " . $conn->errno . ": " . $conn->error);
@@ -103,7 +105,7 @@ function createNewGame($width, $height, $numMines) {
 //Goes through each space in the 2-dimensional array provided.
 //In each space, the value becomes the number of adjacent "M" values if the space did not have a value of "M" already.
 function _updateMinefieldNumbers($minefield) {
-	require_once('mineGameConstants.php');
+	global $adjacencies;
 
 	$width = count($minefield);
 	$height = count($minefield[0]);

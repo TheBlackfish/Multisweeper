@@ -7,6 +7,7 @@
 	If all players in the game who are alive have then submitted actions, the game is updated via the action queue.
 */
 
+require_once("../../../database.php");
 require_once("resolveActions.php");
 
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
@@ -54,14 +55,15 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 				if ($insertStmt = $conn->prepare("INSERT INTO multisweeper.actionqueue (playerID, gameID, xCoord, yCoord, actionType) VALUES (?, ?, ?, ?, ?)")) {
 					$insertStmt->bind_param("iiiii", $xml->playerID, $xml->gameID, $xml->xCoord, $xml->yCoord, $xml->actionType);
 					$updated = $insertStmt->execute();
-					$insertStmt->close();
 					if (!$updated) {
-						error_log("Error occurred inserting player action into queue.");
+						error_log("Error occurred inserting player action into queue. " . $insertStmt->errno . ": " . $insertStmt->error);
 						$error = $result->createElement('error');
 						$error = $resultBase->appendChild($error);
 						$errorText = $result->createTextNode("Internal error occurred, please try again later.");
 						$errorText = $error->appendChild($errorText);
+						$insertStmt->close();
 					} else {
+						$insertStmt->close();
 						$error = $result->createElement('action');
 						$error = $resultBase->appendChild($error);
 						$errorText = $result->createTextNode("Action submitted!");
@@ -87,7 +89,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 								$shouldResolve = true;
 							}
 						} else {
-							error_log("Unable to prepare check status statement.");
+							error_log("Unable to prepare check status statement. " . $conn->errno . ": " . $conn->error);
 						}
 					}
 				} else {
@@ -111,7 +113,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 	echo $r;
 
 	if ($shouldResolve) {
-		#resolveAllActions($xml->gameID);
+		resolveAllActions($xml->gameID);
 	}
 }
 
