@@ -26,92 +26,78 @@ function createNewGame($width, $height, $numMines) {
 		}
 	}
 
-	//Debugging!
-	echo "Minefield pre-update<br>";
-	for ($y = 0; $y < $height; $y++) {
-		$debugRow = "";
-		for ($x = 0; $x < $width; $x++) {
-			$debugRow .= " " . $minefield[$x][$y];
-		}
-		echo $debugRow;
-		echo "<br>";
-	}
-
 	//Calculate numbers for each index in the array
 	$minefield = _updateMinefieldNumbers($minefield);
-
-	//Debugging!
-	echo "Minefield post-update, pre-translate<br>";
-	for ($y = 0; $y < $height; $y++) {
-		$debugRow = "";
-		for ($x = 0; $x < $width; $x++) {
-			$debugRow .= " " . $minefield[$x][$y];
-		}
-		echo $debugRow;
-		echo "<br>";
-	}
 
 	//Translate to form MySQL can store it
 	$result = translateMinefieldToMySQL($minefield);
 	$visibility = str_pad("", strlen($result), "0");
 
 	//Upload to MySQL
-	$query = "INSERT INTO multisweeper.games (map, visibility, height, width, status) VALUES (";
-	$query = $query . '"' . $result . '"' . ",";
-	$query = $query . '"' . $visibility . '"' . ",";
-	$query = $query . $height . ",";
-	$query = $query . $width . ",";
-	$query = $query . '"' . "OPEN" . '"' . ");";
+	if ($insertStmt = $conn->prepare("INSERT INTO multisweeper.games (map, visibility, height, width, status) VALUES (?, ?, ?, ?, ?)")) {
+		$insertStmt->bind_param("ssiis", $result, $visibilty, $height, $width, "OPEN");
+		$inserted = $insertStmt->execute();
+		$insertStmt->close();
 
-	if ($conn->query($query) === FALSE) {
-		error_log("Error: " . $query . "<br>" . $conn->error);
-		die("Unable to continue with game creation, exiting.");
-	}
+		if ($inserted) {
 
-	//Get game ID
-	$gameID = -1;
-	$query = "SELECT gameID FROM multisweeper.games WHERE map = '" . $result . "' AND status = 'OPEN' LIMIT 1;";
+			//Get game ID
+			if ($idStmt = $conn->prepare("SELECT gameID FROM multisweeper.games WHERE map=? AND status='OPEN' LIMIT 1")) {
+				$idStmt->bind_param("s", $result);
+				$idStmt->execute();
+				$idStmt->bind_result($gameID);
+				$idStmt->fetch();
+				$idStmt->close();
 
-	$idResults = $conn->query($query);
-	if ($idResults->num_rows > 0) {
-		while ($row = mysqli_fetch_row($idResults)) {
-			$gameID = $row[0];
+				if ($gameID !== null) {
+
+					//Create player statuses for all players currently signed up
+					if ($playerStmt = $conn->prepare("SELECT playerID FROM multisweeper.upcomingsignup")) {
+						$playerIDs = array();
+						$playerStmt->execute();
+						$playerStmt->bind_result($curID);
+						while ($playerStmt->fetch()) {
+							array_push($playerIDs, $curID);
+						}
+						$playerStmt->close();
+
+						if (count($playerIDs) === 0) {
+							error_log("No players for new game.");
+						} else {
+							if ($statusStmt = $conn->prepare("INSERT INTO multisweeper.playerstatus (gameID, playerID, awaitingAction) VALUES (?, ?, ?)")) {
+								for ($i=0; $i < count($playerIDs); $i++) { 
+									$statusStmt->bind_param("iii", $gameID, $playerIDs[$i], 1);
+									$statusStmt->execute();
+								}
+								$statusStmt->close();
+
+								if ($deleteStmt = $conn->prepare("TRUNCATE multisweeper.upcomingsignup")) {
+									$deleteStmt->execute();
+									$deleteStmt->close();
+
+									error_log("New game successfully created, ID=" . $gameID);
+								} else {
+									error_log("Unable to prepare delete statement. " . $conn->errno . ": " . $conn->error);
+								}
+							} else {
+								error_log("Unable to prepare sign-up finalize statement. " . $conn->errno . ": " . $conn->error);
+							}
+						}
+					} else {
+						error_log("Unable to prepare sign-up statement. " . $conn->errno . ": " . $conn->error);
+					}
+				} else {
+					error_log("Unexpected results from ID statement. " . $conn->errno . ": " . $conn->error);
+				}
+			} else {
+				error_log("Unable to prepare ID statement. " . $conn->errno . ": " . $conn->error);
+			}
+		} else {
+			error_log("Unable to insert game during creation. " . $conn->errno . ": " . $conn->error);
 		}
 	} else {
-		error_log("Error: Unable to get ID for new game after uploading. Exiting.");
-		die("Unable to continue with game creation, exiting.");
+		error_log("Unable to prepare game insertation statement. " . $conn->errno . ": " . $conn->error);
 	}
-
-	if ($gameID == -1) {
-		error_log("Error: Game was not created by time we needed it. Exiting.");
-		die("Unable to continue with game creation, exiting.");
-	}
-
-	//Create player statuses for all players currently signed up
-	$query = "SELECT playerID FROM multisweeper.upcomingsignup;";
-	$wResults = $conn->query($query);
-	if ($wResults->num_rows > 0) {
-		$playerQuery = "INSERT INTO multisweeper.playerstatus (gameID, playerID, awaitingAction) VALUES ";
-		while ($row = mysqli_fetch_row($wResults)) {
-			$playerQuery = $playerQuery . "('" . $gameID . "',";
-			$playerQuery = $playerQuery . "'" . $row[0] . "',1),";
-		}
-		$playerQuery = rtrim($playerQuery, ',');
-		$playerQuery .= ";";
-
-		echo "Insert multiple statii:<br>";
-		echo $playerQuery . "<br>";
-
-		if ($conn->query($playerQuery) === FALSE) {
-			error_log("Error: " . $playerQuery . "<br>" . $conn->error);
-			die("Unable to continue with game creation, exiting.");
-		}
-	} else {
-		error_log("Error: Did not find any players for game. Exiting.");
-		die("Unable to continue with game creation, exiting.");
-	}
-
-	error_log("New game successfully created, ID=" . $gameID);
 }
 
 //Goes through each space in the 2-dimensional array provided.

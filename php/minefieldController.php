@@ -48,12 +48,17 @@ function checkIfSpaceIsUnrevealed($gameID, $xCoord, $yCoord) {
 		die("Connection failed: " . $conn->connect_error);
 	}
 
-	$query = "SELECT visibility FROM multisweeper.games WHERE gameID = '" . $gameID . ";";
-	$result = $conn->query($query);
+	if ($query = $conn->prepare("SELECT visibility FROM multisweeper.games WHERE gameID=?")) {
+		$query->execute();
+		$query->bind_result($vis);
+		$query->fetch();
+		$query->close();
 
-	while ($row = mysqli_fetch_row($result)) {
 		$field = translateMinefieldToPHP($row[0], $minefieldWidth, $minefieldHeight);
 		return ($field[$xCoord][$yCoord] !== 2);
+	} else {
+		error_log("Unable to prepare visibility statement. " . $conn->errno . ": " . $conn->error);
+		return false;
 	}
 }
 

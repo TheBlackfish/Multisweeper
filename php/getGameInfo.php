@@ -15,18 +15,20 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 	$doc = new DOMDocument('1.0');
 	$doc->formatOutput = true;
 
-	$query = "SELECT map, visibility, height, width, gameID FROM multisweeper.games WHERE status = 'OPEN' ORDER BY gameID DESC LIMIT 1;";
-	$result = $conn->query($query);
+	if ($query = $conn->prepare("SELECT map, visibility, height, width, gameID FROM multisweeper.games WHERE status='OPEN' ORDER BY gameID DESC LIMIT 1")) {
+		$query->execute();
+		$query->bind_result($map, $vis, $height, $width, $gameID);
+		$query->fetch();
+		$query->close();
 
-	while ($row = mysqli_fetch_row($result)) {
-		$finalMap = translateMinefieldToMySQL(getMinefieldWithVisibility(translateMinefieldToPHP($row[0], $row[2], $row[3]), translateMinefieldToPHP($row[1], $row[2], $row[3])));
+		$finalMap = translateMinefieldToMySQL(getMinefieldWithVisibility(translateMinefieldToPHP($map, $height, $width), translateMinefieldToPHP($vis, $height, $width)));
 
 		$newrow = $doc->createElement('minefield');
 		$newrow = $doc->appendChild($newrow);
 
 		$nodeID = $doc->createElement('id');
 		$nodeID = $newrow->appendChild($nodeID);
-		$nodeIDText = $doc->createTextNode($row[4]);
+		$nodeIDText = $doc->createTextNode($gameID);
 		$nodeIDText = $nodeID->appendChild($nodeIDText);
 
 		$nodeA = $doc->createElement('map');
@@ -36,13 +38,19 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
 		$nodeB = $doc->createElement('height');
 		$nodeB = $newrow->appendChild($nodeB);
-		$nodeBText = $doc->createTextNode($row[2]);
+		$nodeBText = $doc->createTextNode($height);
 		$nodeBText = $nodeB->appendChild($nodeBText);
 
 		$nodeC = $doc->createElement('width');
 		$nodeC = $newrow->appendChild($nodeC);
-		$nodeCText = $doc->createTextNode($row[3]);
+		$nodeCText = $doc->createTextNode($width);
 		$nodeCText = $nodeC->appendChild($nodeCText);
+	} else {
+		error_log("Unable to prepare map gathering statement. " . $conn->errno . ": " . $conn->error);
+		$error = $doc->createElement('error');
+		$error = $doc->appendChild($error);
+		$errorText = $doc->createTextNode("Internal error occurred, please try again later.");
+		$errorText = $error->appendChild($errorText);
 	}
 	
 	$r = $doc->saveXML();
