@@ -18,8 +18,8 @@
 		<input id="loginUsername" type='text' name='username'><br>
 		Password:
 		<input id="loginPassword" type='password' name='password'><br>
-		<div onclick="attemptLogIn();"><p>Log In</p></div><br>
-		<div onclick="attemptRegister();"><p>Register</p></div><br>
+		<div onclick="attemptLogIn();"><p>Log In</p></div>
+		<div onclick="attemptRegister();"><p>Register</p></div>
 		<p id="logInError"></p>
 	</div>
 
@@ -29,6 +29,11 @@
 	</div>
 
     <!-- Sign Up for next game prompt -->
+
+    <div id="nextGamePrompt">
+    	<p id="nextGameText">You are currently not signed up for the next game.</p>
+    	<div onclick="attemptNextGame();"><p>Sign Up For The Next Game</p></div>
+    </div>
     <!-- Canvas for game -->
     <canvas id="gameArea" height="720" width="1200">Your browser does not support the canvas element. Please use a HTML5 compatible browser.</canvas>
 
