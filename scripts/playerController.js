@@ -1,6 +1,29 @@
 var currentPlayerID = null;
 var currentUserName = null;
 
+function checkCookie() {
+	var foundUsername = null;
+	var foundPassword = null;
+
+	var allCookieVals = document.cookie.split("; ");
+	for (var i = 0; i < allCookieVals.length; i++) {
+		var cur = allCookieVals[i];
+		if (cur.lastIndexOf("username") > -1) {
+			var curBreaks = cur.split("=");
+			foundUsername = curBreaks[1];
+		} else if (cur.lastIndexOf("password") > -1) {
+			var curBreaks = cur.split("=");
+			foundPassword = curBreaks[1];
+		}
+	}
+
+	if ((foundUsername !== null) && (foundPassword !== null)) {
+		document.getElementById("loginUsername").value = foundUsername;
+		document.getElementById("loginPassword").value = foundPassword;
+		attemptLogIn();
+	}
+}
+
 //Get username and password, POST to server for authentication.
 function attemptLogIn() {
 	var inputUserName = document.getElementById("loginUsername").value;
@@ -23,6 +46,12 @@ function handleLogIn(response) {
 	} else {
 		currentPlayerID = playerInfo.getElementsByTagName("id")[0].childNodes[0].nodeValue;
 		currentUserName = playerInfo.getElementsByTagName("username")[0].childNodes[0].nodeValue;
+
+		//Set up login cookie
+		var d = new Date();
+		d.setTime(d.getTime() + (3*24*60*60*1000));
+		var expires = "expires="+d.toUTCString();
+		document.cookie = "username=" + currentUserName + "; password=" + document.getElementById("loginPassword").value + "; " + expires;
 
 		updatePlayerInfo();
 

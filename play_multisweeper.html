@@ -5,6 +5,7 @@
 <title>Multisweeper</title>
 <link rel="stylesheet" type="text/css" href="style/multisweeper.css" />
 <script src="scripts/actionController.js"></script>
+<script src="scripts/autoController.js"></script>
 <script src="scripts/dataController.js"></script>
 <script src="scripts/minefield.js"></script>
 <script src="scripts/playerController.js"></script>
@@ -34,6 +35,12 @@
     	<p id="nextGameText">You need to be logged in in order to sign up for the next game.</p>
     	<div id="nextGameButton" onclick="attemptNextGameSignUp();"><p>Sign Up For The Next Game</p></div>
     </div>
+
+    <!-- Timer update -->
+    <div>
+    	<p id="timerText"></p>
+    </div>
+
     <!-- Canvas for game -->
     <canvas id="gameArea" height="720" width="1200">Your browser does not support the canvas element. Please use a HTML5 compatible browser.</canvas>
 
@@ -48,9 +55,8 @@
     
     <script type="text/javascript">
 		function debug() {		
-			setTimeout( function(){
-				getMinefieldData();
-			}, 3000);	
+			checkCookie();	
+			initQueryTimer();
 		}
 	</script>
 </body>
