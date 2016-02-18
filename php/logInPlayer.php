@@ -33,6 +33,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 			while ($stmt->fetch()) {
 				$output = $id;
 			}
+			$stmt->close();
 
 			if ($output != null) {
 				$correct = $result->createElement('id');

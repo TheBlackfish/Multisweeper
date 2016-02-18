@@ -27,6 +27,8 @@ function handleLogIn(response) {
 		updatePlayerInfo();
 
 		getMinefieldData();
+
+		attemptNextGameSignUp();
 	}
 }
 
@@ -49,6 +51,30 @@ function handleRegister(response) {
 		}
 	} else {
 		attemptLogIn();
+	}
+}
+
+function attemptNextGameSignUp() {
+	var inputUserName = document.getElementById("loginUsername").value;
+	var inputPassword = document.getElementById("loginPassword").value;
+
+	var loginXML = "<login><username>" + inputUserName + "</username><password>" + inputPassword + "</password></login>";
+
+	handleDataWithPHP(loginXML, 'signUpForNextGame', handleSignUp);
+}
+
+function handleSignUp(response) {
+	var playerInfo = response.getElementsByTagName("register")[0];
+
+	if (playerInfo.getElementsByTagName("error").length > 0) {
+		var errors = playerInfo.getElementsByTagName("error");
+		for (var i = 0; i < errors.length; i++) {
+			document.getElementById("logInError").innerHTML += "<br>" + errors[i].childNodes[0].nodeValue;
+		}
+	} else {
+		var success = playerInfo.getElementsByTagName("success");
+		document.getElementById("nextGameText").innerHTML = success[0].childNodes[0].nodeValue;
+		document.getElementById("nextGameButton").className += " hidden";
 	}
 }
 

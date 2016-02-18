@@ -21,19 +21,20 @@ function submitAction() {
 function resolveActionSubmission(response) {
 	var text = "Unexpected client error!";
 
-	allInfo = response.getElementsByTagName("submission");
+	var allInfo = response.getElementsByTagName("submission")[0];
 
-	actionDone = allInfo[0].getElementsByTagName("action");
+	var actionDone = allInfo.getElementsByTagName("action");
 
 	if (actionDone.length > 0) {
 		text = actionDone[0].nodeValue;
 	} else {
-		errors = allInfo.getElementsByTagName("error");
+		test = "";
+		var errors = allInfo.getElementsByTagName("error");
 		for (var i = 0; i < errors.length; i++) {
 			if (i != 0) {
 				text += "<br>";
 			}
-			text += errors[i].nodeValue;
+			text += errors[i].childNodes[0].nodeValue;
 		}
 	}
 
