@@ -51,7 +51,9 @@ function handleLogIn(response) {
 		var d = new Date();
 		d.setTime(d.getTime() + (3*24*60*60*1000));
 		var expires = "expires="+d.toUTCString();
-		document.cookie = "username=" + currentUserName + "; password=" + document.getElementById("loginPassword").value + "; " + expires;
+		document.cookie = "username=" + currentUserName;
+		document.cookie = "password=" + document.getElementById("loginPassword").value;
+		document.cookie = expires;
 
 		updatePlayerInfo();
 
