@@ -29,7 +29,11 @@ function initMinefield(input, h, w) {
 	minefieldInput = input;
 	minefieldHeight = h;
 	minefieldWidth = w;
-	initImages();		
+	if (!minefieldInitialized) {
+		initImages();
+	} else {
+		updateMinefield();
+	}		
 }
 
 function finishInitMinefield() {
@@ -90,6 +94,32 @@ function initMinefieldInterface() {
 	document.getElementById("gameArea").addEventListener('click', function(evt) {
 		selectTile(evt);	
 	}, false);
+}
+
+function updateMinefield() {
+	//Save all tiles currently altered by the player.
+	var previouslyAltered = getAllTilesWithValue(10);
+
+	//Update the input based on those altered tiles.
+	var temp = [];
+
+	for (var x = 0; x < minefieldWidth; x++) {
+		temp.push([]);
+		for (var y = 0; y < minefieldHeight; y++) {
+			temp[x].push(input.shift());
+		}
+	}
+
+	for (var i = 0; i < temp.length; i++) {
+		var xCoord = temp[i][0];
+		var yCoord = temp[i][1];
+
+		if (temp[xCoord][yCoord] == -1) {
+			temp[xCoord][yCoord] = 10;
+		}
+	}
+
+	drawMinefield();
 }
 
 /*
