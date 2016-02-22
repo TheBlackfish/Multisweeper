@@ -59,6 +59,8 @@ function handleLogIn(response) {
 
 		getMinefieldData();
 
+		initQueryTimer();
+
 		attemptNextGameSignUp();
 	}
 }

@@ -32,7 +32,7 @@ function initMinefield(input, h, w) {
 	if (!minefieldInitialized) {
 		initImages();
 	} else {
-		updateMinefield();
+		updateMinefield(input);
 	}		
 }
 
@@ -96,7 +96,7 @@ function initMinefieldInterface() {
 	}, false);
 }
 
-function updateMinefield() {
+function updateMinefield(input) {
 	//Save all tiles currently altered by the player.
 	var previouslyAltered = getAllTilesWithValue(10);
 
@@ -106,13 +106,13 @@ function updateMinefield() {
 	for (var x = 0; x < minefieldWidth; x++) {
 		temp.push([]);
 		for (var y = 0; y < minefieldHeight; y++) {
-			temp[x].push(input.shift());
+			temp[x].push(minefieldInput.shift());
 		}
 	}
 
-	for (var i = 0; i < temp.length; i++) {
-		var xCoord = temp[i][0];
-		var yCoord = temp[i][1];
+	for (var i = 0; i < previouslyAltered.length; i++) {
+		var xCoord = previouslyAltered[i][0];
+		var yCoord = previouslyAltered[i][1];
 
 		if (temp[xCoord][yCoord] == -1) {
 			temp[xCoord][yCoord] = 10;

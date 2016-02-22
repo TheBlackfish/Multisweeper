@@ -75,7 +75,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 	}
 
 	$r = $result->SaveXML();
-	error_log($r);
 	echo $r;
 }
 

@@ -38,6 +38,10 @@ function processMinefieldData(response) {
 	var w = allInfo.getElementsByTagName("width")[0].childNodes[0].nodeValue;
 	
 	initMinefield(map, h, w);
+
+	var players = allInfo.getElementsByTagName("players")[0];
+
+	populatePlayerListTable(players);
 }
 
 function preprocessMinefieldMap(input) {

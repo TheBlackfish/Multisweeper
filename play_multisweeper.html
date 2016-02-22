@@ -9,6 +9,7 @@
 <script src="scripts/dataController.js"></script>
 <script src="scripts/minefield.js"></script>
 <script src="scripts/playerController.js"></script>
+<script src="scripts/socialController.js"></script>
 </head>
 
 <body onLoad="debug();">
@@ -51,12 +52,19 @@
     </div>
     
    	<!-- Current Players -->
+   	<div id="playerList">
+   		<table id="playerListTable">
+   			<tr>
+   				<td>Player Name</td>
+   			</tr>
+   		</table>
+   	</div>
+
     <!-- Chat area -->
     
     <script type="text/javascript">
 		function debug() {		
 			checkCookie();	
-			initQueryTimer();
 		}
 	</script>
 </body>

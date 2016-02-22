@@ -26,34 +26,45 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 		$newrow = $doc->createElement('minefield');
 		$newrow = $doc->appendChild($newrow);
 
-		$nodeID = $doc->createElement('id');
+		$nodeID = $doc->createElement('id', $gameID);
 		$nodeID = $newrow->appendChild($nodeID);
-		$nodeIDText = $doc->createTextNode($gameID);
-		$nodeIDText = $nodeID->appendChild($nodeIDText);
 
-		$nodeA = $doc->createElement('map');
+		$nodeA = $doc->createElement('map', $finalMap);
 		$nodeA = $newrow->appendChild($nodeA);
-		$nodeAText = $doc->createTextNode($finalMap);
-		$nodeAText = $nodeA->appendChild($nodeAText);
 
-		$nodeB = $doc->createElement('height');
+		$nodeB = $doc->createElement('height', $height);
 		$nodeB = $newrow->appendChild($nodeB);
-		$nodeBText = $doc->createTextNode($height);
-		$nodeBText = $nodeB->appendChild($nodeBText);
 
-		$nodeC = $doc->createElement('width');
+		$nodeC = $doc->createElement('width', $width);
 		$nodeC = $newrow->appendChild($nodeC);
-		$nodeCText = $doc->createTextNode($width);
-		$nodeCText = $nodeC->appendChild($nodeCText);
+
+		if ($playerQuery = $conn->prepare("SELECT username FROM multisweeper.players WHERE playerID IN (SELECT playerID FROM multisweeper.playerstatus WHERE gameID=?)")) {
+			$playerQuery->bind_param("i", $gameID);
+			$playerQuery->execute();
+			$playerQuery->bind_result($user);
+
+			$playerRow = $doc->createElement('players');
+			$playerRow = $newrow->appendChild($playerRow);
+
+			while ($playerQuery->fetch()) {
+				$playerInfo = $doc->createElement('player', $user);
+				$playerInfo = $playerRow->appendChild($playerInfo);
+			}
+
+			$playerQuery->close();
+		} else {
+			error_log("Unable to prepare player gathering statement. " . $conn->errno . ": " . $conn->error);
+			$error = $doc->createElement('error', "Internal error occurred, please try again later.");
+			$error = $doc->appendChild($error);
+		}
 	} else {
 		error_log("Unable to prepare map gathering statement. " . $conn->errno . ": " . $conn->error);
-		$error = $doc->createElement('error');
+		$error = $doc->createElement('error', "Internal error occurred, please try again later.");
 		$error = $doc->appendChild($error);
-		$errorText = $doc->createTextNode("Internal error occurred, please try again later.");
-		$errorText = $error->appendChild($errorText);
 	}
 	
 	$r = $doc->saveXML();
+	error_log($r);
 	echo $r;
 }
 ?>

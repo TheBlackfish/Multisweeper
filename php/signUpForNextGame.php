@@ -43,7 +43,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 					$checkStmt->fetch();
 					$checkStmt->close();
 
-					if ($doubleCheck === null) {
+					if ($doubleCheck !== null) {
 						$error = $result->createElement('success');
 						$error = $resultBase->appendChild($error);
 						$errorText = $result->createTextNode("You are already signed up for the next game. Please wait for deployment.");
@@ -89,7 +89,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 	}
 
 	$r = $result->SaveXML();
-	error_log($r);
 	echo $r;
 }
 
