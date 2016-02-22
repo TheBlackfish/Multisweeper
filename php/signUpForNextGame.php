@@ -14,10 +14,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
 	if (($xml->username == null) or ($xml->password == null)) {
 		error_log("Sign up rejected");
-		$error = $result->createElement('error');
+		$error = $result->createElement('error', "Please fill out both fields and try again.");
 		$error = $resultBase->appendChild($error);
-		$errorText = $result->createTextNode("Please fill out both fields and try again.");
-		$errorText = $error->appendChild($errorText);
 	} else {
 		$conn = new mysqli($sqlhost, $sqlusername, $sqlpassword);
 		if ($conn->connect_error) {
@@ -44,47 +42,35 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 					$checkStmt->close();
 
 					if ($doubleCheck !== null) {
-						$error = $result->createElement('success');
+						$error = $result->createElement('success', "You are already signed up for the next game. Please wait for deployment.");
 						$error = $resultBase->appendChild($error);
-						$errorText = $result->createTextNode("You are already signed up for the next game. Please wait for deployment.");
-						$errorText = $error->appendChild($errorText);
 					} else {
 						if ($insertStmt = $conn->prepare("INSERT INTO multisweeper.upcomingsignup (playerID) VALUES (?)")) {
 							$insertStmt->bind_param("i", $playerID);
 							$insertStmt->execute();
 							$insertStmt->close();
 
-							$error = $result->createElement('success');
+							$error = $result->createElement('success', "You are signed up for the next game. Please wait for deployment.");
 							$error = $resultBase->appendChild($error);
-							$errorText = $result->createTextNode("You are signed up for the next game. Please wait for deployment.");
-							$errorText = $error->appendChild($errorText);
 						} else {
 							error_log("Unable to prepare insert statement.");
-							$error = $result->createElement('error');
+							$error = $result->createElement('error', "An internal error has occurred. Please try again later.");
 							$error = $resultBase->appendChild($error);
-							$errorText = $result->createTextNode("An internal error has occurred. Please try again later.");
-							$errorText = $error->appendChild($errorText);
 						}
 					}
 				} else {
 					error_log("Unable to prepare check statement.");
-					$error = $result->createElement('error');
+					$error = $result->createElement('error', "An internal error has occurred. Please try again later.");
 					$error = $resultBase->appendChild($error);
-					$errorText = $result->createTextNode("An internal error has occurred. Please try again later.");
-					$errorText = $error->appendChild($errorText);
 				}
 			} else {
-				$error = $result->createElement('error');
+				$error = $result->createElement('error', "Could not find your profile. Please double-check your credentials.");
 				$error = $resultBase->appendChild($error);
-				$errorText = $result->createTextNode("Could not find your profile. Please double-check your credentials.");
-				$errorText = $error->appendChild($errorText);
 			}
 		} else {
 			error_log("Unable to prepare validation statement.");
-			$error = $result->createElement('error');
+			$error = $result->createElement('error', "An internal error has occurred. Please try again later.");
 			$error = $resultBase->appendChild($error);
-			$errorText = $result->createTextNode("An internal error has occurred. Please try again later.");
-			$errorText = $error->appendChild($errorText);
 		}
 	}
 

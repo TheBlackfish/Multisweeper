@@ -14,10 +14,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
 	if (($xml->username == null) or ($xml->password == null)) {
 		error_log("Login rejected");
-		$error = $result->createElement('error');
+		$error = $result->createElement('error', "Please fill out both fields and try again.");
 		$error = $resultBase->appendChild($error);
-		$errorText = $result->createTextNode("Please fill out both fields and try again.");
-		$errorText = $error->appendChild($errorText);
 	} else {
 		$conn = new mysqli($sqlhost, $sqlusername, $sqlpassword);
 		if ($conn->connect_error) {
@@ -36,15 +34,11 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 			$stmt->close();
 
 			if ($output != null) {
-				$correct = $result->createElement('id');
+				$correct = $result->createElement('id', $output);
 				$correct = $resultBase->appendChild($correct);
-				$correctText = $result->createTextNode($output);
-				$correctText = $correct->appendChild($correctText);
 
-				$name = $result->createElement('username');
+				$name = $result->createElement('username', $xml->username);
 				$name = $resultBase->appendChild($name);
-				$nameText = $result->createTextNode($xml->username);
-				$nameText = $name->appendChild($nameText);
 			} else {
 				if ($verify = $conn->prepare("SELECT COUNT(*) FROM multisweeper.players where username=?")) {
 					$verify->bind_param("s", $xml->username);
@@ -52,25 +46,19 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 					$verify->bind_result($count);
 					while ($verify->fetch()) {
 						if ($count > 0) {
-							$error = $result->createElement('error');
+							$error = $result->createElement('error', "Incorrect password.");
 							$error = $resultBase->appendChild($error);
-							$errorText = $result->createTextNode("Incorrect password.");
-							$errorText = $error->appendChild($errorText);
 						} else {
-							$error = $result->createElement('error');
+							$error = $result->createElement('error', "That username does not exist. That means it's available to register!");
 							$error = $resultBase->appendChild($error);
-							$errorText = $result->createTextNode("That username does not exist. That means it's available to register!");
-							$errorText = $error->appendChild($errorText);
 						}
 					}
 				}
 			}
 		} else {
 			error_log("Unable to prepare statement for logging in.");
-			$error = $result->createElement('error');
+			$error = $result->createElement('error', "An internal error has occurred. Please try again later.");
 			$error = $resultBase->appendChild($error);
-			$errorText = $result->createTextNode("An internal error has occurred. Please try again later.");
-			$errorText = $error->appendChild($errorText);
 		}
 	}
 

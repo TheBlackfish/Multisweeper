@@ -23,10 +23,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
 	if (($xml->playerID == null) or ($xml->gameID == null) or ($xml->xCoord == null) or ($xml->yCoord == null) or ($xml->actionType == null)) {
 		error_log("Action rejected");
-		$error = $result->createElement('error');
+		$error = $result->createElement('error', "Incomplete data in submission. Please try again.");
 		$error = $resultBase->appendChild($error);
-		$errorText = $result->createTextNode("Incomplete data in submission. Please try again.");
-		$errorText = $error->appendChild($errorText);
 	} else {
 		$conn = new mysqli($sqlhost, $sqlusername, $sqlpassword);
 		if ($conn->connect_error) {
@@ -57,18 +55,14 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 					$updated = $insertStmt->execute();
 					if (!$updated) {
 						error_log("Error occurred inserting player action into queue. " . $insertStmt->errno . ": " . $insertStmt->error);
-						$error = $result->createElement('error');
+						$error = $result->createElement('error', "Internal error occurred, please try again later.");
 						$error = $resultBase->appendChild($error);
-						$errorText = $result->createTextNode("Internal error occurred, please try again later.");
-						$errorText = $error->appendChild($errorText);
 						$insertStmt->close();
 					} else {
 						$insertStmt->close();
-						$error = $result->createElement('action');
+						$error = $result->createElement('action', "Action submitted!");
 						$error = $resultBase->appendChild($error);
-						$errorText = $result->createTextNode("Action submitted!");
-						$errorText = $error->appendChild($errorText);
-
+						
 						//Update current player status to set current player's action awaiting status to false
 						if ($updateStmt = $conn->prepare("UPDATE multisweeper.playerstatus SET awaitingAction=0 WHERE playerID=? AND gameID=?")) {
 							$updateStmt->bind_param("ii", $xml->playerID, $xml->gameID);

@@ -14,10 +14,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
 	if (($xml->username == null) or ($xml->password == null)) {
 		error_log("Registration rejected");
-		$error = $result->createElement('error');
+		$error = $result->createElement('error', "Please fill out both fields and try again.");
 		$error = $resultBase->appendChild($error);
-		$errorText = $result->createTextNode("Please fill out both fields and try again.");
-		$errorText = $error->appendChild($errorText);
 	} else {
 		$conn = new mysqli($sqlhost, $sqlusername, $sqlpassword);
 		if ($conn->connect_error) {
@@ -38,35 +36,26 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 					$registerStmt->execute();
 
 					if ($registerStmt->affected_rows > 0) {
-						$error = $result->createElement('success');
+						$error = $result->createElement('success', "Successfully registered!");
 						$error = $resultBase->appendChild($error);
-						$errorText = $result->createTextNode("Successfully registered!");
-						$errorText = $error->appendChild($errorText);
 					} else {
 						error_log("Unable to register player.");
-						$error = $result->createElement('error');
+						$error = $result->createElement('error', "An internal error has occurred. Please try again later.");
 						$error = $resultBase->appendChild($error);
-						$errorText = $result->createTextNode("An internal error has occurred. Please try again later.");
-						$errorText = $error->appendChild($errorText);
 					}
 				}
 			} else {
-				$error = $result->createElement('error');
+				$error = $result->createElement('error', "Username already taken, try another username.");
 				$error = $resultBase->appendChild($error);
-				$errorText = $result->createTextNode("Username already taken, try another username.");
-				$errorText = $error->appendChild($errorText);
 			}
 		} else {
 			error_log("Unable to prepare statement for checking registration.");
-			$error = $result->createElement('error');
+			$error = $result->createElement('error', "An internal error has occurred. Please try again later.");
 			$error = $resultBase->appendChild($error);
-			$errorText = $result->createTextNode("An internal error has occurred. Please try again later.");
-			$errorText = $error->appendChild($errorText);
 		}
 	}
 
 	$r = $result->SaveXML();
-	error_log($r);
 	echo $r;
 }
 
