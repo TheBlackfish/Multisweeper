@@ -17,41 +17,53 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 		$error = $result->createElement('error', "Please fill out both fields and try again.");
 		$error = $resultBase->appendChild($error);
 	} else {
-		$conn = new mysqli($sqlhost, $sqlusername, $sqlpassword);
-		if ($conn->connect_error) {
-			die("Connection failed: " . $conn->connect_error);
-		}
 
-		//Check if username already taken
-		if ($checkStmt = $conn->prepare("SELECT COUNT(*) FROM multisweeper.players WHERE username=?")) {
-			$checkStmt->bind_param("s", $xml->username);
-			$checkStmt->execute();
-			$checkStmt->bind_result($count);
-			$checkStmt->close();
+		$xml->username = preg_replace("/[^A-Za-z0-9]/", '', $xml->username);
+		$xml->password = preg_replace("/[^A-Za-z0-9]/", '', $xml->password);
 
-			if ($count == 0) {
-				//Register player
-				if ($registerStmt = $conn->prepare("INSERT INTO multisweeper.players (username, password) VALUES (?,?)")) {
-					$registerStmt->bind_param("ss", $xml->username, $xml->password);
-					$registerStmt->execute();
+		if (strlen($xml->username) == 0) {
+			$error = $result->createElement('error', "Username cannot be blank!");
+			$error = $resultBase->appendChild($error);
+		} else if (strlen($xml->password) == 0) {
+			$error = $result->createElement('error', "Username cannot be blank!");
+			$error = $resultBase->appendChild($error);
+		} else {
+			$conn = new mysqli($sqlhost, $sqlusername, $sqlpassword);
+			if ($conn->connect_error) {
+				die("Connection failed: " . $conn->connect_error);
+			}
 
-					if ($registerStmt->affected_rows > 0) {
-						$error = $result->createElement('success', "Successfully registered!");
-						$error = $resultBase->appendChild($error);
-					} else {
-						error_log("Unable to register player.");
-						$error = $result->createElement('error', "An internal error has occurred. Please try again later.");
-						$error = $resultBase->appendChild($error);
+			//Check if username already taken
+			if ($checkStmt = $conn->prepare("SELECT COUNT(*) FROM multisweeper.players WHERE username=?")) {
+				$checkStmt->bind_param("s", $xml->username);
+				$checkStmt->execute();
+				$checkStmt->bind_result($count);
+				$checkStmt->close();
+
+				if ($count == 0) {
+					//Register player
+					if ($registerStmt = $conn->prepare("INSERT INTO multisweeper.players (username, password) VALUES (?,?)")) {
+						$registerStmt->bind_param("ss", $xml->username, $xml->password);
+						$registerStmt->execute();
+
+						if ($registerStmt->affected_rows > 0) {
+							$error = $result->createElement('success', "Successfully registered!");
+							$error = $resultBase->appendChild($error);
+						} else {
+							error_log("Unable to register player.");
+							$error = $result->createElement('error', "An internal error has occurred. Please try again later.");
+							$error = $resultBase->appendChild($error);
+						}
 					}
+				} else {
+					$error = $result->createElement('error', "Username already taken, try another username.");
+					$error = $resultBase->appendChild($error);
 				}
 			} else {
-				$error = $result->createElement('error', "Username already taken, try another username.");
+				error_log("Unable to prepare statement for checking registration.");
+				$error = $result->createElement('error', "An internal error has occurred. Please try again later.");
 				$error = $resultBase->appendChild($error);
 			}
-		} else {
-			error_log("Unable to prepare statement for checking registration.");
-			$error = $result->createElement('error', "An internal error has occurred. Please try again later.");
-			$error = $resultBase->appendChild($error);
 		}
 	}
 

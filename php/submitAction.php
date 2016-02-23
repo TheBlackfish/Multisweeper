@@ -88,17 +88,13 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 					}
 				} else {
 					error_log("Unable to prepare insert statement, need to fail. " . $conn->errno . ": " . $conn->error);
-					$error = $result->createElement('error');
+					$error = $result->createElement('error', "Internal error occurred, please try again later.");
 					$error = $resultBase->appendChild($error);
-					$errorText = $result->createTextNode("Internal error occurred, please try again later.");
-					$errorText = $error->appendChild($errorText);
 				}
 			} else {
 				error_log("Player not allowed to submit actions.");
-				$error = $result->createElement('error');
+				$error = $result->createElement('error', "You are not a participant in this game.");
 				$error = $resultBase->appendChild($error);
-				$errorText = $result->createTextNode("You are not a participant in this game.");
-				$errorText = $error->appendChild($errorText);
 			}
 		}
 	}
