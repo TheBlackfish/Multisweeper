@@ -110,47 +110,87 @@ function resolveAllActions($gameID) {
 							//TBD
 						}
 					}
-						
-					//Update map and visibility values for the game by saving to database.
-					if ($updateStmt = $conn->prepare("UPDATE multisweeper.games SET map=?, visibility=? WHERE gameID=?")) {
-						$updateStmt->bind_param("ssi", translateMinefieldToMySQL($minefield), translateMinefieldToMySQL($visibility), $gameID);
-						$updated = $updateStmt->execute();
-						
 
-						if ($updated === false) {
-							error_log("Error occurred during map update. " . $updateStmt->errno . ": " . $updateStmt->error);
-							$updateStmt->close();
-						} else {
-							$updateStmt->close();
-
-							//Update all remaining players in game to be awaiting actions.
-							foreach ($playerstatus as $id => $isAlive) {
-								if ($updatePlayer = $conn->prepare("UPDATE multisweeper.playerstatus SET status=?, awaitingAction=1 WHERE gameID=? AND playerID=?")) {
-									$updatePlayer->bind_param("iii", $isAlive, $gameID, $id);
-									$updated = $updatePlayer->execute();
-									if ($updated === false) {
-										error_log("Error occurred during player status update. " . $updatePlayer->errno . ": " . $updatePlayer->error);
-									}
-									$updatePlayer->close();
-								} else {
-									error_log("Unable to prepare player status update after resolving action queue. " . $conn->errno . ": " . $conn->error);
-								}
-							}
-
-							//Delete all player actions from the action queue.
-							if ($deleteStmt = $conn->prepare("DELETE FROM multisweeper.actionqueue WHERE gameID=?")) {
-								$deleteStmt->bind_param("i", $gameID);
-								$updated = $deleteStmt->execute();
-								if ($updated === false) {
-									error_log("Error occurred during action queue clean up. " . $deleteStmt->errno . ": " . $deleteStmt->error);
-								}
-								$deleteStmt->close();
+					//Update all remaining players in game to be awaiting actions.
+					foreach ($playerstatus as $id => $isAlive) {
+						if ($updatePlayer = $conn->prepare("UPDATE multisweeper.playerstatus SET status=?, awaitingAction=1 WHERE gameID=? AND playerID=?")) {
+							$updatePlayer->bind_param("iii", $isAlive, $gameID, $id);
+							$updated = $updatePlayer->execute();
+							if ($updated === false) {
+								error_log("Error occurred during player status update. " . $updatePlayer->errno . ": " . $updatePlayer->error);
+								$updatePlayer->close();
 							} else {
-								error_log("Unable to prepare delete statement. " . $conn->errno . ": " . $conn->error);
+								$updatePlayer->close();
+
+								//Delete all player actions from the action queue.
+								if ($deleteStmt = $conn->prepare("DELETE FROM multisweeper.actionqueue WHERE gameID=?")) {
+									$deleteStmt->bind_param("i", $gameID);
+									$updated = $deleteStmt->execute();
+									if ($updated === false) {
+										error_log("Error occurred during action queue clean up. " . $deleteStmt->errno . ": " . $deleteStmt->error);
+										$deleteStmt->close();
+									} else {
+										$deleteStmt->close();
+
+										//Check if game is done or not.
+										$gameCompleted = true;
+										//If all players are dead, it is for sure done.
+										if ($checkLivingPlayers = $conn->prepare("SELECT playerID FROM multisweeper.playerstatus WHERE gameID=? AND status=1")) {
+											$checkLivingPlayers->bind_param("i", $gameID);
+											$checkLivingPlayers->execute();
+											if ($checkLivingPlayers->num_rows != 0) {
+												$gameCompleted = false;
+
+												//Otherwise, if all unrevealed spaces are mines, it is done.
+												for ($x = 0; ($x < count($visibility)) && !$gameCompleted; $x++) {
+													for ($y = 0; ($y < count($visibility[$x])) && !$gameCompleted; $y++) {
+														if ($visibility[$x][$y] == 0) {
+															if ($minefield[$x][$y] !== "M") {
+																$gameCompleted = false;
+															}
+														}
+													}
+												}
+											}
+											$checkLivingPlayers->close();
+										} else {
+											error_log("Unable to prepare living player status statement after resolving action queue. " . $conn->errno . ": " . $conn->error);
+										}
+
+										//If game is done, all unrevealed tiles become flagged instead.
+										if ($gameCompleted) {
+											for ($x = 0; ($x < count($visibility)) && !$gameCompleted; $x++) {
+												for ($y = 0; ($y < count($visibility[$x])) && !$gameCompleted; $y++) {
+													if ($visibility[$x][$y] == 0) {
+														$visibility[$x][$y] = 1;
+													}
+												}
+											}
+										}
+
+										//Update map and visibility values for the game by saving to database.
+										if ($updateStmt = $conn->prepare("UPDATE multisweeper.games SET map=?, visibility=?, status=? WHERE gameID=?")) {
+											$statusStr = "OPEN";
+											if ($gameCompleted) {
+												$statusStr = "DONE"
+											}
+											$updateStmt->bind_param("sssi", translateMinefieldToMySQL($minefield), translateMinefieldToMySQL($visibility), $statusStr, $gameID);
+											$updated = $updateStmt->execute();
+											if ($updated === false) {
+												error_log("Error occurred during map update. " . $updateStmt->errno . ": " . $updateStmt->error);
+											} 
+											$updateStmt->close();
+										} else {
+											error_log("Unable to prepare map update after resolving action queue. " . $conn->errno . ": " . $conn->error);
+										}
+									}
+								} else {
+									error_log("Unable to prepare delete statement. " . $conn->errno . ": " . $conn->error);
+								}
 							}
+						} else {
+							error_log("Unable to prepare player status update after resolving action queue. " . $conn->errno . ": " . $conn->error);
 						}
-					} else {
-						error_log("Unable to prepare map update after resolving action queue. " . $conn->errno . ": " . $conn->error);
 					}
 				} else {
 					error_log("Found 0 actions in queue! Most likely something went terribly wrong!");

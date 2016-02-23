@@ -38,10 +38,11 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 		$nodeC = $doc->createElement('width', $width);
 		$nodeC = $newrow->appendChild($nodeC);
 
-		if ($playerQuery = $conn->prepare("SELECT username FROM multisweeper.players WHERE playerID IN (SELECT playerID FROM multisweeper.playerstatus WHERE gameID=?)")) {
+		if ($playerQuery = $conn->prepare("SELECT p.username, s.status FROM multisweeper.players as p INNER JOIN multisweeper.playerstatus as s ON p.playerID=s.playerID WHERE s.gameID=?
+")) {
 			$playerQuery->bind_param("i", $gameID);
 			$playerQuery->execute();
-			$playerQuery->bind_result($user);
+			$playerQuery->bind_result($user, $status);
 
 			$playerRow = $doc->createElement('players');
 			$playerRow = $newrow->appendChild($playerRow);
@@ -49,6 +50,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 			while ($playerQuery->fetch()) {
 				$playerInfo = $doc->createElement('player', $user);
 				$playerInfo = $playerRow->appendChild($playerInfo);
+				$playerInfo->setAttribute('status', $status);
 			}
 
 			$playerQuery->close();
@@ -64,6 +66,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 	}
 	
 	$r = $doc->saveXML();
+	error_log($r);
 	echo $r;
 }
 ?>

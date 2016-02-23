@@ -93,8 +93,27 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 				}
 			} else {
 				error_log("Player not allowed to submit actions.");
-				$error = $result->createElement('error', "You are not a participant in this game.");
-				$error = $resultBase->appendChild($error);
+
+				//Find out why player is not allowed to submit actions.
+				if ($deadStmt = $conn->prepare("SELECT COUNT(*) FROM multisweeper.playerstatus WHERE gameID=? AND playerID=? AND status=0")) {
+					$deadStmt->bind_param("ii", $xml->playerID, $xml->gameID);
+					$deadStmt->execute();
+					$deadStmt->bind_result($count);
+					$deadStmt->fetch();
+					$deadStmt->close();
+
+					if ($count > 0) {
+						$error = $result->createElement('error', "You are dead.");
+						$error = $resultBase->appendChild($error);
+					} else {
+						$error = $result->createElement('error', "You are not a participant in this game.");
+						$error = $resultBase->appendChild($error);
+					}
+				} else {
+					error_log("Unable to prepare dead check statement. " . $conn->errno . ": " . $conn->error);
+					$error = $result->createElement('error', "You are not allowed to participate in this game at this time.");
+					$error = $resultBase->appendChild($error);
+				}
 			}
 		}
 	}
