@@ -76,6 +76,7 @@ function resolveAllActions($gameID) {
 							//If tile value is 0,
 							} else if ($minefield[$cur["x"]][$cur["y"]] == 0) {
 								error_log("Zero encountered!");
+								
 								//Add actions to queue that reveal all adjacent tiles
 								foreach ($adjacencies as $adj) {
 									$targetX = $cur["x"] + $adj[0];

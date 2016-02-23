@@ -4,7 +4,7 @@ require_once('../../../database.php');
 require_once('translateData.php');
 require_once('mineGameConstants.php');
 
-function getMinefieldWithVisibility($minefield, $visibility) {
+function getMinefieldWithVisibility($gameID, $minefield, $visibility) {
 	if (count($minefield) !== count($visibility)) {
 		error_log("Error: Minefield size did not match visibility matrix size. Exiting.");
 		die("Fatal error, exiting.");
@@ -39,7 +39,26 @@ function getMinefieldWithVisibility($minefield, $visibility) {
 		array_push($result, $temp);
 	}
 
-	return $result;
+	return addPlayerActionsToMinefield($gameID, $result);
+}
+
+function addPlayerActionsToMinefield($gameID, $map) {
+	$conn = new mysqli($sqlhost, $sqlusername, $sqlpassword);
+	if ($conn->connect_error) {
+		die("Connection failed: " . $conn->connect_error);
+	}
+
+	if ($query = $conn->prepare("SELECT xCoord, yCoord FROM multisweeper.actionqueue WHERE gameID=?")) {
+		$query->bind_param("i", $gameID);
+		$query->execute();
+		$query->bind_result($xCoord, $yCoord);
+		while ($query->fetch()) {
+			$map[$xCoord][$yCoord] = "A";
+		}
+	} else {
+		error_log("Unable to add actions to map, returning with none.");
+		return $map;
+	}
 }
 
 function checkIfSpaceIsUnrevealed($gameID, $xCoord, $yCoord) {

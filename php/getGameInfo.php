@@ -21,7 +21,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 		$query->fetch();
 		$query->close();
 
-		$finalMap = translateMinefieldToMySQL(getMinefieldWithVisibility(translateMinefieldToPHP($map, $height, $width), translateMinefieldToPHP($vis, $height, $width)));
+		$finalMap = translateMinefieldToMySQL(getMinefieldWithVisibility($gameID, translateMinefieldToPHP($map, $height, $width), translateMinefieldToPHP($vis, $height, $width)));
 
 		$newrow = $doc->createElement('minefield');
 		$newrow = $doc->appendChild($newrow);
@@ -66,7 +66,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 	}
 	
 	$r = $doc->saveXML();
-	error_log($r);
 	echo $r;
 }
 ?>
