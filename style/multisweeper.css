@@ -1,7 +1,52 @@
+/*
+	Generic helpers
+*/
 canvas {
 	cursor: pointer;	
 }
 
 .hidden {
 	display: none;
+}
+
+/*
+	Top Bar
+*/
+#topBar {
+	height: 200px;
+	width: 100%;
+}
+
+.topBarBox {
+	background: #E6F6DD;
+	height: 180px;
+	width: 180px;
+	margin: 10px 20px;
+	float: left;
+}
+
+.topBarBox > p {
+	margin: 4px;
+}
+
+/*
+	Main Area
+*/
+#mainArea {
+	clear: both;
+}
+
+#gameArea {
+	float: left;
+}
+
+#playerList {
+	float: left;
+}
+
+/*
+	Submit Area
+*/
+#submitArea {
+	clear: both;
 }

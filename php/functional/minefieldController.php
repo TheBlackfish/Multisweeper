@@ -1,8 +1,8 @@
 <?php
 
-require_once('../../../../database.php');
+require_once('../../../database.php');
 require_once('translateData.php');
-require_once('../constants/mineGameConstants.php');
+require_once('constants/mineGameConstants.php');
 
 function getMinefieldWithVisibility($gameID, $minefield, $visibility) {
 	if (count($minefield) !== count($visibility)) {

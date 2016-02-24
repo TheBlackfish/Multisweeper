@@ -117,7 +117,7 @@ function updatePlayerInfo() {
 
 	inner = "Welcome, " + currentUserName;
 
-	document.getElementById("userInfo").innerHTML = inner;
+	document.getElementById("userInfo").innerHTML = "<p>" + inner + "</p>";
 	document.getElementById("loginPrompt").className += " hidden";
 }
 

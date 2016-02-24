@@ -13,60 +13,63 @@
 </head>
 
 <body onLoad="debug();">
-	<!-- Updating Blocker -->
-	<!-- Sign In prompt -->
-	<div id="loginPrompt">
-		Username:
-		<input id="loginUsername" type='text' name='username'><br>
-		Password:
-		<input id="loginPassword" type='password' name='password'><br>
-		<div onclick="attemptLogIn();"><p>Log In</p></div>
-		<div onclick="attemptRegister();"><p>Register</p></div>
-		<p id="logInError"></p>
-	</div>
+	
+  <div id="topBar">
+    <!-- Sign In prompt -->
+    <div id="loginPrompt" class="topBarBox">
+      Username:
+      <input id="loginUsername" type='text' name='username'><br>
+      Password:
+      <input id="loginPassword" type='password' name='password'><br>
+      <div onclick="attemptLogIn();"><p>Log In</p></div>
+      <div onclick="attemptRegister();"><p>Register</p></div>
+      <p id="logInError"></p>
+    </div>
 
-	<!-- User Information -->
-	<div id="userInfo">
-		Please sign in using the log-in prompt.
-	</div>
+    <!-- User Information -->
+    <div id="userInfo" class="topBarBox">
+      Please sign in using the log-in prompt.
+    </div>
 
     <!-- Sign Up for next game prompt -->
-
-    <div id="nextGamePrompt">
-    	<p id="nextGameText">You need to be logged in in order to sign up for the next game.</p>
-    	<div id="nextGameButton" onclick="attemptNextGameSignUp();"><p>Sign Up For The Next Game</p></div>
+    <div id="nextGamePrompt" class="topBarBox">
+      <p id="nextGameText">You need to be logged in in order to sign up for the next game.</p>
+      <div id="nextGameButton" onclick="attemptNextGameSignUp();"><p>Sign Up For The Next Game</p></div>
     </div>
 
     <!-- Timer update -->
-    <div>
-    	<p id="timerText"></p>
+    <div class="topBarBox">
+      <p id="timerText"></p>
     </div>
+  </div>
 
+	<div id="mainArea">
     <!-- Canvas for game -->
     <canvas id="gameArea" height="720" width="1200">Your browser does not support the canvas element. Please use a HTML5 compatible browser.</canvas>
 
-    <!-- Submit button -->
-    <div id="submitArea">
-    	<div onclick="submitAction();"><p>Submit Move</p></div>
-    	<p id="submitMessage">Press the Submit button to submit your action.</p>
-    </div>
-    
-   	<!-- Current Players -->
-   	<div id="playerList">
-   		<table id="playerListTable">
-   			<tr>
-   				<td>Player Name</td>
+    <!-- Current Players -->
+    <div id="playerList">
+      <table id="playerListTable">
+        <tr>
+          <td>Player Name</td>
           <td>Status</td>
-   			</tr>
-   		</table>
-   	</div>
+        </tr>
+      </table>
+    </div>
+  </div>
 
-    <!-- Chat area -->
+  <!-- Submit button -->
+  <div id="submitArea">
+    <div onclick="submitAction();"><p>Submit Move</p></div>
+    <p id="submitMessage">Press the Submit button to submit your action.</p>
+  </div>
+
+  <!-- Chat area -->
     
-    <script type="text/javascript">
+  <script type="text/javascript">
 		function debug() {		
 			checkCookie();
-      getMinefieldData();	
+      getMinefieldData();
 		}
 	</script>
 </body>
