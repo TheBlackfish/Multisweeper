@@ -9,6 +9,7 @@
 
 require_once("../../../database.php");
 require_once("resolveActions.php");
+require_once("taskScheduler.php");
 
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
 	header('Content-Type: text/xml');
@@ -26,6 +27,9 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 		$error = $result->createElement('error', "Incomplete data in submission. Please try again.");
 		$error = $resultBase->appendChild($error);
 	} else {
+		//Delete any previously scheduled resolution tasks.
+		deleteResolveActionsTask($xml->gameID);
+
 		$conn = new mysqli($sqlhost, $sqlusername, $sqlpassword);
 		if ($conn->connect_error) {
 			die("Connection failed: " . $conn->connect_error);
@@ -81,6 +85,9 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 							$checkStmt->close();
 							if ($count === 0) {
 								$shouldResolve = true;
+							} else {
+								//Schedule timeout for next automatic resolution.
+								createResolveActionsTask($xml->gameID);
 							}
 						} else {
 							error_log("Unable to prepare check status statement. " . $conn->errno . ": " . $conn->error);
