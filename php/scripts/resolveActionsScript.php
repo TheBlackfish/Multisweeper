@@ -1,6 +1,6 @@
 <?php
 
-require_once("resolveActions.php");
+require_once("../functional/resolveActions.php");
 
 if (count($argv) == 0) {
 	die("No ID supplied for auto-resolution, dying.");

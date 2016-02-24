@@ -1,8 +1,8 @@
 <?php
 
 require_once('../../../database.php');
-require_once('minefieldController.php');
-require_once('translateData.php');
+require_once('functional/minefieldController.php');
+require_once('functional/translateData.php');
 
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
 	header('Content-Type: text/xml');

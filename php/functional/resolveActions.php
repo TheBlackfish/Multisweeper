@@ -1,7 +1,7 @@
 <?php
 
-require_once('../../../database.php');
-require_once('mineGameConstants.php');
+require_once('../../../../database.php');
+require_once('../constants/mineGameConstants.php');
 require_once('translateData.php');
 
 function resolveAllActions($gameID) {

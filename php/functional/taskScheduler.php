@@ -1,6 +1,6 @@
 <?php
 
-require_once("localServerConstants.php");
+require_once("../constants/localServerConstants.php");
 
 function createResolveActionsTask($gameID) {
 	global $scriptsDirectory, $phpFilepath, $phpSchedulerLogPath;

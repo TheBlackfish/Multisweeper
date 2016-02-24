@@ -8,8 +8,8 @@
 */
 
 require_once("../../../database.php");
-require_once("resolveActions.php");
-require_once("taskScheduler.php");
+require_once("functional/resolveActions.php");
+require_once("functional/taskScheduler.php");
 
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
 	header('Content-Type: text/xml');
