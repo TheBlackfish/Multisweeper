@@ -2,6 +2,7 @@
 
 require_once('../../../../database.php');
 require_once('../constants/mineGameConstants.php');
+require_once('taskScheduler.php')
 require_once('translateData.php');
 
 function resolveAllActions($gameID) {
@@ -179,6 +180,10 @@ function resolveAllActions($gameID) {
 												error_log("Error occurred during map update. " . $updateStmt->errno . ": " . $updateStmt->error);
 											} 
 											$updateStmt->close();
+
+											if ($gameCompleted) {
+												createGameCreationTask();
+											}
 										} else {
 											error_log("Unable to prepare map update after resolving action queue. " . $conn->errno . ": " . $conn->error);
 										}
