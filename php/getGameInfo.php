@@ -15,7 +15,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 	$doc = new DOMDocument('1.0');
 	$doc->formatOutput = true;
 
-	if ($query = $conn->prepare("SELECT map, visibility, height, width, gameID FROM multisweeper.games WHERE status='OPEN' ORDER BY gameID DESC LIMIT 1")) {
+	if ($query = $conn->prepare("SELECT map, visibility, height, width, gameID FROM multisweeper.games ORDER BY gameID DESC LIMIT 1")) {
 		$query->execute();
 		$query->bind_result($map, $vis, $height, $width, $gameID);
 		$query->fetch();
@@ -66,6 +66,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 	}
 	
 	$r = $doc->saveXML();
+	error_log($r);
 	echo $r;
 }
 ?>

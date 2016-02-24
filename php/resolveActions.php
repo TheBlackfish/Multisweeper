@@ -60,22 +60,16 @@ function resolveAllActions($gameID) {
 
 						//If shovel action
 						if ($cur["actionType"] == 0) {
-							error_log("Resolving dig at " . $cur["x"] . "," . $cur["y"]);
 
 							//Reveal tile at coordinates
 							$visibility[$cur["x"]][$cur["y"]] = 2;
 
-							error_log("Visibility at the coordinate now " . $visibility[$cur["x"]][$cur["y"]]);
-							error_log("Map value there is " . $minefield[$cur["x"]][$cur["y"]]);
-
 							//If tile value is a mine,
 							if ($minefield[$cur["x"]][$cur["y"]] === "M") {
-								error_log("Mine encountered!");
 								//Kill player
 								$playerstatus[$cur["playerID"]] = 0;
 							//If tile value is 0,
 							} else if ($minefield[$cur["x"]][$cur["y"]] == 0) {
-								error_log("Zero encountered!");
 								
 								//Add actions to queue that reveal all adjacent tiles
 								foreach ($adjacencies as $adj) {
@@ -134,26 +128,30 @@ function resolveAllActions($gameID) {
 										$deleteStmt->close();
 
 										//Check if game is done or not.
-										$gameCompleted = true;
+										$gameCompleted = false;
 										//If all players are dead, it is for sure done.
-										if ($checkLivingPlayers = $conn->prepare("SELECT playerID FROM multisweeper.playerstatus WHERE gameID=? AND status=1")) {
+										if ($checkLivingPlayers = $conn->prepare("SELECT COUNT(playerID) FROM multisweeper.playerstatus WHERE gameID=? AND status=1")) {
 											$checkLivingPlayers->bind_param("i", $gameID);
 											$checkLivingPlayers->execute();
-											if ($checkLivingPlayers->num_rows != 0) {
-												$gameCompleted = false;
+											$checkLivingPlayers->bind_result($count);
+											$checkLivingPlayers->fetch();
+											$checkLivingPlayers->close();
+											if ($count > 0) {
+												$gameCompleted = true;
 
 												//Otherwise, if all unrevealed spaces are mines, it is done.
-												for ($x = 0; ($x < count($visibility)) && !$gameCompleted; $x++) {
-													for ($y = 0; ($y < count($visibility[$x])) && !$gameCompleted; $y++) {
+												for ($x = 0; ($x < count($visibility)) && $gameCompleted; $x++) {
+													for ($y = 0; ($y < count($visibility[$x])) && $gameCompleted; $y++) {
 														if ($visibility[$x][$y] == 0) {
-															if ($minefield[$x][$y] !== "M") {
+															if ($minefield[$x][$y] === "M") {
 																$gameCompleted = false;
 															}
 														}
 													}
 												}
+											} else {
+												$gameCompleted = true;
 											}
-											$checkLivingPlayers->close();
 										} else {
 											error_log("Unable to prepare living player status statement after resolving action queue. " . $conn->errno . ": " . $conn->error);
 										}
@@ -173,7 +171,7 @@ function resolveAllActions($gameID) {
 										if ($updateStmt = $conn->prepare("UPDATE multisweeper.games SET map=?, visibility=?, status=? WHERE gameID=?")) {
 											$statusStr = "OPEN";
 											if ($gameCompleted) {
-												$statusStr = "DONE"
+												$statusStr = "DONE";
 											}
 											$updateStmt->bind_param("sssi", translateMinefieldToMySQL($minefield), translateMinefieldToMySQL($visibility), $statusStr, $gameID);
 											$updated = $updateStmt->execute();

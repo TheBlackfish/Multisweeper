@@ -49,7 +49,7 @@ function finishInitMinefield() {
 	Loads all images needed into the images array for later use.
 */
 function initImages() {
-	var allImages = ["mine", "unrevealed", "0", "1", "2", "3", "4", "5", "6", "7", "8", "flag", "shovel", "plantflag", "hover"];
+	var allImages = ["mine", "unrevealed", "0", "1", "2", "3", "4", "5", "6", "7", "8", "flag", "shovel", "plantflag", "hover", "otherPlayer"];
 	for (var i = 0; i < allImages.length; i++) {
 		var img = new Image();
 		img.onload = function() {
@@ -118,6 +118,8 @@ function updateMinefield(input) {
 			temp[xCoord][yCoord] = 10;
 		}
 	}
+
+	minefield = temp;
 
 	drawMinefield();
 }
@@ -201,6 +203,8 @@ function getTileValueString(value) {
 		temp = "shovel";	
 	} else if (temp === 11) {
 		temp = "plantflag";
+	} else if (temp === 12) {
+		temp = "otherPlayer";
 	}
 	
 	temp = temp + "";

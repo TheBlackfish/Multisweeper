@@ -43,6 +43,7 @@ function getMinefieldWithVisibility($gameID, $minefield, $visibility) {
 }
 
 function addPlayerActionsToMinefield($gameID, $map) {
+	global $sqlhost, $sqlusername, $sqlpassword;
 	$conn = new mysqli($sqlhost, $sqlusername, $sqlpassword);
 	if ($conn->connect_error) {
 		die("Connection failed: " . $conn->connect_error);
@@ -57,8 +58,8 @@ function addPlayerActionsToMinefield($gameID, $map) {
 		}
 	} else {
 		error_log("Unable to add actions to map, returning with none.");
-		return $map;
 	}
+	return $map;
 }
 
 function checkIfSpaceIsUnrevealed($gameID, $xCoord, $yCoord) {

@@ -53,6 +53,8 @@ function preprocessMinefieldMap(input) {
 			result[i] = -2;
 		} else if (result[i] === "F") {
 			result[i] = 9;
+ 		} else if (result[i] === "A") {
+ 			result[i] = 12;
  		}
 	}
 	return result;

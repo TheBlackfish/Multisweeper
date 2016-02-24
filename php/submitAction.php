@@ -122,6 +122,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 	echo $r;
 
 	if ($shouldResolve) {
+		error_log("We think we should resolve all actions, resolving");
 		resolveAllActions($xml->gameID);
 	}
 }
