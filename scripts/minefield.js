@@ -99,7 +99,6 @@ function initMinefieldInterface() {
 function updateMinefield(input) {
 	//Save all tiles currently altered by the player.
 	var previouslyAltered = getAllTilesWithValue(10);
-	var otherPlayers = getAllTilesWithValue(12);
 
 	//Update the input based on those altered tiles.
 	var temp = [];
@@ -108,15 +107,6 @@ function updateMinefield(input) {
 		temp.push([]);
 		for (var y = 0; y < minefieldHeight; y++) {
 			temp[x].push(minefieldInput.shift());
-		}
-	}
-
-	for (var i = 0; i < otherPlayers.length; i++) {
-		var xCoord = otherPlayers[i][0];
-		var yCoord = otherPlayers[i][1];
-
-		if (temp[xCoord][yCoord] == -1) {
-			temp[xCoord][yCoord] = 12;
 		}
 	}
 

@@ -18,6 +18,7 @@ function resolveAllActions($gameID) {
 
 	//Get map for game and visibility for the game.
 	if ($stmt = $conn->prepare("SELECT map, visibility, height, width FROM multisweeper.games WHERE gameID=?")) {
+
 		$stmt->bind_param("i", $gameID);
 		$stmt->execute();
 		$stmt->bind_result($m, $v, $h, $w);
@@ -203,7 +204,7 @@ function resolveAllActions($gameID) {
 				error_log("Unable to prepare action statement for resolving action queue. " . $conn->errno . ": " . $conn->error);
 			}
 		} else {
-			error_log("Unable to resolve map statement for resolving action queue. " . $conn->errno . ": " . $conn->error);
+			error_log("Unable to resolve map statement for resolving action queue. " . $stmt->errno . ": " . $stmt->error);
 		}
 	} else {
 		error_log("Unable to prepare map statement for resolving action queue. " . $conn->errno . ": " . $conn->error);
