@@ -6,6 +6,10 @@ function initQueryTimer() {
 	window.setInterval( timerCallback, timerPeriod ); 
 }
 
+function forceTimerToTime(time) {
+	timerCurrent = time + 1;
+}
+
 function timerCallback() {
 	timerCurrent--;
 

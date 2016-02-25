@@ -27,6 +27,7 @@ function resolveActionSubmission(response) {
 
 	if (actionDone.length > 0) {
 		text = actionDone[0].nodeValue;
+		forceTimerToTime(3);
 	} else {
 		test = "";
 		var errors = allInfo.getElementsByTagName("error");
