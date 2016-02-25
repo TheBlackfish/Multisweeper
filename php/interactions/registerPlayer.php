@@ -1,6 +1,6 @@
 <?php
 
-require_once('../../../database.php');
+require_once($_SERVER['DOCUMENT_ROOT'] . '/multisweeper/php/constants/databaseConstants.php');
 
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
 	header('Content-Type: text/xml');

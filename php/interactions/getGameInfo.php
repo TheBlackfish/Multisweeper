@@ -1,8 +1,8 @@
 <?php
 
-require_once('../../../database.php');
-require_once('functional/minefieldController.php');
-require_once('functional/translateData.php');
+require_once($_SERVER['DOCUMENT_ROOT'] . '/multisweeper/php/constants/databaseConstants.php');
+require_once($_SERVER['DOCUMENT_ROOT'] . '/multisweeper/php/functional/minefieldController.php');
+require_once($_SERVER['DOCUMENT_ROOT'] . '/multisweeper/php/functional/translateData.php');
 
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
 	header('Content-Type: text/xml');

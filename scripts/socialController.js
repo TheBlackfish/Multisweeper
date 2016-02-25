@@ -14,6 +14,4 @@ function populatePlayerListTable(playerXML) {
 	}
 
 	document.getElementById("playerListTable").innerHTML = htmlStr;
-
-	console.log(htmlStr);
 }

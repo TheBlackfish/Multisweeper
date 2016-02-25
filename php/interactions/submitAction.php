@@ -7,9 +7,9 @@
 	If all players in the game who are alive have then submitted actions, the game is updated via the action queue.
 */
 
-require_once("../../../database.php");
-require_once("functional/resolveActions.php");
-require_once("functional/taskScheduler.php");
+require_once($_SERVER['DOCUMENT_ROOT'] . '/multisweeper/php/constants/databaseConstants.php');
+require_once($_SERVER['DOCUMENT_ROOT'] . '/multisweeper/php/functional/resolveActions.php');
+require_once($_SERVER['DOCUMENT_ROOT'] . '/multisweeper/php/functional/taskScheduler.php');
 
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
 	header('Content-Type: text/xml');

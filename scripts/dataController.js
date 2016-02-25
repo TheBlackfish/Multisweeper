@@ -3,10 +3,10 @@ var currentGameID = null;
 function handleDataWithPHP(data, phpFileName, responseFunction) {
 	var xmlhttp = new XMLHttpRequest();
 	if ("withCredentials" in xmlhttp) {
-		xmlhttp.open("POST", "./php/" + phpFileName + ".php", true);	
+		xmlhttp.open("POST", "./php/interactions/" + phpFileName + ".php", true);	
 	} else if (typeof XDomainRequest != "undefined") {
 		xmlhttp = new XDomainRequest();
-		xmlhttp.open("POST", "./php/" + phpFileName + ".php", true);	
+		xmlhttp.open("POST", "./php/interactions/" + phpFileName + ".php", true);	
 	} else {
 		xmlhttp = null;
 		console.log("CORS not supported");	

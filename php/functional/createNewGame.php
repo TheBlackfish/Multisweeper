@@ -1,8 +1,8 @@
 <?php
 
-require_once('../../../../database.php');
-require_once('../constants/mineGameConstants.php');
-require_once('translateData.php');
+require_once($_SERVER['DOCUMENT_ROOT'] . '/multisweeper/php/constants/databaseConstants.php');
+require_once($_SERVER['DOCUMENT_ROOT'] . '/multisweeper/php/constants/mineGameConstants.php');
+require_once($_SERVER['DOCUMENT_ROOT'] . '/multisweeper/php/functional/translateData.php');
 
 //Takes the various parameters of the minefield width, height, and number of mines.
 //Does not return anything, but does alter the MySQL database

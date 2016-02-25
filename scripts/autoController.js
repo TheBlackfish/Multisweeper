@@ -17,5 +17,5 @@ function timerCallback() {
 		timerCurrent = timerMax;
 	}
 
-	document.getElementById("timerText").innerHTML = timerCurrent;
+	document.getElementById("timerText").innerHTML = "Updating in " + timerCurrent;
 }

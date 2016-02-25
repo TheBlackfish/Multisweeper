@@ -1,6 +1,6 @@
 <?php
 
-require_once("../constants/localServerConstants.php");
+require_once($_SERVER['DOCUMENT_ROOT'] . "/multisweeper/php/constants/localServerConstants.php");
 
 function createResolveActionsTask($gameID) {
 	global $scriptsDirectory, $phpFilepath, $phpSchedulerLogPath;
