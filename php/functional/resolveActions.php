@@ -102,9 +102,13 @@ function resolveAllActions($gameID) {
 								}
 							}
 							
-						//If flag action, don't actually implement because yeah
+						//If flag action, mark the space as flagged in visibility.
 						} else {
-							//TBD
+							
+							//Place a flag at the coordinates if it is not already revealed.
+							if ($visibility[$cur["x"]][$cur["y"]] == 0) {
+								$visibility[$cur["x"]][$cur["y"]] = 1;
+							}
 						}
 					}
 

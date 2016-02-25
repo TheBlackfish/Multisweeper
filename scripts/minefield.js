@@ -12,6 +12,8 @@ var hoverFPS = Math.floor(1000/30);
 var previousHoverCoords = null;
 var previousSelectCoords = null;
 
+var selectedTilesPreviousValue = -1;
+
 /*
 	Tile numbers in the minefield translate to the following:
 	-2 	Revealed mine
@@ -98,7 +100,8 @@ function initMinefieldInterface() {
 
 function updateMinefield(input) {
 	//Save all tiles currently altered by the player.
-	var previouslyAltered = getAllTilesWithValue(10);
+	var previouslyShoveled = getAllTilesWithValue(10);
+	var previouslyFlagged = getAllTilesWithValue(11);
 
 	//Update the input based on those altered tiles.
 	var temp = [];
@@ -114,8 +117,17 @@ function updateMinefield(input) {
 		var xCoord = previouslyAltered[i][0];
 		var yCoord = previouslyAltered[i][1];
 
-		if (temp[xCoord][yCoord] == -1) {
+		if (temp[xCoord][yCoord] !== 10) {
 			temp[xCoord][yCoord] = 10;
+		}
+	}
+
+	for (var i = 0; i < previouslyFlagged.length; i++) {
+		var xCoord = previouslyFlagged[i][0];
+		var yCoord = previouslyFlagged[i][1];
+
+		if (temp[xCoord][yCoord] !== 11) {
+			temp[xCoord][yCoord] = 11;
 		}
 	}
 
@@ -151,6 +163,15 @@ function getSelectedTile() {
 		ret["action"] = 0;
 		return ret;
 	} else {
+		temp = getAllTilesWithValue(11);
+		if (temp.length >= 1) {
+			var cur = temp[0];
+			var ret = [];
+			ret["x"] = cur[0];
+			ret["y"] = cur[1];
+			ret["action"] = 1;
+			return ret;
+		}
 		return null;
 	}
 }
@@ -219,25 +240,41 @@ function selectTile(evt) {
 	var pos = calculateMousePosition(evt.clientX, evt.clientY);
 	var cur = getTileCoordinatesFromRealCoordinates(pos[0], pos[1]);
 	
-	if (minefield[cur[0]][cur[1]] == -1) {
+	if ((minefield[cur[0]][cur[1]] === -1) || (minefield[cur[0]][cur[1]] === 9)) {
 		var prev = getAllTilesWithValue(10);
 		for (var i = 0; i < prev.length; i++) {
 			var toChange = prev[i];
-			minefield[toChange[0]][toChange[1]] = -1;
+			minefield[toChange[0]][toChange[1]] = selectedTilesPreviousValue;
+			drawTileAtCoordinates(selectedTilesPreviousValue, toChange[0], toChange[1]);
+		}
+
+		prev = getAllTilesWithValue(11);
+		for (var i = 0; i < prev.length; i++) {
+			var toChange = prev[i];
+			minefield[toChange[0]][toChange[1]] = selectedTilesPreviousValue;
+			drawTileAtCoordinates(selectedTilesPreviousValue, toChange[0], toChange[1]);
+		}
+		
+		selectedTilesPreviousValue = minefield[cur[0]][cur[1]];
+		minefield[cur[0]][cur[1]] = 10;
+		drawTileAtCoordinates("shovel", cur[0], cur[1]);
+	} else if (minefield[cur[0]][cur[1]] === 10 && selectedTilesPreviousValue !== 9) {
+		var prev = getAllTilesWithValue(10);
+		for (var i = 0; i < prev.length; i++) {
+			var toChange = prev[i];
+			minefield[toChange[0]][toChange[1]] = selectedTilesPreviousValue;
 			drawTileAtCoordinates(-1, toChange[0], toChange[1]);
 		}
 
 		prev = getAllTilesWithValue(11);
 		for (var i = 0; i < prev.length; i++) {
 			var toChange = prev[i];
-			minefield[toChange[0]][toChange[1]] = -1;
+			minefield[toChange[0]][toChange[1]] = selectedTilesPreviousValue;
 			drawTileAtCoordinates(-1, toChange[0], toChange[1]);
 		}
 		
-		if (minefield[cur[0]][cur[1]] != 10) {
-			minefield[cur[0]][cur[1]] = 10;
-			drawTileAtCoordinates("shovel", cur[0], cur[1]);
-		}
+		minefield[cur[0]][cur[1]] = 11;
+		drawTileAtCoordinates("plantflag", cur[0], cur[1]);
 	}
 }
 
