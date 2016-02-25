@@ -122,5 +122,17 @@ function updatePlayerInfo() {
 }
 
 function getPlayerID() {
-	return currentPlayerID;	
+	if (currentPlayerID === null) {
+		return "";
+	} else {
+		return currentPlayerID;
+	}
+}
+
+function getPlayerName() {
+	if (currentUserName === null) {
+		return "";
+	} else {
+		return currentUserName;
+	}
 }

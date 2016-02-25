@@ -162,7 +162,7 @@ function resolveAllActions($gameID) {
 											for ($x = 0; ($x < count($visibility)) && !$gameCompleted; $x++) {
 												for ($y = 0; ($y < count($visibility[$x])) && !$gameCompleted; $y++) {
 													if ($visibility[$x][$y] == 0) {
-														$visibility[$x][$y] = 1;
+														$visibility[$x][$y] = 2;
 													}
 												}
 											}
