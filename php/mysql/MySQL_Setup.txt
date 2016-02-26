@@ -63,4 +63,13 @@ Tables:
 	A table corresponding to all players who wish to sign up for the next game.
 	Fields:
 		playerID (Double)
-			Foreign key referring to the player attempting to sign up.s
+			Foreign key referring to the player attempting to sign up.
+
+*globalVars
+
+	A table containing unique key-value pairs that are unique to the whole Multisweeper server instance, such as when the next game is being made.
+	Fields:
+		key (Varchar)
+			A unique string identifying the key for the key-value pair.
+		value (Varchar)
+			The value currently associated with the key.

@@ -61,3 +61,8 @@ CREATE TABLE `multisweeper`.`upcomingsignup` (
     REFERENCES `multisweeper`.`players` (`playerID`)
     ON DELETE NO ACTION
     ON UPDATE NO ACTION);
+
+CREATE TABLE `multisweeper`.`globalvars` (
+  `key` VARCHAR(60) NOT NULL,
+  `value` VARCHAR(60) NOT NULL,
+  UNIQUE INDEX `key_UNIQUE` (`key` ASC));

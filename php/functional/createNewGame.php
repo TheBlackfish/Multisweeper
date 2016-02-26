@@ -15,6 +15,14 @@ function createNewGame($width, $height, $numMines) {
 		die("Connection failed: " . $conn->connect_error);
 	}
 
+	if ($deleteTimeStmt = $conn->prepare("DELETE FROM multisweeper.globalvars WHERE key='nextGameTime'")) {
+		$deleteTimeStmt->execute();
+		$deleteTimeStmt->close();
+	} else {
+		error_log("Unable to prepare next game time deletion statement, only cosmetic in effects. " . $deleteTimeStmt->errno . ": " . $deleteStmt->error);
+		$deleteStmt->close();
+	}
+
 	//Initialize various arrays for the base 
 	$minefield = array_fill(0, $width, array_fill(0, $height, 0));
 

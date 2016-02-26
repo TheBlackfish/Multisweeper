@@ -42,3 +42,18 @@ function populatePlayerListTable(playerXML) {
 
 	document.getElementById("playerListTable").innerHTML = htmlStr + clientPlayerText + livingPlayersText + deadPlayersText;
 }
+
+function updateUpcomingGameTime(gameTime) {
+	if (gameTime !== null) {
+		if (document.getElementById("gameTimePrompt") !== null) {
+			var promptBox = "<div id='gameTimePrompt' class='topBarBox'><p>The next game starts at " + gameTime.getChildNodes[0].nodeValue + "</p></div>";
+			document.getElementById("topBar").innerHTML += promptBox;
+		} else {
+			document.getElementById("gameTimePrompt").innerHTML = "<p>The next game starts at " + gameTime.getChildNodes[0].nodeValue + "</p>";
+		}
+	} else {
+		if (document.getElementById("gameTimePrompt") !== null) {
+			document.getElementById("topBar").innerHTML = document.getElementById("topBar").innerHTML.replace(document.getElementById("gameTimePrompt").outerHTML, "");
+		}
+	}
+}

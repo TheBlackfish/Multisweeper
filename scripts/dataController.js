@@ -42,6 +42,14 @@ function processMinefieldData(response) {
 	var players = allInfo.getElementsByTagName("players")[0];
 
 	populatePlayerListTable(players);
+
+	var gameTime = allInfo.getElementsByTagName("nextGameTime");
+
+	if (gameTime.length > 0) {
+		updateUpcomingGameTime(gameTime[0]);
+	} else {
+		updateUpcomingGameTime(null);
+	}
 }
 
 function preprocessMinefieldMap(input) {

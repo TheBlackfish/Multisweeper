@@ -54,6 +54,16 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 			}
 
 			$playerQuery->close();
+
+			if ($gameTimeStmt = $conn->prepare("SELECT value FROM multisweeper.globalVars WHERE key='nextGameTime'")) {
+				$gameTimeStmt->execute();
+				$gameTimeStmt->bind_result($time);
+				while ($gameTimeStmt->fetch()) {
+					$gt = $doc->createElement('nextGameTime', "The next game will start at " . $time . ".");
+					$gt = $doc->appendChild($gt);
+				}
+			}
+
 		} else {
 			error_log("Unable to prepare player gathering statement. " . $conn->errno . ": " . $conn->error);
 			$error = $doc->createElement('error', "Internal error occurred, please try again later.");
