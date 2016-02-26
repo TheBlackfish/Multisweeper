@@ -117,7 +117,7 @@ function updateMinefield(input) {
 		var xCoord = previouslyShoveled[i][0];
 		var yCoord = previouslyShoveled[i][1];
 
-		if (temp[xCoord][yCoord] !== 10) {
+		if (temp[xCoord][yCoord] == -1 || temp[xCoord][yCoord] == 9) {
 			temp[xCoord][yCoord] = 10;
 		}
 	}
@@ -126,7 +126,7 @@ function updateMinefield(input) {
 		var xCoord = previouslyFlagged[i][0];
 		var yCoord = previouslyFlagged[i][1];
 
-		if (temp[xCoord][yCoord] !== 11) {
+		if (temp[xCoord][yCoord] == -1 && temp[xCoord][yCoord] != 9) {
 			temp[xCoord][yCoord] = 11;
 		}
 	}
