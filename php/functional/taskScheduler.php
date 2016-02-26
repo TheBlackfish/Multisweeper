@@ -49,7 +49,7 @@ function createGameCreationTask() {
 	if ($timeStmt = $conn->prepare("INSERT INTO multisweeper.globalvars (key, value) VALUES ('nextGameTime', ?)")) {
 		$timeStmt->bind_param("s", $execTime);
 		if ($timeStmt->execute()) {
-			
+			error_log("Successfully executed next game time statement.");
 		} else {
 			error_log("Unable to set next game time in database. " . $timeStmt->errno . ": " . $timeStmt->error);
 		}
