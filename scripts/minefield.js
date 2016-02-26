@@ -56,7 +56,7 @@ function initImages() {
 		var img = new Image();
 		img.onload = function() {
 			minefieldImagesLoaded++;
-			if (minefieldImagesLoaded >= minefieldImages.length) {
+			if (minefieldImagesLoaded >= allImages.length) {
 				finishInitMinefield();	
 			}
 		};
@@ -113,9 +113,9 @@ function updateMinefield(input) {
 		}
 	}
 
-	for (var i = 0; i < previouslyAltered.length; i++) {
-		var xCoord = previouslyAltered[i][0];
-		var yCoord = previouslyAltered[i][1];
+	for (var i = 0; i < previouslyShoveled.length; i++) {
+		var xCoord = previouslyShoveled[i][0];
+		var yCoord = previouslyShoveled[i][1];
 
 		if (temp[xCoord][yCoord] !== 10) {
 			temp[xCoord][yCoord] = 10;

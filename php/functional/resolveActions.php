@@ -112,6 +112,26 @@ function resolveAllActions($gameID) {
 						}
 					}
 
+					//Set all players who are still awaiting actions to be AFK.
+					if ($afkStmt = $conn->prepare("SELECT playerID FROM multisweeper.playerstatus WHERE status=1 AND awaitingAction=1 AND gameID=?")) {
+						$afkStmt->bind_param("i", $gameID);
+						$afkStmt->execute();
+						$afkStmt->bind_result($afkID);
+						$afkPlayers = array();
+						while ($afkStmt->fetch()) {
+							array_push($afkPlayers, $afkID);
+						}
+						$afkStmt->close();
+
+						if ($afkUpdateStmt = $conn->prepare("UPDATE multisweeper.playerstatus SET status=2 WHERE gameID=? AND playerID=?")) {
+							foreach ($afkPlayers as $key => $value) {
+								$afkUpdateStmt->bind_param("ii", $gameID, $value);
+								$afkUpdateStmt->execute();
+							}
+							$afkUpdateStmt->close();
+						}
+					}
+
 					//Update all remaining players in game to be awaiting actions.
 					foreach ($playerstatus as $id => $isAlive) {
 						if ($updatePlayer = $conn->prepare("UPDATE multisweeper.playerstatus SET status=?, awaitingAction=1 WHERE gameID=? AND playerID=?")) {

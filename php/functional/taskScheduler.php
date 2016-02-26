@@ -9,7 +9,7 @@ function createResolveActionsTask($gameID) {
 	$taskDetails = $phpFilepath . " -f " . $scriptsDirectory . "resolveActionsScript.php " . $gameID;
 
 	//Set up exec time
-	$exactTime = time() + 2 * 60;
+	$exactTime = time() + 15 * 60;
 	$execTime = date("H:i", $exactTime);
 
 	$cmd = "schtasks.exe /CREATE /RU SYSTEM /SC ONCE /TN \"MultisweeperResolveActions-{$gameID}\" /TR \"{$taskDetails}\" /ST {$execTime} /F > \"{$phpSchedulerLogPath}\"";

@@ -45,7 +45,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 		}
 
 		//Check if player can actually submit actions or not
-		if ($aliveStmt = $conn->prepare("SELECT COUNT(*) FROM multisweeper.playerstatus WHERE gameID=? AND playerID=? AND status=1")) {
+		if ($aliveStmt = $conn->prepare("SELECT COUNT(*) FROM multisweeper.playerstatus WHERE gameID=? AND playerID=? AND status!=0")) {
 			$aliveStmt->bind_param("ii", $xml->gameID, $xml->playerID);
 			$aliveStmt->execute();
 			$aliveStmt->bind_result($count);
