@@ -8,8 +8,6 @@ require_once($_SERVER['DOCUMENT_ROOT'] . '/multisweeper/php/functional/translate
 function resolveAllActions($gameID) {
 	global $sqlhost, $sqlusername, $sqlpassword, $adjacencies;
 
-	error_log("Attempting to resolve action queue.");
-
 	//Prepare MySQL connection
 	$conn = new mysqli($sqlhost, $sqlusername, $sqlpassword);
 	if ($conn->connect_error) {
@@ -43,7 +41,6 @@ function resolveAllActions($gameID) {
 						"x"				=>	$xCoord,
 						"y"				=>	$yCoord
 					);
-					error_log("Found action at " . $xCoord . "," . $yCoord);
 					array_push($actionqueue, $temp);
 				}
 
@@ -182,10 +179,10 @@ function resolveAllActions($gameID) {
 											error_log("Unable to prepare living player status statement after resolving action queue. " . $conn->errno . ": " . $conn->error);
 										}
 
-										//If game is done, all unrevealed tiles become flagged instead.
+										//If game is done, all unrevealed tiles become visible instead.
 										if ($gameCompleted) {
-											for ($x = 0; ($x < count($visibility)) && !$gameCompleted; $x++) {
-												for ($y = 0; ($y < count($visibility[$x])) && !$gameCompleted; $y++) {
+											for ($x = 0; ($x < count($visibility)); $x++) {
+												for ($y = 0; ($y < count($visibility[$x])); $y++) {
 													if ($visibility[$x][$y] == 0) {
 														$visibility[$x][$y] = 2;
 													}
