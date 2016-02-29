@@ -7,6 +7,7 @@
 <script src="scripts/actionController.js"></script>
 <script src="scripts/autoController.js"></script>
 <script src="scripts/dataController.js"></script>
+<script src="scripts/interactionController.js"></script>
 <script src="scripts/minefield.js"></script>
 <script src="scripts/playerController.js"></script>
 <script src="scripts/socialController.js"></script>
@@ -60,14 +61,15 @@
 
   <!-- Submit button -->
   <div id="submitArea">
-    <div onclick="submitAction();"><p>Submit Move</p></div>
+    <div type="submit" onclick="submitAction();"><p>Submit Move</p></div>
     <p id="submitMessage">Press the Submit button to submit your action.</p>
   </div>
 
   <!-- Chat area -->
     
   <script type="text/javascript">
-		function debug() {		
+		function debug() {	
+      initInteractions();	
 			checkCookie();
       getMinefieldData();
 		}
