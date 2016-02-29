@@ -1,46 +1,38 @@
 <?php
 
+#This file contains various functions to help with scheduling tasks. At this time, this only supports Windows Task Scheduler.
+
 require_once($_SERVER['DOCUMENT_ROOT'] . "/multisweeper/php/constants/localServerConstants.php");
 require_once($_SERVER['DOCUMENT_ROOT'] . "/multisweeper/php/constants/databaseConstants.php");
 
+#createResolveActionsTask($gameID)
+#Sets up a scheduled task to resolve all actions 15 minutes into the future.
+#@param $gameID (Integer) The game ID that this task is for.
 function createResolveActionsTask($gameID) {
 	global $scriptsDirectory, $phpFilepath, $phpSchedulerLogPath;
 
-	//Set up details
 	$taskDetails = $phpFilepath . " -f " . $scriptsDirectory . "resolveActionsScript.php " . $gameID;
-
-	//Set up exec time
-	$exactTime = time() + 15 * 60;
-	$execTime = date("H:i", $exactTime);
-
-	$cmd = "schtasks.exe /CREATE /RU SYSTEM /SC ONCE /TN \"MultisweeperResolveActions-{$gameID}\" /TR \"{$taskDetails}\" /ST {$execTime} /F > \"{$phpSchedulerLogPath}\"";
-
-	error_log($cmd);
-
-	exec($cmd);
+	$execTime = date("H:i", time() + 15 * 60);
+	exec("schtasks.exe /CREATE /RU SYSTEM /SC ONCE /TN \"MultisweeperResolveActions-{$gameID}\" /TR \"{$taskDetails}\" /ST {$execTime} /F > \"{$phpSchedulerLogPath}\"");
 }
 
+#createResolveActionsTask($gameID)
+#Deletes all scheduled action resolution tasks for the game ID provided.
+#@param $gameID (Integer) The game ID that this task is for.
 function deleteResolveActionsTask($gameID) {
-	$cmd = "schtasks.exe /DELETE /TN \"MultisweeperResolveActions-{$gameID}\" /F";
-
-	exec($cmd);
+	exec("schtasks.exe /DELETE /TN \"MultisweeperResolveActions-{$gameID}\" /F");
 }
 
+#createGameCreationTask()
+#Sets up a scheduled task to create a new game.
 function createGameCreationTask() {
 	global $scriptsDirectory, $phpFilepath, $phpSchedulerLogPath, $sqlhost,	$sqlusername, $sqlpassword;
 
-	//Set up details
 	$taskDetails = $phpFilepath . " -f " . $scriptsDirectory . "gameCreationScript.php";
-
-	//Set up exec time
 	$exactTime = time() + 30 * 60;
 	$execTime = date("H:i", $exactTime);
+	exec("schtasks.exe /CREATE /RU SYSTEM /SC ONCE /TN \"MultisweeperCreateGame\" /TR \"{$taskDetails}\" /ST {$execTime} /F > \"{$phpSchedulerLogPath}\"");
 
-	$cmd = "schtasks.exe /CREATE /RU SYSTEM /SC ONCE /TN \"MultisweeperCreateGame\" /TR \"{$taskDetails}\" /ST {$execTime} /F > \"{$phpSchedulerLogPath}\"";
-
-	exec($cmd);
-
-	//Add time to globalvars
 	$conn = new mysqli($sqlhost, $sqlusername, $sqlpassword);
 	if ($conn->connect_error) {
 		die("Connection failed: " . $conn->connect_error);

@@ -1,6 +1,13 @@
 <?php
 	
-//Translates a string of VARCHARs to the multidimensional arrays needed, using the provided height and width variables.
+#This file contains various helper functions to assist with the translation of data for different formats.
+
+#translateMinefieldToPHP($data, $height, $width)
+#Takes a string representing a minefield and turns it into a double array.
+#@param $data (String) The minefield in string form.
+#@param $height (Integer) The height of the final minefield.
+#@param $width (Integer) The width of the final minefield.
+#@return The double array representing the minefield.
 function translateMinefieldToPHP($data, $height, $width) {
 	if (strlen($data) != ($height * $width)) {
 		throw new Exception("translateMinefieldToPHP - Data provided does not match size given!", 1);
@@ -19,7 +26,10 @@ function translateMinefieldToPHP($data, $height, $width) {
 	return $result;
 }
 
-//Translates a multidimensional array to the appropriate form for MySQL.
+#translateMinefieldToMySQL($data)
+#Takes a double array representing a minefield and turns it into a string.
+#@param $data (Double Array) The minefield in double array form.
+#@return The string representing the minefield.
 function translateMinefieldToMySQL($data) {
 	$width = count($data);
 	$height = count($data[0]);

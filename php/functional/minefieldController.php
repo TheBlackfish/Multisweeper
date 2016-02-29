@@ -1,10 +1,17 @@
 <?php
 
+#This file contains various helper function to help with minefield control.
+
 require_once($_SERVER['DOCUMENT_ROOT'] . '/multisweeper/php/constants/databaseConstants.php');
 require_once($_SERVER['DOCUMENT_ROOT'] . '/multisweeper/php/constants/mineGameConstants.php');
 require_once($_SERVER['DOCUMENT_ROOT'] . '/multisweeper/php/functional/translateData.php');
 
-
+#getMinefieldWithVisibility($gameID, $minefield, $visibility)
+#Takes a minefield and visibility maps (both as double arrays), and returns a properly formatted minefield with visibility applied, as well as player actions.
+#@param $gameID (Integer) The game ID that this operation is for.
+#@param $minefield (Double Array) The properly formatted double array representing the minefield with all tiles revealed.
+#@param $visibility (Double Array) The properly formatted double array representing the visibility of the minefield, including flags.
+#@return The properly formatted double array with both visibility and player actions applied.
 function getMinefieldWithVisibility($gameID, $minefield, $visibility) {
 	if (count($minefield) !== count($visibility)) {
 		error_log("Error: Minefield size did not match visibility matrix size. Exiting.");
@@ -43,6 +50,11 @@ function getMinefieldWithVisibility($gameID, $minefield, $visibility) {
 	return addPlayerActionsToMinefield($gameID, $result);
 }
 
+#addPlayerActionsToMinefield($gameID, $map)
+#Takes a minefield with visibility modifiers and applies all currently queued actions to it as just visual indicators.
+#@param $gameID (Integer) The game ID that this operation is for.
+#@param $map (Double Array) The properly formatted double array representing the minefield with visibility applied.
+#@return The properly formatted double array with both visibility and player actions applied.
 function addPlayerActionsToMinefield($gameID, $map) {
 	global $sqlhost, $sqlusername, $sqlpassword;
 	$conn = new mysqli($sqlhost, $sqlusername, $sqlpassword);
@@ -61,26 +73,6 @@ function addPlayerActionsToMinefield($gameID, $map) {
 		error_log("Unable to add actions to map, returning with none.");
 	}
 	return $map;
-}
-
-function checkIfSpaceIsUnrevealed($gameID, $xCoord, $yCoord) {
-	$conn = new mysqli($sqlhost, $sqlusername, $sqlpassword);
-	if ($conn->connect_error) {
-		die("Connection failed: " . $conn->connect_error);
-	}
-
-	if ($query = $conn->prepare("SELECT visibility FROM multisweeper.games WHERE gameID=?")) {
-		$query->execute();
-		$query->bind_result($vis);
-		$query->fetch();
-		$query->close();
-
-		$field = translateMinefieldToPHP($row[0], $minefieldWidth, $minefieldHeight);
-		return ($field[$xCoord][$yCoord] !== 2);
-	} else {
-		error_log("Unable to prepare visibility statement. " . $conn->errno . ": " . $conn->error);
-		return false;
-	}
 }
 
 ?>
