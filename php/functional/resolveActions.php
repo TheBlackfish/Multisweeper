@@ -101,22 +101,47 @@ function resolveAllActions($gameID) {
 					}
 
 					#Any players who are in the game but did not have an action in the queue are set to AFK.
-					if ($afkStmt = $conn->prepare("SELECT playerID FROM multisweeper.playerstatus WHERE status=1 AND awaitingAction=1 AND gameID=?")) {
+					#Any who were previously AFK have their internal 'AFK clock' incremented.
+					#Any players left who are AFK and have their AFK clock at 5 or more are killed.
+					if ($afkStmt = $conn->prepare("SELECT playerID, status FROM multisweeper.playerstatus WHERE status!=0 AND awaitingAction=1 AND gameID=?")) {
 						$afkStmt->bind_param("i", $gameID);
 						$afkStmt->execute();
-						$afkStmt->bind_result($afkID);
-						$afkPlayers = array();
+						$afkStmt->bind_result($afkID, $afkStatus);
+						$newAfkPlayers = array();
+						$prevAfkPlayers = array();
 						while ($afkStmt->fetch()) {
-							array_push($afkPlayers, $afkID);
+							if ($afkStatus == 1) {
+								array_push($newAfkPlayers, $afkID);
+							} else if ($afkStatus == 2) {
+								array_push($prevAfkPlayers, $afkID);
+							}
 						}
 						$afkStmt->close();
 
-						if ($afkUpdateStmt = $conn->prepare("UPDATE multisweeper.playerstatus SET status=2 WHERE gameID=? AND playerID=?")) {
-							foreach ($afkPlayers as $key => $value) {
+						if ($afkUpdateStmt = $conn->prepare("UPDATE multisweeper.playerstatus SET afkCount=afkCount+1 WHERE status=2 AND gameID=? AND playerID=?")) {
+							foreach ($prevAfkPlayers as $key => $value) {
 								$afkUpdateStmt->bind_param("ii", $gameID, $value);
 								$afkUpdateStmt->execute();
 							}
 							$afkUpdateStmt->close();
+						} else {
+							error_log("Unable to prepare AFK add statement.");
+						}
+
+						if ($afkAddStmt = $conn->prepare("UPDATE multisweeper.playerstatus SET status=2 WHERE gameID=? AND playerID=?")) {
+							foreach ($newAfkPlayers as $key => $value) {
+								$afkAddStmt->bind_param("ii", $gameID, $value);
+								$afkAddStmt->execute();
+							}
+							$afkAddStmt->close();
+						} else {
+							error_log("Unable to prepare AFK add statement.");
+						}
+
+						if ($afkKillStmt = $conn->prepare("UPDATE multisweeper.playerstatus SET status=0 WHERE status=2 AND afkCount>=5")) {
+							$afkKillStmt->execute();
+						} else {
+							error_log("Unable to prepare AFK kill statement.");
 						}
 					}
 

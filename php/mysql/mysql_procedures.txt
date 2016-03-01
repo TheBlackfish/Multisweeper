@@ -16,23 +16,17 @@ CREATE TABLE `multisweeper`.`games` (
   `status` VARCHAR(45) NOT NULL,
   PRIMARY KEY (`gameID`));
 
-CREATE TABLE `multisweeper`.`playerstatus` (
-  `status` BIT(1) NOT NULL DEFAULT 1,
-  `awaitingAction` BIT(1) NOT NULL,
-  `gameID` INT NOT NULL,
-  `playerID` INT NOT NULL,
-  INDEX `gameID_idx` (`gameID` ASC),
-  INDEX `playerID_idx` (`playerID` ASC),
-  CONSTRAINT `gameID`
-    FOREIGN KEY (`gameID`)
-    REFERENCES `multisweeper`.`games` (`gameID`)
-    ON DELETE NO ACTION
-    ON UPDATE NO ACTION,
-  CONSTRAINT `playerID`
-    FOREIGN KEY (`playerID`)
-    REFERENCES `multisweeper`.`players` (`playerID`)
-    ON DELETE NO ACTION
-    ON UPDATE NO ACTION);
+CREATE TABLE `playerstatus` (
+  `status` int(2) NOT NULL DEFAULT '1',
+  `awaitingAction` bit(1) NOT NULL,
+  `gameID` int(11) NOT NULL,
+  `playerID` int(11) NOT NULL,
+  `afkCount` int(4) NOT NULL DEFAULT '0',
+  KEY `gameID_idx` (`gameID`),
+  KEY `playerID_idx` (`playerID`),
+  CONSTRAINT `gameID` FOREIGN KEY (`gameID`) REFERENCES `games` (`gameID`) ON DELETE NO ACTION ON UPDATE NO ACTION,
+  CONSTRAINT `playerID` FOREIGN KEY (`playerID`) REFERENCES `players` (`playerID`) ON DELETE NO ACTION ON UPDATE NO ACTION
+)
 
 CREATE TABLE `multisweeper`.`actionqueue` (
   `gameID` INT NOT NULL,
