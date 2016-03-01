@@ -1,5 +1,7 @@
 <?php
 
+#This file checks the log-in information of a player and returns an XML form explaining if it was successful or not.
+
 require_once($_SERVER['DOCUMENT_ROOT'] . '/multisweeper/php/constants/databaseConstants.php');
 
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
@@ -12,6 +14,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 	$resultBase = $result->createElement('login');
 	$resultBase = $result->appendChild($resultBase);
 
+	#Check if log-in credentials are valid.
 	if (($xml->username == null) or ($xml->password == null)) {
 		error_log("Login rejected");
 		$error = $result->createElement('error', "Please fill out both fields and try again.");
@@ -22,6 +25,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 			die("Connection failed: " . $conn->connect_error);
 		}
 
+		#Check if user exists.
 		if ($stmt = $conn->prepare("SELECT playerID FROM multisweeper.players WHERE username=? AND password=?")) {
 			$output = null;
 
@@ -40,6 +44,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 				$name = $result->createElement('username', $xml->username);
 				$name = $resultBase->appendChild($name);
 			} else {
+				#Find out why login was rejected.
 				if ($verify = $conn->prepare("SELECT COUNT(*) FROM multisweeper.players where username=?")) {
 					$verify->bind_param("s", $xml->username);
 					$verify->execute();

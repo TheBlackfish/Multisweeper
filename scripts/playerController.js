@@ -1,6 +1,19 @@
+/*
+	PlayerController.js
+
+	This file contains all functionality relating to player information, including logging in and tracking cookies.
+*/
+
+//currentPlayerID [Integer]
+//The internal ID of the player currently logged in.
 var currentPlayerID = null;
+
+//currentUserName [String]
+//The name of the currently logged-in player.
 var currentUserName = null;
 
+//checkCookie()
+//Attempts to find any cookies for this page. If they exist and they contain user information, this function will attempt to log that player in on this computer.
 function checkCookie() {
 	var foundUsername = null;
 	var foundPassword = null;
@@ -24,7 +37,10 @@ function checkCookie() {
 	}
 }
 
-//Get username and password, POST to server for authentication.
+
+
+//attemptLogIn()
+//Gets the entered username and password, then makes a POST request to the server for authentication.
 function attemptLogIn() {
 	var inputUserName = document.getElementById("loginUsername").value;
 	var inputPassword = document.getElementById("loginPassword").value;
@@ -34,7 +50,9 @@ function attemptLogIn() {
 	handleDataWithPHP(loginXML, 'logInPlayer', handleLogIn);
 }
 
+//handleLogIn(response)
 //Handles player information after logging in.
+//@param response - The XML information from the server after attempting to authenticate with the server.
 function handleLogIn(response) {
 	var playerInfo = response.getElementsByTagName("login")[0];
 
@@ -56,15 +74,14 @@ function handleLogIn(response) {
 		document.cookie = expires;
 
 		updatePlayerInfo();
-
 		getMinefieldData();
-
 		initQueryTimer();
-
 		attemptNextGameSignUp();
 	}
 }
 
+//attemptRegister()
+//Gets the entered username and password, then makes a POST request to the server to register that information as a new player.
 function attemptRegister() {
 	var inputUserName = document.getElementById("loginUsername").value;
 	var inputPassword = document.getElementById("loginPassword").value;
@@ -74,6 +91,9 @@ function attemptRegister() {
 	handleDataWithPHP(loginXML, 'registerPlayer', handleRegister);
 }
 
+//handleRegister(response)
+//Handles player information after registering that player.
+//@param response - The XML information from the server after attempting to register with the server.
 function handleRegister(response) {
 	var playerInfo = response.getElementsByTagName("login")[0];
 
@@ -87,6 +107,8 @@ function handleRegister(response) {
 	}
 }
 
+//attemptNextGameSignUp()
+//Gets the entered username and password, then makes a POST request to the server to register that player for the next game.
 function attemptNextGameSignUp() {
 	var inputUserName = document.getElementById("loginUsername").value;
 	var inputPassword = document.getElementById("loginPassword").value;
@@ -96,6 +118,9 @@ function attemptNextGameSignUp() {
 	handleDataWithPHP(loginXML, 'signUpForNextGame', handleSignUp);
 }
 
+//handleSignUp(response)
+//Handles UI information after registering the current player for the next game.
+//@param response - The XML information from the server after attempting to sign up for the next game with the server.
 function handleSignUp(response) {
 	var playerInfo = response.getElementsByTagName("register")[0];
 
@@ -111,7 +136,8 @@ function handleSignUp(response) {
 	}
 }
 
-//Updates the player information box with information after the player logs in.
+//updatePlayerInfo()
+//Updates the UI to reflect the current player information.
 function updatePlayerInfo() {
 	var inner = "";
 
@@ -121,6 +147,9 @@ function updatePlayerInfo() {
 	document.getElementById("loginPrompt").className += " hidden";
 }
 
+//getPlayerID()
+//Retrieves the ID of the current player.
+//@return The ID of the player, or an empty string if no player is logged in.
 function getPlayerID() {
 	if (currentPlayerID === null) {
 		return "";
@@ -129,6 +158,9 @@ function getPlayerID() {
 	}
 }
 
+//getPlayerName()
+//Retrieves the name of the current player.
+//@return The name of the player, or an empty string if no player is logged in.
 function getPlayerName() {
 	if (currentUserName === null) {
 		return "";

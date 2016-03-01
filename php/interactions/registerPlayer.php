@@ -1,5 +1,7 @@
 <?php
 
+#This file takes the registration information for a new player passed to it and attempts to create that player in the MySQL database.
+
 require_once($_SERVER['DOCUMENT_ROOT'] . '/multisweeper/php/constants/databaseConstants.php');
 
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
@@ -12,12 +14,14 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 	$resultBase = $result->createElement('login');
 	$resultBase = $result->appendChild($resultBase);
 
+	#Check if registration credentials are valid.
 	if (($xml->username == null) or ($xml->password == null)) {
 		error_log("Registration rejected");
 		$error = $result->createElement('error', "Please fill out both fields and try again.");
 		$error = $resultBase->appendChild($error);
 	} else {
 
+		#Clean up registration credentials.
 		$xml->username = preg_replace("/[^A-Za-z0-9]/", '', $xml->username);
 		$xml->password = preg_replace("/[^A-Za-z0-9]/", '', $xml->password);
 
@@ -33,7 +37,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 				die("Connection failed: " . $conn->connect_error);
 			}
 
-			//Check if username already taken
+			#Check if username already taken
 			if ($checkStmt = $conn->prepare("SELECT COUNT(*) FROM multisweeper.players WHERE username=?")) {
 				$checkStmt->bind_param("s", $xml->username);
 				$checkStmt->execute();
@@ -41,7 +45,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 				$checkStmt->close();
 
 				if ($count == 0) {
-					//Register player
+					
+					#Register the player in the MySQL database.
 					if ($registerStmt = $conn->prepare("INSERT INTO multisweeper.players (username, password) VALUES (?,?)")) {
 						$registerStmt->bind_param("ss", $xml->username, $xml->password);
 						$registerStmt->execute();

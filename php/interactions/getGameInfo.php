@@ -1,5 +1,7 @@
 <?php
 
+#This file returns the most recent game's information to the user.
+
 require_once($_SERVER['DOCUMENT_ROOT'] . '/multisweeper/php/constants/databaseConstants.php');
 require_once($_SERVER['DOCUMENT_ROOT'] . '/multisweeper/php/functional/minefieldController.php');
 require_once($_SERVER['DOCUMENT_ROOT'] . '/multisweeper/php/functional/translateData.php');
@@ -15,6 +17,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 	$doc = new DOMDocument('1.0');
 	$doc->formatOutput = true;
 
+	#Select all information about the game from the game's status columns in the MySQL database and parse it into XML form. 
 	if ($query = $conn->prepare("SELECT map, visibility, height, width, gameID FROM multisweeper.games ORDER BY gameID DESC LIMIT 1")) {
 		$query->execute();
 		$query->bind_result($map, $vis, $height, $width, $gameID);
@@ -38,6 +41,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 		$nodeC = $doc->createElement('width', $width);
 		$nodeC = $newrow->appendChild($nodeC);
 
+		#Add all players in the game and their statuses to the XML.
 		if ($playerQuery = $conn->prepare("SELECT p.username, s.status FROM multisweeper.players as p INNER JOIN multisweeper.playerstatus as s ON p.playerID=s.playerID WHERE s.gameID=?
 ")) {
 			$playerQuery->bind_param("i", $gameID);
@@ -76,7 +80,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 	}
 	
 	$r = $doc->saveXML();
-	#error_log($r);
 	echo $r;
 }
 ?>

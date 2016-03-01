@@ -1,3 +1,12 @@
+/*
+	SocialController.js
+
+	This script file holds all functionality relating to social interactions between players, including the player list and chat area.
+*/
+
+//populatePlayerListTable(playerXML)
+//Formats and presents the table of players currently in the game being played.
+//@param playerXML - The list of players in XML form.
 function populatePlayerListTable(playerXML) {
 	var htmlStr = "<tr><td>Player Name</td></tr>";
 
@@ -43,6 +52,9 @@ function populatePlayerListTable(playerXML) {
 	document.getElementById("playerListTable").innerHTML = htmlStr + clientPlayerText + livingPlayersText + deadPlayersText;
 }
 
+//updateUpcomingGameTime(gameTime)
+//Formats and presents the time until the next game on the UI.
+//@param gameTime - The information about the next game in XML form.
 function updateUpcomingGameTime(gameTime) {
 	if (gameTime !== null) {
 		if (document.getElementById("gameTimePrompt") !== null) {

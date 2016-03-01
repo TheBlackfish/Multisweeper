@@ -1,5 +1,7 @@
 <?php
 
+#This file takes a player's log-in information and registers the player for the next game.
+
 require_once($_SERVER['DOCUMENT_ROOT'] . '/multisweeper/php/constants/databaseConstants.php');
 
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
@@ -12,6 +14,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 	$resultBase = $result->createElement('register');
 	$resultBase = $result->appendChild($resultBase);
 
+	#Check if registration credentials are valid.
 	if (($xml->username == null) or ($xml->password == null)) {
 		error_log("Sign up rejected");
 		$error = $result->createElement('error', "Please fill out both fields and try again.");
@@ -22,6 +25,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 			die("Connection failed: " . $conn->connect_error);
 		}
 
+		#Get the internal ID for the player being registered.
 		if ($stmt = $conn->prepare("SELECT playerID FROM multisweeper.players WHERE username=? AND password=?")) {
 			$playerID = null;
 
@@ -32,6 +36,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 			$stmt->close();
 
 			if ($playerID !== null) {
+
+				#Validate that the player is currently not signed up.
 				if ($checkStmt = $conn->prepare("SELECT playerID from multisweeper.upcomingsignup WHERE playerID=?")) {
 					$doubleCheck = null;
 
@@ -45,6 +51,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 						$error = $result->createElement('success', "You are already signed up for the next game. Please wait for deployment.");
 						$error = $resultBase->appendChild($error);
 					} else {
+
+						#Register the player for the next game.
 						if ($insertStmt = $conn->prepare("INSERT INTO multisweeper.upcomingsignup (playerID) VALUES (?)")) {
 							$insertStmt->bind_param("i", $playerID);
 							$insertStmt->execute();

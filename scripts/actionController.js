@@ -1,3 +1,11 @@
+/*
+	ActionController.js
+
+	This script file contains all server-client interactions with the server regarding actions.
+*/
+
+//submitAction()
+//Gets action information from various files and sends it to the server for processing.
 function submitAction() {
 	document.getElementById("submitMessage").innerHTML = "Submitting...";
 
@@ -18,18 +26,19 @@ function submitAction() {
 	}
 }
 
+//resolveActionSubmission(response)
+//Takes the response from the server for submitting an action and properly resolves it.
+//@param response - The response from the server for the submission in XML form.
 function resolveActionSubmission(response) {
 	var text = "Unexpected client error!";
-
 	var allInfo = response.getElementsByTagName("submission")[0];
-
 	var actionDone = allInfo.getElementsByTagName("action");
 
 	if (actionDone.length > 0) {
 		text = actionDone[0].nodeValue;
 		forceTimerToTime(3);
 	} else {
-		test = "";
+		text = "";
 		var errors = allInfo.getElementsByTagName("error");
 		for (var i = 0; i < errors.length; i++) {
 			if (i != 0) {

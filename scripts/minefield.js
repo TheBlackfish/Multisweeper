@@ -1,20 +1,8 @@
-var squareSize = 24;
-var minefield = [];
-var minefieldHeight = 1;
-var minefieldWidth = 1;
-var minefieldContext = null;
-var minefieldImages = new Array();
-var minefieldImagesLoaded = 0;
-var minefieldInput = null;
-var minefieldInitialized = false;
-var hoverFPS = Math.floor(1000/30);
-
-var previousHoverCoords = null;
-var previousSelectCoords = null;
-
-var selectedTilesPreviousValue = -1;
-
 /*
+	Minefield.js
+
+	This file controls all functionality relating to the minefield, including tile statuses, visibility, drawing, and direct interactions with the canvas.
+
 	Tile numbers in the minefield translate to the following:
 	-2 	Revealed mine
 	-1	Unrevealed
@@ -22,11 +10,62 @@ var selectedTilesPreviousValue = -1;
 	9	Flag placed
 	10	Shovel selection
 	11	Flag selection
+	12	Other players' actions
 */
 
-/*
-	Initializes the necessary variables for minefield.js
-*/
+//minefield [Double Array]
+//Holds all the tile statuses for drawing the minefield on the screen.
+var minefield = [];
+
+//minefieldHeight [Integer]
+//The height of the minefield in tiles.
+var minefieldHeight = 1;
+
+//minefieldWidth [Integer]
+//The width of the minefield in tiles.
+var minefieldWidth = 1;
+
+//minefieldContext [Canvas context]
+//The drawing context of the minefield canvas on the screen.
+var minefieldContext = null;
+
+//minefieldImages [Array]
+//An array of images corresponding to all 
+var minefieldImages = new Array();
+
+//minefieldImagesLoaded [Integer]
+//A control variable that exists to help with loading images and preventing graphical errors.
+var minefieldImagesLoaded = 0;
+
+//minefieldInput [String]
+//The string that represents a minefield being provided to create the game.
+var minefieldInput = null;
+
+//minefieldInitialized [Boolean]
+//A control variable to prevent reloading of images upon updating the map.
+var minefieldInitialized = false;
+
+//minefieldSquareSize [Integer]
+//The size of the minefield tiles (in pixels).
+var minefieldSquareSize = 24;
+
+//hoverFPS [double]
+//The amount of time (in milliseconds) to update the hovering interaction on the minefield.
+var hoverFPS = Math.floor(1000/30);
+
+//previousHoverCoords [Array]
+//The coordinates of the previously hovered-over tile.
+var previousHoverCoords = null;
+
+//selectedTilesPreviousValue [Integer]
+//The control variable to help with selection logic.
+var selectedTilesPreviousValue = -1;
+
+//initMinefield(input, h, w)
+//Initializes the minefield. If the minefield has been initialized already, the current minefield is updated with the new information. Otherwise, various control variables and functions will be called as part of the initialization process.
+//@param input - The string representing the minefield data to show to the player.
+//@param h - The integer that is the height of the minefield.
+//@param w - The integer that is the width of the minefield.
 function initMinefield(input, h, w) {
 	minefieldInput = input;
 	minefieldHeight = h;
@@ -38,6 +77,8 @@ function initMinefield(input, h, w) {
 	}		
 }
 
+//finishInitMinefield()
+//Finishes initialization of the minefield after loading images.
 function finishInitMinefield() {
 	if (!minefieldInitialized) {
 		minefieldInitialized = true;
@@ -47,9 +88,8 @@ function finishInitMinefield() {
 	}
 }
 
-/*
-	Loads all images needed into the images array for later use.
-*/
+//initImages()
+//Attempts to load all images necessary for the game. When loading, each image will increment the amount of images loaded. Then, if that number is equal to the number of images, the initialization will be finished.
 function initImages() {
 	var allImages = ["mine", "unrevealed", "0", "1", "2", "3", "4", "5", "6", "7", "8", "flag", "shovel", "plantflag", "hover", "otherPlayer"];
 	for (var i = 0; i < allImages.length; i++) {
@@ -65,12 +105,9 @@ function initImages() {
 	}
 }
 
-/*
-	Initializes the minefield on the screen using the input given.
-	input - A string straight from the php response, post-cleaning for transportation s.
-	h - The height of the minefield.
-	w - The width of the minefield.
-*/
+//initMinefieldDisplay(input)
+//Sets the context of the canvas as well as finalizes the minefield input.
+//@param input - The input data for the minefield.
 function initMinefieldDisplay(input) {
 	minefieldContext = document.getElementById("gameArea").getContext("2d");
 	
@@ -86,9 +123,8 @@ function initMinefieldDisplay(input) {
 	}
 }
 
-/*
-	Initializes various mouse functionality with the minefield.
-*/
+//initMinefieldInterface()
+//Adds event listeners to the canvas for various mouse interaction.
 function initMinefieldInterface() {
 	document.getElementById("gameArea").addEventListener('mousemove', function(evt) {
 		updateHover(evt);
@@ -98,6 +134,9 @@ function initMinefieldInterface() {
 	}, false);
 }
 
+//updateMinefield(input)
+//Updates all current minefield information to match the input provided.
+//@param input - The minefield information to update to.
 function updateMinefield(input) {
 	//Save all tiles currently altered by the player.
 	var previouslyShoveled = getAllTilesWithValue(10);
@@ -136,9 +175,8 @@ function updateMinefield(input) {
 	drawMinefield();
 }
 
-/*
-	Draws the entire minefield on the screen by drawing each tile individually.
-*/
+//drawMinefield
+//Draws the minefield to the canvas.
 function drawMinefield() {
 	for (var i = 0; i < minefield.length; i++) {
 		for (var j = 0; j < minefield[i].length; j++) {
@@ -147,12 +185,9 @@ function drawMinefield() {
 	}
 }
 
-/*
-	Returns an array with the following values:
-		x: The x-coordinate of the selected tile.
-		y: The y-coordinate of the selected tile.
-		action: The action to perform on the selected tile.
-*/
+//getSelectedTile()
+//Formats the selection data into an associative array. The array has values for x, y, and action.
+//@return The formatted associative array.
 function getSelectedTile() {
 	var temp = getAllTilesWithValue(10);
 	if (temp.length >= 1) {
@@ -176,9 +211,10 @@ function getSelectedTile() {
 	}
 }
 
-/*
-	Returns an array of all tile coordinates with the given value
-*/
+//getAllTilesWithValue(value)
+//Gets coordinates for all tiles with the value specified. Each index in the returned array is a coordinate in array form ([x, y]).
+//@param value - The value of the tiles to look for.
+//@return The array of all coordinates to be retrieved.
 function getAllTilesWithValue(value) {
 	var ret = [];
 	for (var i = 0; i < minefield.length; i++) {
@@ -191,51 +227,54 @@ function getAllTilesWithValue(value) {
 	return ret;
 }
 
-/*
-	Draws the appropriate tile at the grid coordinates provided.
-*/
+//drawTileAtCoordinates(value, x, y)
+//Draws the appropriate image for the value specified at the tile position x, y.
+//@param value - The minefield tile value to draw at the specified tile position.
+//@param x - The x-coordinate to draw the tile at.
+//@param y - The y-coordinate to draw the tile at.
 function drawTileAtCoordinates(value, x, y) {
-	var realX = x * squareSize;
-	var realY = y * squareSize;
+	var realX = x * minefieldSquareSize;
+	var realY = y * minefieldSquareSize;
 	var val = getTileValueString(value);
 	
 	minefieldContext.drawImage(minefieldImages[val], realX, realY);
 }
 
-/*
-	Returns tile coordinates from real coordinates.
-*/
+//getTileCoordinatesFromRealCoordinates(x, y)
+//Takes pixel-perfect coordinates and translates them to tile coordinates.
+//@param x - The x-coordinate to translate.
+//@param y - The y-coordinate to translate.
+//@return The tile coordinates in array form.
 function getTileCoordinatesFromRealCoordinates(x, y) {
-	return [Math.floor(x / squareSize), Math.floor(y / squareSize)];	
+	return [Math.floor(x / minefieldSquareSize), Math.floor(y / minefieldSquareSize)];	
 }
 
-/*
-	Returns the string used for correct retrieval of images from the image array based on the value provided.
-*/
+//getTileValueString(value)
+//Returns the appropriate string value for drawing images for tile values that don't correspond directly to images.
+//@param value - The value of the tile to translate into a string.
+//@return The string representing the image name to display for the value provided.
 function getTileValueString(value) {
-	var temp = value;
-	if (temp === -2) {
+	var temp = value + "";
+	if (value === -2) {
 		temp = "mine";
-	} else if (temp === -1) {
+	} else if (value === -1) {
 		temp = "unrevealed";	
-	} else if (temp === 9) {
+	} else if (value === 9) {
 		temp = "flag";
-	} else if (temp === 10) {
+	} else if (value === 10) {
 		temp = "shovel";	
-	} else if (temp === 11) {
+	} else if (value === 11) {
 		temp = "plantflag";
-	} else if (temp === 12) {
+	} else if (value === 12) {
 		temp = "otherPlayer";
 	}
-	
-	temp = temp + "";
 	
 	return temp;
 }
 
-/*
-	Changes the status of the clicked-on tile to "shovel" if not currently selected. If it was previously selected, it becomes "plantflag" instead.
-*/
+//selectTile(evt)
+//Updates control variables and the canvas to reflect a selected tile after the user clicks on the canvas.
+//@param evt - The mouse click event to process for the selection.
 function selectTile(evt) {	
 	var pos = calculateMousePosition(evt.clientX, evt.clientY);
 	var cur = getTileCoordinatesFromRealCoordinates(pos[0], pos[1]);
@@ -278,9 +317,9 @@ function selectTile(evt) {
 	}
 }
 
-/*
-	Draws the "hover" tile over the currently hovered over tile.
-*/
+//updateHover(evt)
+//Clears any previously drawn hovers and draws a new hover over the currently hovered-over tile on the canvas.
+//@param evt - The mouseover event to process.
 function updateHover(evt) {
 	if (previousHoverCoords !== null) {
 		drawTileAtCoordinates(minefield[previousHoverCoords[0]][previousHoverCoords[1]], previousHoverCoords[0], previousHoverCoords[1]);
@@ -296,9 +335,11 @@ function updateHover(evt) {
 	previousHoverCoords = [cur[0], cur[1]];
 }
 
-/*
-	Corrects incorrect mouse positioning on the canvas.
-*/
+//calculateMousePosition(x, y)
+//Takes the document mouse position and corrects it in regards to the canvas.
+//@param x - The x-coordinate on the window.
+//@param y - The y-coordinate on the window.
+//@return The corrected coordinate on the canvas in array form.
 function calculateMousePosition(x, y) {
 	var realX = x - document.getElementById("gameArea").getBoundingClientRect().left;
 	var realY = y - document.getElementById("gameArea").getBoundingClientRect().top;

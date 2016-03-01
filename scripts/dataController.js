@@ -1,5 +1,18 @@
+/*
+	DataController.js
+
+	This script file holds various functions relating to client-server controls.
+*/
+
+//currentGameID [Integer]
+//The ID of the game being shown to the player.
 var currentGameID = null;
 
+//handleDataWithPHP(data, phpFileName, responseFunction)
+//Using the information provided, sends a POST request to the server to a .php file and resolves the response using the response function provided.
+//@param data - The information to send to the server in XML form.
+//@param phpFileName - The string that matches the file name of the PHP file to send the request to. This string must be the direct file name of the file, minus any directories or file extensions.
+//@param responseFunction - The function to call in response to the information sent back from the server. The function should accept one parameter of the response event.
 function handleDataWithPHP(data, phpFileName, responseFunction) {
 	var xmlhttp = new XMLHttpRequest();
 	if ("withCredentials" in xmlhttp) {
@@ -24,10 +37,15 @@ function handleDataWithPHP(data, phpFileName, responseFunction) {
 	}
 }
 
+//getMinefieldData()
+//Gets all of the information about the current game being played from the server.
 function getMinefieldData() {
 	handleDataWithPHP("", "getGameInfo", processMinefieldData);
 }
 
+//processMinefieldData(response)
+//Takes the response from the server for getting game information and properly distributes it to various script functions.
+//@param response - The response from the server for the submission in XML form.
 function processMinefieldData(response) {
 	var allInfo = response.getElementsByTagName("minefield")[0];
 	
@@ -52,6 +70,10 @@ function processMinefieldData(response) {
 	}
 }
 
+//preprocessMinefieldMap(input)
+//Takes the minefield data in string form from a server response and changes certain values into forms that the minefield.js file can understand.
+//@param input - The minefield to clean up in string form.
+//@return The array of values representing the minefield.
 function preprocessMinefieldMap(input) {
 	var result = input.split("");
 	for (var i = 0; i < result.length; i++) {
@@ -68,6 +90,9 @@ function preprocessMinefieldMap(input) {
 	return result;
 }
 
+//getGameID()
+//Returns the current game ID for the game being shown.
+//@return The ID of the current game.
 function getGameID() {
 	return currentGameID;
 }
