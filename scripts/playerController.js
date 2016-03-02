@@ -80,6 +80,16 @@ function handleLogIn(response) {
 	}
 }
 
+//attemptLogOut()
+//Logs the current player out of the game.
+function attemptLogOut() {
+	currentPlayerID = null;
+	currentUserName = null;
+
+	document.getElementById("userInfo").innerHTML = "Please sign in using the log-in prompt.";
+	document.getElementById("loginPrompt").className = document.getElementById("loginPrompt").className.replace(/hidden/g, "");
+}
+
 //attemptRegister()
 //Gets the entered username and password, then makes a POST request to the server to register that information as a new player.
 function attemptRegister() {
@@ -143,7 +153,7 @@ function updatePlayerInfo() {
 
 	inner = "Welcome, " + currentUserName;
 
-	document.getElementById("userInfo").innerHTML = "<p>" + inner + "</p>";
+	document.getElementById("userInfo").innerHTML = "<p>" + inner + "</p><div onclick='attemptLogOut();'><p>Log Out</p></div>";
 	document.getElementById("loginPrompt").className += " hidden";
 }
 
