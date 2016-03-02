@@ -60,3 +60,15 @@ CREATE TABLE `multisweeper`.`globalvars` (
   `key` VARCHAR(60) NOT NULL,
   `value` VARCHAR(60) NOT NULL,
   UNIQUE INDEX `key_UNIQUE` (`key` ASC));
+
+CREATE TABLE `multisweeper`.`chatmessages` (
+  `playerID` INT(11) NOT NULL,
+  `message` VARCHAR(500) NOT NULL DEFAULT 'ERROR',
+  `time` DATETIME NOT NULL,
+  `forCurrentGame` TINYINT(1) NOT NULL DEFAULT 1,
+  INDEX `playerID_idx` (`playerID` ASC),
+  CONSTRAINT `chatPlayerID`
+    FOREIGN KEY (`playerID`)
+    REFERENCES `multisweeper`.`players` (`playerID`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION);

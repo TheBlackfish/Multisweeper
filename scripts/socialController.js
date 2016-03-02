@@ -4,6 +4,46 @@
 	This script file holds all functionality relating to social interactions between players, including the player list and chat area.
 */
 
+function attemptChatSubmit(evt) {
+	if (evt.key == "Enter") {
+		if (!evt.shiftKey) {
+			evt.preventDefault();
+
+			var xml = "<chat><userID>" + getPlayerID() + "</userID><msg>" + document.getElementById("chatEntry").value + "</msg></chat>";
+			console.log(xml);
+			handleDataWithPHP(xml, "submitGameChat", handleChatUpdate);
+		}
+	}
+}
+
+//attemptChatUpdate()
+//Contacts the server to get any new chat messages.
+function attemptChatUpdate() {
+	handleDataWithPHP("", "getGameChat", handleChatUpdate);
+}
+
+//handleChatUpdate(response)
+//Formats any chat messages recieved from the server into a format the player can read.
+//@param response - The XML chat log from the server.
+function handleChatUpdate(response) {
+	var htmlStr = "";
+
+	var chatNodes = response.getElementsByTagName("chat");
+	if (chatNodes.length > 0) {
+		for (var i = 0; i < chatNodes.length; i++) {
+			var tempStr = "<div><p>";
+			tempStr += chatNodes[i].getElementsByTagName("user")[0].childNodes[0].nodeValue;
+			tempStr += "</p><p>";
+			tempStr += chatNodes[i].getElementsByTagName("msg")[0].childNodes[0].nodeValue;
+			tempStr += "</p></div>";
+
+			htmlStr += tempStr;
+		}
+
+		document.getElementById("chatLog").innerHTML = htmlStr;
+	}
+}
+
 //populatePlayerListTable(playerXML)
 //Formats and presents the table of players currently in the game being played.
 //@param playerXML - The list of players in XML form.
