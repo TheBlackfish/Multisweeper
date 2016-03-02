@@ -22,14 +22,21 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 	} else {
 
 		#Clean up registration credentials.
-		$xml->username = preg_replace("/[^A-Za-z0-9]/", '', $xml->username);
-		$xml->password = preg_replace("/[^A-Za-z0-9]/", '', $xml->password);
+		$tempUsername = preg_replace("/[^A-Za-z0-9]/", '', $xml->username);
+		$tempPassword = preg_replace("/[^A-Za-z0-9]/", '', $xml->password);
 
+		#Validate that username and password are legal.
 		if (strlen($xml->username) == 0) {
 			$error = $result->createElement('error', "Username cannot be blank!");
 			$error = $resultBase->appendChild($error);
 		} else if (strlen($xml->password) == 0) {
 			$error = $result->createElement('error', "Username cannot be blank!");
+			$error = $resultBase->appendChild($error);
+		} else if ($tempUsername !== $xml->username) {
+			$error = $result->createElement('error', "Username contains illegal characters, please only use A-Z and 0-9.");
+			$error = $resultBase->appendChild($error);
+		} else if ($tempPassword !== $xml->password) {
+			$error = $result->createElement('error', "Password contains illegal characters, please only use A-Z and 0-9.");
 			$error = $resultBase->appendChild($error);
 		} else {
 			$conn = new mysqli($sqlhost, $sqlusername, $sqlpassword);
