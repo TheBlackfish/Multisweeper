@@ -24,12 +24,9 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 	}
 
 	ob_start();
-
 	require_once($_SERVER['DOCUMENT_ROOT'] . '/multisweeper/php/interactions/getGameChat.php');
-
 	$result = ob_get_clean();
 
-	error_log($result);
 	echo $result;
 }
 

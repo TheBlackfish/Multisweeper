@@ -138,6 +138,9 @@ function initMinefieldInterface() {
 //Updates all current minefield information to match the input provided.
 //@param input - The minefield information to update to.
 function updateMinefield(input) {
+
+	debugger;
+
 	//Save all tiles currently altered by the player.
 	var previouslyShoveled = getAllTilesWithValue(10);
 	var previouslyFlagged = getAllTilesWithValue(11);
@@ -156,7 +159,7 @@ function updateMinefield(input) {
 		var xCoord = previouslyShoveled[i][0];
 		var yCoord = previouslyShoveled[i][1];
 
-		if (temp[xCoord][yCoord] == -1 || temp[xCoord][yCoord] == 9) {
+		if (temp[xCoord][yCoord] == -1 || temp[xCoord][yCoord] == 9 || temp[xCoord][yCoord] == 12) {
 			temp[xCoord][yCoord] = 10;
 		}
 	}

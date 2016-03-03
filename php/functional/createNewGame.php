@@ -25,8 +25,7 @@ function createNewGame($width, $height, $numMines) {
 		$deleteTimeStmt->execute();
 		$deleteTimeStmt->close();
 	} else {
-		error_log("Unable to prepare next game time deletion statement, only cosmetic in effects. " . $deleteTimeStmt->errno . ": " . $deleteStmt->error);
-		$deleteStmt->close();
+		error_log("Unable to prepare next game time deletion statement, only cosmetic in effects. " . $conn->errno . ": " . $conn->error);
 	}
 
 	#Creates a double array with all zeroes matching the width and height of the minefield.
