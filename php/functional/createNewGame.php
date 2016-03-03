@@ -21,7 +21,7 @@ function createNewGame($width, $height, $numMines) {
 	}
 
 	#Deletes all variables for upcoming game times.
-	if ($deleteTimeStmt = $conn->prepare("DELETE FROM multisweeper.globalvars WHERE key='nextGameTime'")) {
+	if ($deleteTimeStmt = $conn->prepare("DELETE FROM multisweeper.globalvars WHERE k='nextGameTime'")) {
 		$deleteTimeStmt->execute();
 		$deleteTimeStmt->close();
 	} else {

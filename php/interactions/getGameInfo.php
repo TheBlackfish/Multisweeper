@@ -59,13 +59,15 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
 			$playerQuery->close();
 
-			if ($gameTimeStmt = $conn->prepare("SELECT value FROM multisweeper.globalVars WHERE key='nextGameTime'")) {
+			if ($gameTimeStmt = $conn->prepare("SELECT v FROM multisweeper.globalvars WHERE k='nextGameTime'")) {
 				$gameTimeStmt->execute();
 				$gameTimeStmt->bind_result($time);
 				while ($gameTimeStmt->fetch()) {
 					$gt = $doc->createElement('nextGameTime', "The next game will start at " . $time . ".");
-					$gt = $doc->appendChild($gt);
+					$gt = $newrow->appendChild($gt);
 				}
+			} else {
+				error_log("Unable to prepare next game time statement. " . $conn->errno . ": " . $conn->error);
 			}
 
 		} else {
@@ -80,6 +82,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 	}
 	
 	$r = $doc->saveXML();
+	error_log($r);
 	echo $r;
 }
 ?>
