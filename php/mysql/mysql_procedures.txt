@@ -7,14 +7,17 @@ CREATE TABLE `multisweeper`.`players` (
   PRIMARY KEY (`playerID`),
   UNIQUE INDEX `username_UNIQUE` (`username` ASC));
 
-CREATE TABLE `multisweeper`.`games` (
-  `gameID` INT NOT NULL AUTO_INCREMENT,
-  `map` VARCHAR(2000) NOT NULL,
-  `visibility` VARCHAR(2000) NOT NULL,
-  `height` INT NOT NULL,
-  `width` INT NOT NULL,
-  `status` VARCHAR(45) NOT NULL,
-  PRIMARY KEY (`gameID`));
+CREATE TABLE `games` (
+  `gameID` int(11) NOT NULL AUTO_INCREMENT,
+  `map` varchar(2000) NOT NULL,
+  `visibility` varchar(2000) NOT NULL,
+  `height` int(11) NOT NULL,
+  `width` int(11) NOT NULL,
+  `status` varchar(45) NOT NULL,
+  `tankCountdown` int(4) NOT NULL DEFAULT '3',
+  `tanks` varchar(2000) DEFAULT NULL,
+  PRIMARY KEY (`gameID`)
+)
 
 CREATE TABLE `playerstatus` (
   `status` int(2) NOT NULL DEFAULT '1',

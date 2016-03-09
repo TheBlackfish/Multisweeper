@@ -6,6 +6,7 @@ require_once($_SERVER['DOCUMENT_ROOT'] . '/multisweeper/php/constants/databaseCo
 require_once($_SERVER['DOCUMENT_ROOT'] . '/multisweeper/php/constants/mineGameConstants.php');
 require_once($_SERVER['DOCUMENT_ROOT'] . '/multisweeper/php/functional/taskScheduler.php');
 require_once($_SERVER['DOCUMENT_ROOT'] . '/multisweeper/php/functional/translateData.php');
+require_once($_SERVER['DOCUMENT_ROOT'] . '/multisweeper/php/functional/updateTanks.php');
 
 #resolveAllActions($gameID)
 #Takes all actions from the action queue relating to the game identified by $gameID and applies those actions to the game. All changes are applied to a local copy before uploading to the MySQL database.
@@ -20,14 +21,15 @@ function resolveAllActions($gameID) {
 	}
 
 	#Get map information, both the minefield and the visibility, for this game.
-	if ($stmt = $conn->prepare("SELECT map, visibility, height, width FROM multisweeper.games WHERE gameID=?")) {
+	if ($stmt = $conn->prepare("SELECT map, visibility, height, width, tankCount, tanks FROM multisweeper.games WHERE gameID=?")) {
 		$stmt->bind_param("i", $gameID);
 		$stmt->execute();
-		$stmt->bind_result($m, $v, $h, $w);
+		$stmt->bind_result($m, $v, $h, $w, $tankCount, $t);
 		if ($stmt->fetch()) {
 			$stmt->close();
 			$minefield = translateMinefieldToPHP($m, $h, $w);
 			$visibility = translateMinefieldToPHP($v, $h, $w);
+			$allTanks = translateTanksToPHP($t);
 			
 			#Retrieve all actions in the action queue for this game and throw them into unique objects in an array for easy access during resolution.
 			if ($actionStmt = $conn->prepare("SELECT playerID, actionType, xCoord, yCoord FROM multisweeper.actionqueue WHERE gameID=?")) {
@@ -59,45 +61,77 @@ function resolveAllActions($gameID) {
 							$playerstatus[$cur["playerID"]] = 1;
 						}
 
-						#Action Type 0 is a shovel action.
-						#When shoveling, the current tile is revealed no matter what.
-						#If the tile is a mine, this kills the current player.
-						#If the tile had a value of 0, new actions are added to the queue for revealing all adjacent tiles to the shoveled tile, barring any that are already not flagged or visible. 
-						if ($cur["actionType"] == 0) {
-							$visibility[$cur["x"]][$cur["y"]] = 2;
-							if ($minefield[$cur["x"]][$cur["y"]] === "M") {
-								$playerstatus[$cur["playerID"]] = 0;
-							} else if ($minefield[$cur["x"]][$cur["y"]] == 0) {
-								foreach ($adjacencies as $adj) {
-									$targetX = $cur["x"] + $adj[0];
-									$targetY = $cur["y"] + $adj[1];
-									$shouldAdd = true;
-									if (($targetX < 0) or ($targetX >= $w)) {
-										$shouldAdd = false;
-									}
-									if (($targetY < 0) or ($targetY >= $h)) {
-										$shouldAdd = false;
-									}
-									if ($shouldAdd) {
-										if ($visibility[$targetX][$targetY] == 0) {
-											$newAction = array(
-												"playerID"		=> $cur["playerID"],
-												"actionType"	=> $cur["actionType"],
-												"x"				=> $targetX,
-												"y"				=> $targetY
-											);
-											array_push($actionqueue, $newAction);
+						#Check that current action is legal according to tank placement.
+						$legalMove = true;
+
+						foreach ($allTanks as $tankKey => $tankPos) {
+							if ($cur['x'] === $tankPos[0]) {
+								if ($cur['y'] === $tankPos[1]) {
+									$legalMove = false;
+								}
+							}
+						}
+
+						if ($legalMove) {
+							#Action Type 0 is a shovel action.
+							#When shoveling, the current tile is revealed no matter what.
+							#If the tile is a mine, this kills the current player.
+							#If the tile had a value of 0, new actions are added to the queue for revealing all adjacent tiles to the shoveled tile, barring any that are already not flagged or visible. 
+							if ($cur["actionType"] == 0) {
+								$visibility[$cur["x"]][$cur["y"]] = 2;
+								if ($minefield[$cur["x"]][$cur["y"]] === "M") {
+									$playerstatus[$cur["playerID"]] = 0;
+								} else if ($minefield[$cur["x"]][$cur["y"]] == 0) {
+									foreach ($adjacencies as $adj) {
+										$targetX = $cur["x"] + $adj[0];
+										$targetY = $cur["y"] + $adj[1];
+										$shouldAdd = true;
+										if (($targetX < 0) or ($targetX >= $w)) {
+											$shouldAdd = false;
+										}
+										if (($targetY < 0) or ($targetY >= $h)) {
+											$shouldAdd = false;
+										}
+										if ($shouldAdd) {
+											if ($visibility[$targetX][$targetY] == 0) {
+												$newAction = array(
+													"playerID"		=> $cur["playerID"],
+													"actionType"	=> $cur["actionType"],
+													"x"				=> $targetX,
+													"y"				=> $targetY
+												);
+												array_push($actionqueue, $newAction);
+											}
 										}
 									}
 								}
+							#Action Type 1 is a flag action.
+							#If the tile is unrevealed, a flag is placed there instead.
+							} else if ($cur["actionType"] == 1) {
+								if ($visibility[$cur["x"]][$cur["y"]] == 0) {
+									$visibility[$cur["x"]][$cur["y"]] = 1;
+								}
 							}
-						#Action Type 1 is a flag action.
-						#If the tile is unrevealed, a flag is placed there instead.
-						} else if ($cur["actionType"] == 1) {
-							if ($visibility[$cur["x"]][$cur["y"]] == 0) {
-								$visibility[$cur["x"]][$cur["y"]] = 1;
-							}
+						} else {
+							error_log("Illegal move made by player ID " . $cur["playerID"] . " at coordinates " . $cur["x"] . "," . $cur["y"]);
 						}
+					}
+
+					#All tanks are updated, and any stuff on the map is updated to reflect these changes.
+					$updatedTanks = updateTanks($minefield, $visibility, $allTanks);
+					$allTanks = $updatedTanks['updatedTanks'];
+					$visibility = $updatedTanks['updatedVisibility'];
+
+					#Update the tank count. If it is at 0, add a tank and reset the count to 3.
+					$tankCount = $tankCount - 1;
+					if ($tankCount === 0) {
+						$addedTank = addTank($minefield, $visibility);
+						if ($addedTank['newTankPosition'] !== null) {
+							array_push($allTanks, $addedTank['newTankPosition']);
+						}
+						if ($addedTank['newVisibility'] !== null) {
+							$visibility = $addedTank['newVisibility'];
+						}	
 					}
 
 					#Any players who are in the game but did not have an action in the queue are set to AFK.
@@ -204,12 +238,12 @@ function resolveAllActions($gameID) {
 										}
 
 										#Update map and visibility values for the game by saving to database.
-										if ($updateStmt = $conn->prepare("UPDATE multisweeper.games SET map=?, visibility=?, status=? WHERE gameID=?")) {
+										if ($updateStmt = $conn->prepare("UPDATE multisweeper.games SET map=?, visibility=?, tankCountdown=?, tanks=?, status=? WHERE gameID=?")) {
 											$statusStr = "OPEN";
 											if ($gameCompleted) {
 												$statusStr = "DONE";
 											}
-											$updateStmt->bind_param("sssi", translateMinefieldToMySQL($minefield), translateMinefieldToMySQL($visibility), $statusStr, $gameID);
+											$updateStmt->bind_param("ssissi", translateMinefieldToMySQL($minefield), translateMinefieldToMySQL($visibility), $tankCount, translateTanksToMySQL($allTanks), $statusStr, $gameID);
 											$updated = $updateStmt->execute();
 											if ($updated === false) {
 												error_log("Error occurred during map update. " . $updateStmt->errno . ": " . $updateStmt->error);

@@ -12,17 +12,13 @@ function translateMinefieldToPHP($data, $height, $width) {
 	if (strlen($data) != ($height * $width)) {
 		throw new Exception("translateMinefieldToPHP - Data provided does not match size given!", 1);
 	}
-
 	$chunks = str_split($data, $height);
-
 	$result = array();
-
 	for ($x = 0; $x < count($chunks); $x++) {
 		$currentChunk = $chunks[$x];
 		$tempArray = str_split($currentChunk, 1);
 		array_push($result, $tempArray);
 	}
-
 	return $result;
 }
 
@@ -33,9 +29,7 @@ function translateMinefieldToPHP($data, $height, $width) {
 function translateMinefieldToMySQL($data) {
 	$width = count($data);
 	$height = count($data[0]);
-
 	$result = "";
-
 	for ($x = 0; $x < $width; $x++) {
 		for ($y = 0; $y < $height; $y++) {
 			$result = $result . $data[$x][$y];
@@ -43,5 +37,37 @@ function translateMinefieldToMySQL($data) {
 	}
 	return $result;
 }
+
+function translateTanksToPHP($data) {
+	$tanks = array();
+	if ($data !== null) {
+		$temptanks = str_split($data, "/");
+		foreach ($temptanks as $k => $v) {
+			$tankPos = str_spit($v, ",");
+			if (count($tankPos) !== 2) {
+				error_log("Unexpected number of numbers while translating tanks from MySQL to PHP!");
+			} else {
+				$newTank = array(intval($tankPos[0]), intval($tankPos[1]));
+				array_push($tanks, $newTank);
+			} 
+		}
+	}
+	return $tanks;
+}
+
+function translateTanksToMySQL($data) {
+	$tempStrs = array();
+	foreach ($data as $k => $v) {
+		if (count($v) !== 2) {
+			error_log("Unexpected number of numbers while translating tanks from PHP to MySQL!");
+		} else {
+			array_push($tempStrs, $v[0] . "," . $v[1]);
+		}
+	}
+	if (count($tempStrs) > 0) {
+		return implode("/", $tempStrs);
+	}
+	return "";
+} 
 
 ?>

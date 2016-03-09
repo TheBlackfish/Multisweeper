@@ -54,8 +54,12 @@ function processMinefieldData(response) {
 	var map = preprocessMinefieldMap(allInfo.getElementsByTagName("map")[0].childNodes[0].nodeValue);
 	var h = allInfo.getElementsByTagName("height")[0].childNodes[0].nodeValue;
 	var w = allInfo.getElementsByTagName("width")[0].childNodes[0].nodeValue;
+	var t = new Array();
+	if (allInfo.getElementsByTagName("tanks").length > 0) {
+		t = preprocessTankCoordinates(allInfo.getElementsByTagName("tanks")[0]);
+	}
 	
-	initMinefield(map, h, w);
+	initMinefield(map, h, w, t);
 
 	var players = allInfo.getElementsByTagName("players")[0];
 
@@ -87,6 +91,17 @@ function preprocessMinefieldMap(input) {
  			result[i] = 12;
  		}
 	}
+	return result;
+}
+
+function preprocessTankCoordinates(input) {
+	var result = new Array();
+
+	var tanks = input.getElementsByTagName('tank');
+	for (var i = 0; i < tanks.length; i++) {
+		result.push(tanks[i].childNodes[0].nodeValue.split(","));
+	}
+
 	return result;
 }
 

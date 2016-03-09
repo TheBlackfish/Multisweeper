@@ -61,15 +61,19 @@ var previousHoverCoords = null;
 //The control variable to help with selection logic.
 var selectedTilesPreviousValue = -1;
 
+var tankCoordinates = new Array();
+
 //initMinefield(input, h, w)
 //Initializes the minefield. If the minefield has been initialized already, the current minefield is updated with the new information. Otherwise, various control variables and functions will be called as part of the initialization process.
 //@param input - The string representing the minefield data to show to the player.
 //@param h - The integer that is the height of the minefield.
 //@param w - The integer that is the width of the minefield.
-function initMinefield(input, h, w) {
+//@param t - The array of coordinates that all tanks are currently located at.
+function initMinefield(input, h, w, t) {
 	minefieldInput = input;
 	minefieldHeight = h;
 	minefieldWidth = w;
+	tankCoordinates = t;
 	if (!minefieldInitialized) {
 		initImages();
 	} else {
@@ -91,7 +95,7 @@ function finishInitMinefield() {
 //initImages()
 //Attempts to load all images necessary for the game. When loading, each image will increment the amount of images loaded. Then, if that number is equal to the number of images, the initialization will be finished.
 function initImages() {
-	var allImages = ["mine", "unrevealed", "0", "1", "2", "3", "4", "5", "6", "7", "8", "flag", "shovel", "plantflag", "hover", "otherPlayer"];
+	var allImages = ["mine", "unrevealed", "0", "1", "2", "3", "4", "5", "6", "7", "8", "flag", "shovel", "plantflag", "hover", "otherPlayer", "tank"];
 	for (var i = 0; i < allImages.length; i++) {
 		var img = new Image();
 		img.onload = function() {
@@ -138,9 +142,6 @@ function initMinefieldInterface() {
 //Updates all current minefield information to match the input provided.
 //@param input - The minefield information to update to.
 function updateMinefield(input) {
-
-	debugger;
-
 	//Save all tiles currently altered by the player.
 	var previouslyShoveled = getAllTilesWithValue(10);
 	var previouslyFlagged = getAllTilesWithValue(11);
@@ -185,6 +186,10 @@ function drawMinefield() {
 		for (var j = 0; j < minefield[i].length; j++) {
 			drawTileAtCoordinates(minefield[i][j], i, j);	
 		}
+	}
+
+	for (var i = 0; i < tankCoordinates.length; i++) {
+		drawTankAtCoordinates(tankCoordinates[i][0], tankCoordinates[i][1]);
 	}
 }
 
@@ -243,6 +248,13 @@ function drawTileAtCoordinates(value, x, y) {
 	minefieldContext.drawImage(minefieldImages[val], realX, realY);
 }
 
+function drawTankAtCoordinates(x, y) {
+	var realX = x * minefieldSquareSize;
+	var realY = y * minefieldSquareSize;
+	
+	minefieldContext.drawImage(minefieldImages["tank"], realX, realY);
+}
+
 //getTileCoordinatesFromRealCoordinates(x, y)
 //Takes pixel-perfect coordinates and translates them to tile coordinates.
 //@param x - The x-coordinate to translate.
@@ -281,6 +293,15 @@ function getTileValueString(value) {
 function selectTile(evt) {	
 	var pos = calculateMousePosition(evt.clientX, evt.clientY);
 	var cur = getTileCoordinatesFromRealCoordinates(pos[0], pos[1]);
+
+	for (var i = 0; i < tankCoordinates.length; i++) {
+		var curTank = tankCoordinates[i];
+		if (curTank[0] === cur[0]) {
+			if (curTank[1] === cur[1]) {
+				return;
+			}
+		}
+	}
 	
 	if ((minefield[cur[0]][cur[1]] === -1) || (minefield[cur[0]][cur[1]] === 9)) {
 		var prev = getAllTilesWithValue(10);
@@ -330,6 +351,15 @@ function updateHover(evt) {
 	
 	var pos = calculateMousePosition(evt.clientX, evt.clientY);
 	var cur = getTileCoordinatesFromRealCoordinates(pos[0], pos[1]);
+
+	for (var i = 0; i < tankCoordinates.length; i++) {
+		var curTank = tankCoordinates[i];
+		if (curTank[0] === cur[0]) {
+			if (curTank[1] === cur[1]) {
+				return;
+			}
+		}
+	}
 	
 	if (minefield[cur[0]][cur[1]] == -1) {
 		drawTileAtCoordinates("hover", cur[0], cur[1]);

@@ -18,13 +18,15 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 	$doc->formatOutput = true;
 
 	#Select all information about the game from the game's status columns in the MySQL database and parse it into XML form. 
-	if ($query = $conn->prepare("SELECT map, visibility, height, width, gameID FROM multisweeper.games ORDER BY gameID DESC LIMIT 1")) {
+	if ($query = $conn->prepare("SELECT map, visibility, tanks, height, width, gameID FROM multisweeper.games ORDER BY gameID DESC LIMIT 1")) {
 		$query->execute();
-		$query->bind_result($map, $vis, $height, $width, $gameID);
+		$query->bind_result($map, $vis, $tanks, $height, $width, $gameID);
 		$query->fetch();
 		$query->close();
 
 		$finalMap = translateMinefieldToMySQL(getMinefieldWithVisibility($gameID, translateMinefieldToPHP($map, $height, $width), translateMinefieldToPHP($vis, $height, $width)));
+
+		$finalTanks = translateTanksToPHP($tanks);
 
 		$newrow = $doc->createElement('minefield');
 		$newrow = $doc->appendChild($newrow);
@@ -40,6 +42,18 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
 		$nodeC = $doc->createElement('width', $width);
 		$nodeC = $newrow->appendChild($nodeC);
+
+		if ($tanks !== null) {
+			$nodeD = $doc->createElement('tanks');
+			$nodeD = $newrow->appendChild($nodeD);
+
+			foreach ($finalTanks as $k => $v) {
+				if (count($v) === 2) {
+					$nodeT = $doc->createElement('tank', $v[0] . "," . $v[1]);
+					$nodeT = $nodeD->appendChild($nodeT);
+				}
+			}
+		}
 
 		#Add all players in the game and their statuses to the XML.
 		if ($playerQuery = $conn->prepare("SELECT p.username, s.status FROM multisweeper.players as p INNER JOIN multisweeper.playerstatus as s ON p.playerID=s.playerID WHERE s.gameID=?
@@ -69,7 +83,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 			} else {
 				error_log("Unable to prepare next game time statement. " . $conn->errno . ": " . $conn->error);
 			}
-
 		} else {
 			error_log("Unable to prepare player gathering statement. " . $conn->errno . ": " . $conn->error);
 			$error = $doc->createElement('error', "Internal error occurred, please try again later.");
