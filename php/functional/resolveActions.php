@@ -124,14 +124,15 @@ function resolveAllActions($gameID) {
 
 					#Update the tank count. If it is at 0, add a tank and reset the count to 3.
 					$tankCount = $tankCount - 1;
-					if ($tankCount === 0) {
+					if ($tankCount <= 0) {
 						$addedTank = addTank($minefield, $visibility);
 						if ($addedTank['newTankPosition'] !== null) {
 							array_push($allTanks, $addedTank['newTankPosition']);
 						}
 						if ($addedTank['newVisibility'] !== null) {
 							$visibility = $addedTank['newVisibility'];
-						}	
+						}
+						$tankCount = 3;	
 					}
 
 					#Any players who are in the game but did not have an action in the queue are set to AFK.

@@ -10,7 +10,7 @@ var timerPeriod = 1000;
 
 //timerMax [integer]
 //This is the amount of time (in seconds)
-var timerMax = 10;
+var timerMax = 60;
 
 //timerCurrent [integer]
 //This is the current amount of time (in seconds) until the next time the callback function is called.
