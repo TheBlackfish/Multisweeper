@@ -4,6 +4,9 @@
 	This script file holds all functionality relating to social interactions between players, including the player list and chat area.
 */
 
+//attemptChatSubmit(evt)
+//Attempts to submit chat data to the server for the chat area.
+//@param evt - The event object handling the keyboard input.
 function attemptChatSubmit(evt) {
 	if (evt.key == "Enter") {
 		if (!evt.shiftKey) {

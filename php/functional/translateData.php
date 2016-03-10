@@ -38,12 +38,16 @@ function translateMinefieldToMySQL($data) {
 	return $result;
 }
 
+#translateTanksToPHP($data)
+#Takes a string representing the coordinates of tanks and returns a double array representing the coordinates of tanks.
+#@param $data (String) The string representing the coordinates of tanks in a game.
+#@return The double array containing all of the tank coordinates in a game.
 function translateTanksToPHP($data) {
 	$tanks = array();
 	if ($data !== null) {
-		$temptanks = str_split($data, "/");
+		$temptanks = explode("/", $data);
 		foreach ($temptanks as $k => $v) {
-			$tankPos = str_spit($v, ",");
+			$tankPos = explode(",", $v);
 			if (count($tankPos) !== 2) {
 				error_log("Unexpected number of numbers while translating tanks from MySQL to PHP!");
 			} else {
@@ -55,6 +59,10 @@ function translateTanksToPHP($data) {
 	return $tanks;
 }
 
+#translateMinefieldToMySQL($data)
+#Takes a double array representing tank coordinates and returns a string containing all of those coordinates.
+#@param $data (Double Array) The coordinates of all the tanks in double array form.
+#@return The string representing the tank coordinates.
 function translateTanksToMySQL($data) {
 	$tempStrs = array();
 	foreach ($data as $k => $v) {

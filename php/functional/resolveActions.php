@@ -21,7 +21,7 @@ function resolveAllActions($gameID) {
 	}
 
 	#Get map information, both the minefield and the visibility, for this game.
-	if ($stmt = $conn->prepare("SELECT map, visibility, height, width, tankCount, tanks FROM multisweeper.games WHERE gameID=?")) {
+	if ($stmt = $conn->prepare("SELECT map, visibility, height, width, tankCountdown, tanks FROM multisweeper.games WHERE gameID=?")) {
 		$stmt->bind_param("i", $gameID);
 		$stmt->execute();
 		$stmt->bind_result($m, $v, $h, $w, $tankCount, $t);

@@ -94,6 +94,10 @@ function preprocessMinefieldMap(input) {
 	return result;
 }
 
+//preprocessTankCoordinates(input)
+//Takes the tank coordinates in string form and returns them in array form.
+//@param input - The tank coordinates in string form
+//@return The array of values representing tank coordinates.
 function preprocessTankCoordinates(input) {
 	var result = new Array();
 

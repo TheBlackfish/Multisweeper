@@ -248,6 +248,10 @@ function drawTileAtCoordinates(value, x, y) {
 	minefieldContext.drawImage(minefieldImages[val], realX, realY);
 }
 
+//drawTankAtCoordinates(x, y)
+//Draws a tank at the tile position x, y.
+//@param x - The x-coordinate to draw the tile at.
+//@param y - The y-coordinate to draw the tile at.
 function drawTankAtCoordinates(x, y) {
 	var realX = x * minefieldSquareSize;
 	var realY = y * minefieldSquareSize;

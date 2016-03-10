@@ -2,6 +2,11 @@
 
 require_once($_SERVER['DOCUMENT_ROOT'] . '/multisweeper/php/constants/mineGameConstants.php');
 
+#addTank($map, $visibility)
+#Adds a tank to the leftmost column to the map provided. This addition will never go onto a visible mine or flags, and will try 3 times to not place on an unrevealed mine. If not possible, the tank will be placed on a random row instead, regardless of mines or flags.
+#@param $map (Double Array) The map of the minefield to place a tank on.
+#@param $visibility (Double Array) The visibility map of the minefield to place a tank on.
+#@return An array with two values: 'newTankPosition', which if not null, is a coordinate for a new tank; and 'newVisibility', which if not null, is the updated visibility map
 function addTank($map, $visibility) {
 	$ret = array(
 		'newTankPosition'	=>	null,
@@ -72,7 +77,7 @@ function addTank($map, $visibility) {
 		#Else
 		} else {
 			#Return new tank position
-			ret['newTankPosition'] = array(0, $destination);
+			$ret["newTankPosition"] = array(0, $destination);
 		}			
 	} else {
 		#Choose a random spot and throw the tank there.
@@ -85,13 +90,19 @@ function addTank($map, $visibility) {
 		#Else
 		} else {
 			#Return new tank position
-			ret['newTankPosition'] = array(0, $destination);
+			$ret['newTankPosition'] = array(0, $destination);
 		}		
 	}
 
 	return $ret;
 }
 
+#updateTanks($map, $visibility, $tankPositions)
+#For each tank provided, this function finds the best path for that tank through the map and visibility. Tanks will move forward one column and either one up, straight forward, or one down. When path-finding, tanks will prefer revealed non-mine tiles over unrevealed tiles. Tanks will never move onto flags, revealed mines, or other tanks unless they do not have a choice.
+#@param $map (Double Array) The map for tanks to navigate.
+#@param $visibility (Double Array) The visibility of the minefield for the tanks to navigate.
+#@param $tankPositions (Double Array) The array containing all of the current tank coordinates.
+#@return The double array containing all of the tank coordinates in a game.
 function updateTanks($map, $visibility, $tankPositions) {
 	global $tankMoves;
 
@@ -203,6 +214,11 @@ function updateTanks($map, $visibility, $tankPositions) {
 	return $ret;
 }
 
+#_sortTankPaths($a, $b)
+#A helper function for sorting heuristic objects for tank navigation. Sorts the two objects given by their heuristic value.
+#@param $a (Array) An array that must have the key 'heur' set.
+#@param $b (Array) An array that must have the key 'heur' set.
+#@return The comparison value of the two arrays.
 function _sortTankPaths($a, $b) {
 	$valA = $a['heur'];
 	$valB = $b['heur'];
