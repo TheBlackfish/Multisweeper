@@ -104,13 +104,9 @@ function addTank($map, $visibility) {
 #@param $tankPositions (Double Array) The array containing all of the current tank coordinates.
 #@return The double array containing all of the tank coordinates in a game.
 function updateTanks($map, $visibility, $tankPositions) {
-	$time_start = microtime(true);
-
 	global $tankMoves;
 
-	$minX = 0;
 	$maxX = count($map);
-	$minY = 0;
 	$maxY = count($map[0]);
 
 	$updatedTankPositions = array();
@@ -132,9 +128,10 @@ function updateTanks($map, $visibility, $tankPositions) {
 			$curPathArray = array_shift($allPaths);
 			$curPath = $curPathArray['path'];
 			$curHeur = $curPathArray['heur'];
+			$numAdded = 0;
 
 			#If path goes past edge
-			if ((end($curPath)[0] >= $maxX) || (count($curPath) >= 10)) {
+			if ((end($curPath)[0] >= $maxX) || (count($curPath) >= 6)) {
 				#Update tank position to move along the path chosen
 				reset($curPath);
 				array_push($updatedTankPositions, next($curPath));
@@ -147,16 +144,16 @@ function updateTanks($map, $visibility, $tankPositions) {
 					$nextY = end($curPath)[1] + $move[1];
 
 					$shouldAdd = true;
-					if (($nextX < $minX) || ($nextX >= $maxX)) {
+					if ($nextX < 0) {
 						#Tank somehow goes off map in opposite direction.
 						$shouldAdd = false;
-					} else if (($nextY < $minY) || ($nextY >= $maxY)) {
+					} elseif (($nextY < 0) || ($nextY >= $maxY)) {
 						#Tank goes off map vertically.
 						$shouldAdd = false;
-					} else if ($visibility[$nextX][$nextY] === 1) {
+					} elseif ($visibility[$nextX][$nextY] == 1) {
 						#Tank would move onto a flag.
 						$shouldAdd = false;
-					} else if (($visibility[$nextX][$nextY] === 2) && ($map[$nextX][$nextY] === "M")) {
+					} elseif (($visibility[$nextX][$nextY] == 2) && ($map[$nextX][$nextY] === "M")) {
 						#Tank would move onto a visible mine.
 						$shouldAdd = false;
 					} else {
@@ -168,8 +165,9 @@ function updateTanks($map, $visibility, $tankPositions) {
 						}
 					}
 
-					if ($shouldAdd) {
+					if ($shouldAdd === true) {
 						$copyPath = $curPath;
+						$numAdded = $numAdded + 1;
 
 						#Add square to path
 						$newPath = array($nextX, $nextY);
@@ -178,7 +176,7 @@ function updateTanks($map, $visibility, $tankPositions) {
 						#If the next tile is unrevealed, add to the heuristic value.
 						#Otherwise, keep adding forward movements to the path until the next tile added would be an unrevealed tile.
 						$val = 0;
-						if ($visibility[$nextX][$nextY] === 0) {
+						if ($visibility[$nextX][$nextY] == 0) {
 							$val = 50;
 						} else {
 							$skipX = $nextX + 1;
@@ -200,7 +198,11 @@ function updateTanks($map, $visibility, $tankPositions) {
 						array_push($allPaths, $pathObjToAdd);
 					}
 				}
-				usort($allPaths, "_sortTankPaths");				
+
+				if ($numAdded >= 6) {
+					usort($allPaths, "_sortTankPaths");
+					$numAdded = 0;
+				}
 			}				
 		}
 
@@ -227,12 +229,6 @@ function updateTanks($map, $visibility, $tankPositions) {
 		'updatedVisibility' => $visibility,
 		'updatedTanks'		=> $updatedTankPositions
 	);	
-
-	$time_end = microtime(true);
-
-	$exe_time = ($time_end - $time_start);
-
-	error_log("Time to update tanks- " . $exe_time);
 
 	return $ret;
 }
