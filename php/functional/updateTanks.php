@@ -115,6 +115,7 @@ function updateTanks($map, $visibility, $tankPositions) {
 	foreach ($tankPositions as $key => $tank) {
 		$pathFound = false;
 		$allPaths = array();
+		shuffle($tankMoves);
 
 		#Add the initial space they are in to the array of paths.
 		$path = array(
