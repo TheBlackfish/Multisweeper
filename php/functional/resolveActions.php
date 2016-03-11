@@ -140,8 +140,6 @@ function resolveAllActions($gameID) {
 											}
 										}
 									}
-								} else {
-									error_log("Rejecting tile at " . $cur["x"] . "," . $cur["y"] . " for being a duplicate.");
 								}
 							#Action Type 1 is a flag action.
 							#If the tile is unrevealed, a flag is placed there instead.

@@ -358,12 +358,21 @@ function updateHover(evt) {
 
 	for (var i = 0; i < tankCoordinates.length; i++) {
 		var curTank = tankCoordinates[i];
+
+		if (previousHoverCoords !== null) {
+			if (curTank[0] === previousHoverCoords[0]) {
+				if (curTank[1] === previousHoverCoords[1]) {
+					drawTankAtCoordinates(previousHoverCoords[0], previousHoverCoords[1]);
+				}
+			}
+		}
+
 		if (curTank[0] === cur[0]) {
 			if (curTank[1] === cur[1]) {
 				return;
 			}
 		}
-	}
+	} 
 	
 	if (minefield[cur[0]][cur[1]] == -1) {
 		drawTileAtCoordinates("hover", cur[0], cur[1]);

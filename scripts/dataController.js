@@ -103,7 +103,11 @@ function preprocessTankCoordinates(input) {
 
 	var tanks = input.getElementsByTagName('tank');
 	for (var i = 0; i < tanks.length; i++) {
-		result.push(tanks[i].childNodes[0].nodeValue.split(","));
+		var tempTank = tanks[i].childNodes[0].nodeValue.split(",");
+		for (var j = 0; j < tempTank.length; j++) {
+			tempTank[j] = parseInt(tempTank[j]);
+		}
+		result.push(tempTank);
 	}
 
 	return result;
