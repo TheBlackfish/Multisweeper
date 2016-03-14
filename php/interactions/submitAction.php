@@ -137,6 +137,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 	}
 
 	$r = $result->saveXML();
+	error_log($r);
 	echo $r;
 
 	if ($shouldResolve) {

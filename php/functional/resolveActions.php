@@ -261,7 +261,7 @@ function resolveAllActions($gameID) {
 												$gameCompleted = true;
 												for ($x = 0; ($x < count($visibility)) && $gameCompleted; $x++) {
 													for ($y = 0; ($y < count($visibility[$x])) && $gameCompleted; $y++) {
-														if ($visibility[$x][$y] == 0) {
+														if ($visibility[$x][$y] === 0) {
 															if ($minefield[$x][$y] === "M") {
 																$gameCompleted = false;
 															}

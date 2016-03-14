@@ -85,8 +85,14 @@ function addTank($map, $visibility) {
 
 		#If chosen spot is mine
 		if ($map[0][$destination] === "M") {
-			#Return visibility change
-			$visibility[0][$destination] = 2;
+			#Roll odds. 67% chance to reveal mine.
+			if (rand(0,2) !== 0) {
+				#Reveal tile and do not place tank
+				$visibility[0][$destination] = 2;
+			} else {
+				#Return new tank position
+				$ret['newTankPosition'] = array(0, $destination);
+			}
 		#Else
 		} else {
 			#Return new tank position
@@ -135,7 +141,11 @@ function updateTanks($map, $visibility, $tankPositions) {
 			if ((end($curPath)[0] >= $maxX) || (count($curPath) >= 6)) {
 				#Update tank position to move along the path chosen
 				reset($curPath);
-				array_push($updatedTankPositions, next($curPath));
+				$toPush = next($curPath);
+				#Only add to updated tank positions if the path is within the grid.
+				if ($toPush[0] < $maxX) {
+					array_push($updatedTankPositions, $toPush);
+				}
 				$pathFound = true;
 			} else {
 				#For each vertical variation
@@ -148,6 +158,8 @@ function updateTanks($map, $visibility, $tankPositions) {
 					if ($nextX < 0) {
 						#Tank somehow goes off map in opposite direction.
 						$shouldAdd = false;
+					} elseif ($nextX >= $maxX) {
+						$shouldAdd = true;
 					} elseif (($nextY < 0) || ($nextY >= $maxY)) {
 						#Tank goes off map vertically.
 						$shouldAdd = false;
@@ -174,20 +186,26 @@ function updateTanks($map, $visibility, $tankPositions) {
 						$newPath = array($nextX, $nextY);
 						array_push($copyPath, $newPath);
 
-						#If the next tile is unrevealed, add to the heuristic value.
-						#Otherwise, keep adding forward movements to the path until the next tile added would be an unrevealed tile.
 						$val = 0;
-						if ($visibility[$nextX][$nextY] == 0) {
-							$val = 50;
-						} else {
-							$skipX = $nextX + 1;
-							if ($skipX < $maxX) {
-								while (($skipX < $maxX) && ($visibility[$skipX][$nextY] === 2) && ($map[$skipX][$nextY] !== "M")) {
-									$skipAhead = array($skipX, $nextY);
-									array_push($copyPath, $skipAhead);
-									$skipX = $skipX + 1;
+						#If the tile is on the grid x-wise
+						if (($nextX < $maxX) && ($nextY < $maxY)) {
+							#If the next tile is unrevealed, add to the heuristic value.
+							#Otherwise, keep adding forward movements to the path until the next tile added would be an unrevealed tile.
+							if ($visibility[$nextX][$nextY] == 0) {
+								$val = 50;
+							} else {
+								$skipX = $nextX + 1;
+								if ($skipX < $maxX) {
+									while (($skipX < $maxX) && ($visibility[$skipX][$nextY] === 2) && ($map[$skipX][$nextY] !== "M")) {
+										$skipAhead = array($skipX, $nextY);
+										array_push($copyPath, $skipAhead);
+										$skipX = $skipX + 1;
+									}
 								}
 							}
+						} else {
+							#Decrease the heuristic value, as we have a path that goes off the grid.
+							$val = -5;
 						}
 						
 						$pathObjToAdd = array(
@@ -217,11 +235,28 @@ function updateTanks($map, $visibility, $tankPositions) {
 
 	#For each new position
 	foreach ($updatedTankPositions as $key => $value) {
-		#Check value of tile
-		#If mine
-		if ($map[$value[0]][$value[1]] === "M") {
-			#Reveal tile and remove tank
-			$visibility[$value[0]][$value[1]] = 2;
+		#Validate that the updated position is valid.
+		$validated = false;
+		if (count($value) === 2) {
+			if (($value[0] >= 0) && ($value[0] < $maxX)) {
+				if (($value[1] >= 0) && ($value[1] < $maxY)) {
+					$validated = true;
+				}
+			}
+		}
+
+		if ($validated) {
+			#Check value of tile
+			#If mine
+			if ($map[$value[0]][$value[1]] === "M") {
+				#Roll odds. 67% chance to reveal mine.
+				if (rand(0,2) !== 0) {
+					#Reveal tile and remove tank
+					$visibility[$value[0]][$value[1]] = 2;
+					unset($updatedTankPositions[$key]);
+				}
+			}
+		} else {
 			unset($updatedTankPositions[$key]);
 		}
 	}
