@@ -12,7 +12,7 @@ function createResolveActionsTask($gameID) {
 	global $scriptsDirectory, $phpFilepath, $phpSchedulerLogPath;
 
 	$taskDetails = $phpFilepath . " -f " . $scriptsDirectory . "resolveActionsScript.php " . $gameID;
-	$execTime = date("H:i", time() + 15 * 60);
+	$execTime = date("H:i", time() + 10 * 60);
 	exec("schtasks.exe /CREATE /RU SYSTEM /SC ONCE /TN \"MultisweeperResolveActions-{$gameID}\" /TR \"{$taskDetails}\" /ST {$execTime} /F > \"{$phpSchedulerLogPath}\"");
 }
 
@@ -29,7 +29,7 @@ function createGameCreationTask() {
 	global $scriptsDirectory, $phpFilepath, $phpSchedulerLogPath, $sqlhost,	$sqlusername, $sqlpassword;
 
 	$taskDetails = $phpFilepath . " -f " . $scriptsDirectory . "gameCreationScript.php";
-	$exactTime = time() + 30 * 60;
+	$exactTime = time() + 10 * 60;
 	$execTime = date("H:i", $exactTime);
 	exec("schtasks.exe /CREATE /RU SYSTEM /SC ONCE /TN \"MultisweeperCreateGame\" /TR \"{$taskDetails}\" /ST {$execTime} /F > \"{$phpSchedulerLogPath}\"");
 
