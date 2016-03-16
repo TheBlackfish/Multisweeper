@@ -19,9 +19,9 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 	$doc->formatOutput = true;
 
 	#Select all information about the game from the game's status columns in the MySQL database and parse it into XML form. 
-	if ($query = $conn->prepare("SELECT map, visibility, tanks, height, width, gameID FROM multisweeper.games ORDER BY gameID DESC LIMIT 1")) {
+	if ($query = $conn->prepare("SELECT map, visibility, tanks, height, width, gameID, status FROM multisweeper.games ORDER BY gameID DESC LIMIT 1")) {
 		$query->execute();
-		$query->bind_result($map, $vis, $tanks, $height, $width, $gameID);
+		$query->bind_result($map, $vis, $tanks, $height, $width, $gameID, $status);
 		$query->fetch();
 		$query->close();
 
@@ -44,14 +44,17 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 		$nodeC = $doc->createElement('width', $width);
 		$nodeC = $newrow->appendChild($nodeC);
 
+		$nodeD = $doc->createElement('status', $status);
+		$nodeD = $newrow->appendChild($nodeD);
+
 		if ($tanks !== null) {
-			$nodeD = $doc->createElement('tanks');
-			$nodeD = $newrow->appendChild($nodeD);
+			$nodeE = $doc->createElement('tanks');
+			$nodeE = $newrow->appendChild($nodeE);
 
 			foreach ($finalTanks as $k => $v) {
 				if (count($v) === 2) {
 					$nodeT = $doc->createElement('tank', $v[0] . "," . $v[1]);
-					$nodeT = $nodeD->appendChild($nodeT);
+					$nodeT = $nodeE->appendChild($nodeT);
 				}
 			}
 		}
@@ -96,6 +99,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 	}
 	
 	$r = $doc->saveXML();
+	error_log($r);
 	echo $r;
 }
 ?>

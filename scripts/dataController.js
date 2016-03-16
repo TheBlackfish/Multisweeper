@@ -65,6 +65,12 @@ function processMinefieldData(response) {
 
 	populatePlayerListTable(players);
 
+	var statusMsg = allInfo.getElementsByTagName("status")[0];
+
+	if (statusMsg !== "OPEN") {
+		displayMinefieldOverlayMessage(statusMsg);
+	}
+
 	var gameTime = allInfo.getElementsByTagName("nextGameTime");
 
 	if (gameTime.length > 0) {
