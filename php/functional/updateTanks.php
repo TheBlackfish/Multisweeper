@@ -121,7 +121,7 @@ function updateTanks($map, $visibility, $tankPositions) {
 	foreach ($tankPositions as $key => $tank) {
 		$pathFound = false;
 		$allPaths = array();
-		shuffle($tankMoves);
+		$tempTankMoves = $tankMoves[rand(0,1)];
 
 		#Add the initial space they are in to the array of paths.
 		$path = array(
@@ -149,7 +149,7 @@ function updateTanks($map, $visibility, $tankPositions) {
 				$pathFound = true;
 			} else {
 				#For each vertical variation
-				foreach ($tankMoves as $key => $move) {
+				foreach ($tempTankMoves as $key => $move) {
 					#If next movement with vertical variation is a legal move
 					$nextX = end($curPath)[0] + $move[0];
 					$nextY = end($curPath)[1] + $move[1];
