@@ -362,6 +362,23 @@ function selectTile(evt) {
 			
 			minefield[cur[0]][cur[1]] = 11;
 			drawTileAtCoordinates("plantflag", cur[0], cur[1]);
+		} else if (minefield[cur[0]][cur[1]] === 11 && selectedTilesPreviousValue !== 9) {
+			var prev = getAllTilesWithValue(10);
+			for (var i = 0; i < prev.length; i++) {
+				var toChange = prev[i];
+				minefield[toChange[0]][toChange[1]] = selectedTilesPreviousValue;
+				drawTileAtCoordinates(-1, toChange[0], toChange[1]);
+			}
+
+			prev = getAllTilesWithValue(11);
+			for (var i = 0; i < prev.length; i++) {
+				var toChange = prev[i];
+				minefield[toChange[0]][toChange[1]] = selectedTilesPreviousValue;
+				drawTileAtCoordinates(-1, toChange[0], toChange[1]);
+			}
+			
+			minefield[cur[0]][cur[1]] = 10;
+			drawTileAtCoordinates("shovel", cur[0], cur[1]);
 		}
 	}
 }
