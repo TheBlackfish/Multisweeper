@@ -9,7 +9,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 	
 	$conn = new mysqli($sqlhost, $sqlusername, $sqlpassword);
 	if ($conn->connect_error) {
-		die("Connection failed: " . $conn->connect_error);
+		die("getGameChat.php - Connection failed: " . $conn->connect_error);
 	}
 	
 	$doc = new DOMDocument('1.0');
@@ -33,7 +33,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 			$chatMsg = $chat->appendChild($chatMsg);
 		}
 	} else {
-		error_log("Unable to prepare chat gathering statement. " . $conn->errno . ": " . $conn->error);
+		error_log("getGameChat.php - Unable to prepare chat gathering statement. " . $conn->errno . ": " . $conn->error);
 		$error = $doc->createElement('error', "Internal error occurred, please try again later.");
 		$error = $doc->appendChild($error);
 	}

@@ -16,13 +16,13 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
 	#Check if registration credentials are valid.
 	if (($xml->username == null) or ($xml->password == null)) {
-		error_log("Sign up rejected");
+		error_log("signUpForNextGame.php - Sign up rejected");
 		$error = $result->createElement('error', "Please fill out both fields and try again.");
 		$error = $resultBase->appendChild($error);
 	} else {
 		$conn = new mysqli($sqlhost, $sqlusername, $sqlpassword);
 		if ($conn->connect_error) {
-			die("Connection failed: " . $conn->connect_error);
+			die("signUpForNextGame.php - Connection failed: " . $conn->connect_error);
 		}
 
 		#Get the internal ID for the player being registered.
@@ -61,13 +61,13 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 							$error = $result->createElement('success', "You are signed up for the next game. Please wait for deployment.");
 							$error = $resultBase->appendChild($error);
 						} else {
-							error_log("Unable to prepare insert statement.");
+							error_log("signUpForNextGame.php - Unable to prepare insert statement.");
 							$error = $result->createElement('error', "An internal error has occurred. Please try again later.");
 							$error = $resultBase->appendChild($error);
 						}
 					}
 				} else {
-					error_log("Unable to prepare check statement.");
+					error_log("signUpForNextGame.php - Unable to prepare check statement.");
 					$error = $result->createElement('error', "An internal error has occurred. Please try again later.");
 					$error = $resultBase->appendChild($error);
 				}
@@ -76,7 +76,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 				$error = $resultBase->appendChild($error);
 			}
 		} else {
-			error_log("Unable to prepare validation statement.");
+			error_log("signUpForNextGame.php - Unable to prepare validation statement.");
 			$error = $result->createElement('error', "An internal error has occurred. Please try again later.");
 			$error = $resultBase->appendChild($error);
 		}

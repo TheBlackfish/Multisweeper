@@ -17,7 +17,7 @@ function createNewGame($width, $height, $numMines) {
 	#Initialize the connection to the MySQL database.
 	$conn = new mysqli($sqlhost, $sqlusername, $sqlpassword);
 	if ($conn->connect_error) {
-		die("Connection failed: " . $conn->connect_error);
+		die("createNewGame.php - Connection failed: " . $conn->connect_error);
 	}
 
 	#Deletes all variables for upcoming game times.
@@ -25,7 +25,7 @@ function createNewGame($width, $height, $numMines) {
 		$deleteTimeStmt->execute();
 		$deleteTimeStmt->close();
 	} else {
-		error_log("Unable to prepare next game time deletion statement, only cosmetic in effects. " . $conn->errno . ": " . $conn->error);
+		error_log("createNewGame.php - Unable to prepare next game time deletion statement, only cosmetic in effects. " . $conn->errno . ": " . $conn->error);
 	}
 
 	#Creates a double array with all zeroes matching the width and height of the minefield.
@@ -96,28 +96,28 @@ function createNewGame($width, $height, $numMines) {
 									$deleteStmt->close();
 
 									#Successfully created the new game.
-									error_log("New game successfully created, ID=" . $gameID);
+									error_log("createNewGame.php - New game successfully created, ID=" . $gameID);
 								} else {
-									error_log("Unable to prepare delete statement. " . $conn->errno . ": " . $conn->error);
+									error_log("createNewGame.php - Unable to prepare delete statement. " . $conn->errno . ": " . $conn->error);
 								}
 							} else {
-								error_log("Unable to prepare sign-up finalize statement. " . $conn->errno . ": " . $conn->error);
+								error_log("createNewGame.php - Unable to prepare sign-up finalize statement. " . $conn->errno . ": " . $conn->error);
 							}
 						}
 					} else {
-						error_log("Unable to prepare sign-up statement. " . $conn->errno . ": " . $conn->error);
+						error_log("createNewGame.php - Unable to prepare sign-up statement. " . $conn->errno . ": " . $conn->error);
 					}
 				} else {
-					error_log("Unexpected results from ID statement. " . $idStmt->errno . ": " . $idStmt->error);
+					error_log("createNewGame.php - Unexpected results from ID statement. " . $idStmt->errno . ": " . $idStmt->error);
 				}
 			} else {
-				error_log("Unable to prepare ID statement. " . $conn->errno . ": " . $conn->error);
+				error_log("createNewGame.php - Unable to prepare ID statement. " . $conn->errno . ": " . $conn->error);
 			}
 		} else {
-			error_log("Unable to insert game during creation. " . $insertStmt->errno . ": " . $insertStmt->error);
+			error_log("createNewGame.php - Unable to insert game during creation. " . $insertStmt->errno . ": " . $insertStmt->error);
 		}
 	} else {
-		error_log("Unable to prepare game insertation statement. " . $conn->errno . ": " . $conn->error);
+		error_log("createNewGame.php - Unable to prepare game insertation statement. " . $conn->errno . ": " . $conn->error);
 	}
 }
 

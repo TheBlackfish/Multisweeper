@@ -12,7 +12,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 	
 	$conn = new mysqli($sqlhost, $sqlusername, $sqlpassword);
 	if ($conn->connect_error) {
-		die("Connection failed: " . $conn->connect_error);
+		die("getGameInfo.php - Connection failed: " . $conn->connect_error);
 	}
 	
 	$doc = new DOMDocument('1.0');
@@ -85,15 +85,15 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 					$gt = $newrow->appendChild($gt);
 				}
 			} else {
-				error_log("Unable to prepare next game time statement. " . $conn->errno . ": " . $conn->error);
+				error_log("getGameInfo.php - Unable to prepare next game time statement. " . $conn->errno . ": " . $conn->error);
 			}
 		} else {
-			error_log("Unable to prepare player gathering statement. " . $conn->errno . ": " . $conn->error);
+			error_log("getGameInfo.php - Unable to prepare player gathering statement. " . $conn->errno . ": " . $conn->error);
 			$error = $doc->createElement('error', "Internal error occurred, please try again later.");
 			$error = $doc->appendChild($error);
 		}
 	} else {
-		error_log("Unable to prepare map gathering statement. " . $conn->errno . ": " . $conn->error);
+		error_log("getGameInfo.php - Unable to prepare map gathering statement. " . $conn->errno . ": " . $conn->error);
 		$error = $doc->createElement('error', "Internal error occurred, please try again later.");
 		$error = $doc->appendChild($error);
 	}

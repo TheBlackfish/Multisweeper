@@ -14,15 +14,11 @@ require_once($_SERVER['DOCUMENT_ROOT'] . '/multisweeper/php/functional/updateTan
 function resolveAllActions($gameID) {
 	global $sqlhost, $sqlusername, $sqlpassword, $adjacencies;
 
-	error_log("RA1 - Initializing...");
-
 	#Initialize the connection to the MySQL database.
 	$conn = new mysqli($sqlhost, $sqlusername, $sqlpassword);
 	if ($conn->connect_error) {
-		die("Connection failed: " . $conn->connect_error);
+		die("resolveActions.php - Connection failed: " . $conn->connect_error);
 	}
-
-	error_log("RA2 - Recieving intel from HQ...");
 
 	#Get map information, both the minefield and the visibility, for this game.
 	if ($stmt = $conn->prepare("SELECT map, visibility, height, width, tankCountdown, tanks FROM multisweeper.games WHERE gameID=?")) {
@@ -31,15 +27,9 @@ function resolveAllActions($gameID) {
 		$stmt->bind_result($m, $v, $h, $w, $tankCount, $t);
 		if ($stmt->fetch()) {
 			$stmt->close();
-
-			error_log("RA2 - Decoding game data...");
-
 			$minefield = translateMinefieldToPHP($m, $h, $w);
 			$visibility = translateMinefieldToPHP($v, $h, $w);
-			$allTanks = translateTanksToPHP($t);
-
-			error_log("RA3 - Recieving orders from HQ...");
-			
+			$allTanks = translateTanksToPHP($t);			
 			#Retrieve all actions in the action queue for this game and throw them into unique objects in an array for easy access during resolution.
 			if ($actionStmt = $conn->prepare("SELECT playerID, actionType, xCoord, yCoord FROM multisweeper.actionqueue WHERE gameID=?")) {
 				$actionqueue = array();
@@ -60,8 +50,6 @@ function resolveAllActions($gameID) {
 				}
 
 				$actionStmt->close();
-
-				error_log("RA4 - Carrying out orders...");
 
 				if (count($actionqueue) > 0) {
 					$shoveledTiles = array();
@@ -149,18 +137,14 @@ function resolveAllActions($gameID) {
 								}
 							}
 						} else {
-							error_log("Illegal move made by player ID " . $cur["playerID"] . " at coordinates " . $cur["x"] . "," . $cur["y"]);
+							error_log("resolveActions.php - Illegal move made by player ID " . $cur["playerID"] . " at coordinates " . $cur["x"] . "," . $cur["y"]);
 						}
 					}
-
-					error_log("RA5 - Heavy armor moving forward...");
 
 					#All tanks are updated, and any stuff on the map is updated to reflect these changes.
 					$updatedTanks = updateTanks($minefield, $visibility, $allTanks);
 					$allTanks = $updatedTanks['updatedTanks'];
 					$visibility = $updatedTanks['updatedVisibility'];
-
-					error_log("RA6 - Calling for additional reinforcements...");
 
 					#Update the tank count. If it is at 0, add a tank and reset the count to 3.
 					$tankCount = $tankCount - 1;
@@ -174,8 +158,6 @@ function resolveAllActions($gameID) {
 						}
 						$tankCount = 3;	
 					}
-
-					error_log("RA7 - Court-marshalling lazy soldiers...");
 
 					#Any players who are in the game but did not have an action in the queue are set to AFK.
 					#Any who were previously AFK have their internal 'AFK clock' incremented.
@@ -202,7 +184,7 @@ function resolveAllActions($gameID) {
 							}
 							$afkUpdateStmt->close();
 						} else {
-							error_log("Unable to prepare AFK add statement.");
+							error_log("resolveActions.php - Unable to prepare AFK add statement.");
 						}
 
 						if ($afkAddStmt = $conn->prepare("UPDATE multisweeper.playerstatus SET status=2 WHERE gameID=? AND playerID=?")) {
@@ -212,17 +194,15 @@ function resolveAllActions($gameID) {
 							}
 							$afkAddStmt->close();
 						} else {
-							error_log("Unable to prepare AFK add statement.");
+							error_log("resolveActions.php - Unable to prepare AFK add statement.");
 						}
 
 						if ($afkKillStmt = $conn->prepare("UPDATE multisweeper.playerstatus SET status=0 WHERE status=2 AND afkCount>=5")) {
 							$afkKillStmt->execute();
 						} else {
-							error_log("Unable to prepare AFK kill statement.");
+							error_log("resolveActions.php - Unable to prepare AFK kill statement.");
 						}
 					}
-
-					error_log("RA8 - Awarding loyal soldiers...");
 
 					#All players who did submit actions are updated appropriately.
 					foreach ($playerstatus as $id => $isAlive) {
@@ -230,24 +210,20 @@ function resolveAllActions($gameID) {
 							$updatePlayer->bind_param("iii", $isAlive, $gameID, $id);
 							$updated = $updatePlayer->execute();
 							if ($updated === false) {
-								error_log("Error occurred during player status update. " . $updatePlayer->errno . ": " . $updatePlayer->error);
+								error_log("resolveActions.php - Error occurred during player status update. " . $updatePlayer->errno . ": " . $updatePlayer->error);
 								$updatePlayer->close();
 							} else {
 								$updatePlayer->close();
-
-								error_log("RA9 - Destroying old documents...");
 
 								#Empty the action queue of actions relating to this specific game.
 								if ($deleteStmt = $conn->prepare("DELETE FROM multisweeper.actionqueue WHERE gameID=?")) {
 									$deleteStmt->bind_param("i", $gameID);
 									$updated = $deleteStmt->execute();
 									if ($updated === false) {
-										error_log("Error occurred during action queue clean up. " . $deleteStmt->errno . ": " . $deleteStmt->error);
+										error_log("resolveActions.php - Error occurred during action queue clean up. " . $deleteStmt->errno . ": " . $deleteStmt->error);
 										$deleteStmt->close();
 									} else {
 										$deleteStmt->close();
-
-										error_log("RA10 - Checking for mission completion...");
 
 										#Try to determine if the game is complete or not.
 										$gameCompleted = false;
@@ -271,8 +247,6 @@ function resolveAllActions($gameID) {
 											} else {
 												$gameCompleted = true;
 											}
-										} else {
-											error_log("Unable to prepare living player status statement after resolving action queue. " . $conn->errno . ": " . $conn->error);
 										}
 
 										#If game is done, all unrevealed tiles become visible instead.
@@ -285,9 +259,7 @@ function resolveAllActions($gameID) {
 												}
 											}
 										}
-
-										error_log("RA11 - Sending new battlefield data to HQ...");
-
+										
 										#Update map and visibility values for the game by saving to database.
 										if ($updateStmt = $conn->prepare("UPDATE multisweeper.games SET map=?, visibility=?, tankCountdown=?, tanks=?, status=? WHERE gameID=?")) {
 											$statusStr = "OPEN";
@@ -297,7 +269,7 @@ function resolveAllActions($gameID) {
 											$updateStmt->bind_param("ssissi", translateMinefieldToMySQL($minefield), translateMinefieldToMySQL($visibility), $tankCount, translateTanksToMySQL($allTanks), $statusStr, $gameID);
 											$updated = $updateStmt->execute();
 											if ($updated === false) {
-												error_log("Error occurred during map update. " . $updateStmt->errno . ": " . $updateStmt->error);
+												error_log("resolveActions.php - Error occurred during map update. " . $updateStmt->errno . ": " . $updateStmt->error);
 											} 
 											$updateStmt->close();
 
@@ -305,28 +277,28 @@ function resolveAllActions($gameID) {
 												createGameCreationTask();
 											}
 										} else {
-											error_log("Unable to prepare map update after resolving action queue. " . $conn->errno . ": " . $conn->error);
+											error_log("resolveActions.php - Unable to prepare map update after resolving action queue. " . $conn->errno . ": " . $conn->error);
 										}
 									}
 								} else {
-									error_log("Unable to prepare delete statement. " . $conn->errno . ": " . $conn->error);
+									error_log("resolveActions.php - Unable to prepare delete statement. " . $conn->errno . ": " . $conn->error);
 								}
 							}
 						} else {
-							error_log("Unable to prepare player status update after resolving action queue. " . $conn->errno . ": " . $conn->error);
+							error_log("resolveActions.php - Unable to prepare player status update after resolving action queue. " . $conn->errno . ": " . $conn->error);
 						}
 					}
 				} else {
-					error_log("Found 0 actions in queue! Most likely something went terribly wrong!");
+					error_log("resolveActions.php - Found 0 actions in queue! Most likely something went terribly wrong!");
 				}
 			} else {
-				error_log("Unable to prepare action statement for resolving action queue. " . $conn->errno . ": " . $conn->error);
+				error_log("resolveActions.php - Unable to prepare action statement for resolving action queue. " . $conn->errno . ": " . $conn->error);
 			}
 		} else {
-			error_log("Unable to resolve map statement for resolving action queue. " . $stmt->errno . ": " . $stmt->error);
+			error_log("resolveActions.php - Unable to resolve map statement for resolving action queue. " . $stmt->errno . ": " . $stmt->error);
 		}
 	} else {
-		error_log("Unable to prepare map statement for resolving action queue. " . $conn->errno . ": " . $conn->error);
+		error_log("resolveActions.php - Unable to prepare map statement for resolving action queue. " . $conn->errno . ": " . $conn->error);
 	}
 }
 

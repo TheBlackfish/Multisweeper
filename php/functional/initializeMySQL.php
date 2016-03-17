@@ -2,6 +2,8 @@
 
 require_once($_SERVER['DOCUMENT_ROOT'] . '/multisweeper/php/constants/databaseConstants.php');
 
+#checkMySQL()
+#Checks the global variables table to see if MySQL has been fully initialized. If not, will call initMySQL().
 function checkMySQL() {
 	$conn = new mysqli($sqlhost, $sqlusername, $sqlpassword);
 	if ($conn->connect_error) {
@@ -19,10 +21,12 @@ function checkMySQL() {
 	}
 }
 
+#initMySQL()
+#Calls various MySQL queries to create all of the necessary tables. A global variable will be set if the creation encounters no errors.
 function initMySQL() {
 	$conn = new mysqli($sqlhost, $sqlusername, $sqlpassword);
 	if ($conn->connect_error) {
-		die("Connection failed: " . $conn->connect_error);
+		die("initMySQL.php - Connection failed: " . $conn->connect_error);
 	}
 
 	$actionTableStatement = "CREATE TABLE IF NOT EXISTS multisweeper.actionqueue (
@@ -93,17 +97,17 @@ function initMySQL() {
 	if ($query = $conn->prepare($playerTableStatement)) {
 		if ($query->execute()) {
 			$playerTableCreated = true;
-			error_log("initMySQL - Player table successfully created.");
+			error_log("initMySQL.php - Player table successfully created.");
 		} else {
 			$noErrors = false;
-			error_log("initMySQL - Player table not created. " . $query->errno . ": " . $query->error);
+			error_log("initMySQL.php - Player table not created. " . $query->errno . ": " . $query->error);
 			error_log("Please run the following MySQL query manually:");
 			error_log($playerTableStatement);
 		}
 		$query->close();
 	} else {
 		$noErrors = false;
-		error_log("initMySQL - Failed to prepare player table statement. " . $conn->errno . ": " . $conn->error);
+		error_log("initMySQL.php - Failed to prepare player table statement. " . $conn->errno . ": " . $conn->error);
 		error_log("Please run the following MySQL query manually:");
 		error_log($playerTableStatement);
 	}
@@ -111,34 +115,34 @@ function initMySQL() {
 	if ($query = $conn->prepare($gameTableStatement)) {
 		if ($query->execute()) {
 			$gameTableCreated = true;
-			error_log("initMySQL - Game table successfully created.");
+			error_log("initMySQL.php - Game table successfully created.");
 		} else {
 			$noErrors = false;
-			error_log("initMySQL - Game table not created. " . $query->errno . ": " . $query->error);
+			error_log("initMySQL.php - Game table not created. " . $query->errno . ": " . $query->error);
 			error_log("Please run the following MySQL query manually:");
 			error_log($gameTableStatement);
 		}
 		$query->close();
 	} else {
 		$noErrors = false;
-		error_log("initMySQL - Failed to prepare game table statement. " . $conn->errno . ": " . $conn->error);
+		error_log("initMySQL.php - Failed to prepare game table statement. " . $conn->errno . ": " . $conn->error);
 		error_log("Please run the following MySQL query manually:");
 		error_log($gameTableStatement);
 	}
 
 	if ($query = $conn->prepare($globalTableStatement)) {
 		if ($query->execute()) {
-			error_log("initMySQL - Global variables table successfully created.");
+			error_log("initMySQL.php - Global variables table successfully created.");
 		} else {
 			$noErrors = false;
-			error_log("initMySQL - Global variables table not created. " . $query->errno . ": " . $query->error);
+			error_log("initMySQL.php - Global variables table not created. " . $query->errno . ": " . $query->error);
 			error_log("Please run the following MySQL query manually:");
 			error_log($globalTableStatement);
 		}
 		$query->close();
 	} else {
 		$noErrors = false;
-		error_log("initMySQL - Failed to prepare global variables table statement. " . $conn->errno . ": " . $conn->error);
+		error_log("initMySQL.php - Failed to prepare global variables table statement. " . $conn->errno . ": " . $conn->error);
 		error_log("Please run the following MySQL query manually:");
 		error_log($globalTableStatement);
 	}
@@ -146,40 +150,40 @@ function initMySQL() {
 	if ($playerTableCreated) {
 		if ($query = $conn->prepare($signupTableStatement)) {
 			if ($query->execute()) {
-				error_log("initMySQL - Upcoming sign-up table successfully created.");
+				error_log("initMySQL.php - Upcoming sign-up table successfully created.");
 			} else {
 				$noErrors = false;
-				error_log("initMySQL - Upcoming sign-up table not created. " . $query->errno . ": " . $query->error);
+				error_log("initMySQL.php - Upcoming sign-up table not created. " . $query->errno . ": " . $query->error);
 				error_log("Please run the following MySQL query manually:");
 				error_log($signupTableStatement);
 			}
 			$query->close();
 		} else {
 			$noErrors = false;
-			error_log("initMySQL - Failed to prepare Upcoming sign-up table statement. " . $conn->errno . ": " . $conn->error);
+			error_log("initMySQL.php - Failed to prepare Upcoming sign-up table statement. " . $conn->errno . ": " . $conn->error);
 			error_log("Please run the following MySQL query manually:");
 			error_log($signupTableStatement);
 		}
 
 		if ($query = $conn->prepare($chatTableStatement)) {
 			if ($query->execute()) {
-				error_log("initMySQL - Chat table successfully created.");
+				error_log("initMySQL.php - Chat table successfully created.");
 			} else {
 				$noErrors = false;
-				error_log("initMySQL - Chat table not created. " . $query->errno . ": " . $query->error);
+				error_log("initMySQL.php - Chat table not created. " . $query->errno . ": " . $query->error);
 				error_log("Please run the following MySQL query manually:");
 				error_log($chatTableStatement);
 			}
 			$query->close();
 		} else {
 			$noErrors = false;
-			error_log("initMySQL - Failed to prepare Upcoming sign-up table statement. " . $conn->errno . ": " . $conn->error);
+			error_log("initMySQL.php - Failed to prepare Upcoming sign-up table statement. " . $conn->errno . ": " . $conn->error);
 			error_log("Please run the following MySQL query manually:");
 			error_log($chatTableStatement);
 		}
 	} else {
 		$noErrors = false;
-		error_log("Due to player table creation failure, several important tables were not created.");
+		error_log("initMySQL.php - Due to player table creation failure, several important tables were not created.");
 		error_log("Player run the following MySQL queries manually:");
 		error_log($signupTableStatement);
 		error_log($chatTableStatement);
@@ -188,40 +192,40 @@ function initMySQL() {
 	if ($gameTableCreated && $playerTableCreated) {
 		if ($query = $conn->prepare($actionTableStatement)) {
 			if ($query->execute()) {
-				error_log("initMySQL - Action table successfully created.");
+				error_log("initMySQL.php - Action table successfully created.");
 			} else {
 				$noErrors = false;
-				error_log("initMySQL - Action table not created. " . $query->errno . ": " . $query->error);
+				error_log("initMySQL.php - Action table not created. " . $query->errno . ": " . $query->error);
 				error_log("Please run the following MySQL query manually:");
 				error_log($actionTableStatement);
 			}
 			$query->close();
 		} else {
 			$noErrors = false;
-			error_log("initMySQL - Failed to prepare action table statement. " . $conn->errno . ": " . $conn->error);
+			error_log("initMySQL.php - Failed to prepare action table statement. " . $conn->errno . ": " . $conn->error);
 			error_log("Please run the following MySQL query manually:");
 			error_log($actionTableStatement);
 		}
 
 		if ($query = $conn->prepare($statusTableStatement)) {
 			if ($query->execute()) {
-				error_log("initMySQL - Player status table successfully created.");
+				error_log("initMySQL.php - Player status table successfully created.");
 			} else {
 				$noErrors = false;
-				error_log("initMySQL - Player status table not created. " . $query->errno . ": " . $query->error);
+				error_log("initMySQL.php - Player status table not created. " . $query->errno . ": " . $query->error);
 				error_log("Please run the following MySQL query manually:");
 				error_log($statusTableStatement);
 			}
 			$query->close();
 		} else {
 			$noErrors = false;
-			error_log("initMySQL - Failed to prepare player status table statement. " . $conn->errno . ": " . $conn->error);
+			error_log("initMySQL.php - Failed to prepare player status table statement. " . $conn->errno . ": " . $conn->error);
 			error_log("Please run the following MySQL query manually:");
 			error_log($statusTableStatement);
 		}
 	} else {
 		$noErrors = false;
-		error_log("Due to failure to create both player and game tables, several important tables were not created.");
+		error_log("initMySQL.php - Due to failure to create both player and game tables, several important tables were not created.");
 		error_log("Player run the following MySQL queries manually:");
 		error_log($actionTableStatement);
 		error_log($statusTableStatement);
@@ -232,7 +236,7 @@ function initMySQL() {
 			$query->bind_param("ss", "mysqlInitialized", "true");
 			$query->execute();
 		} else {
-			error_log("initMySQL - Failed to prepare final insertion statement. " . $conn->errno . ": " . $conn->error);
+			error_log("initMySQL.php - Failed to prepare final insertion statement. " . $conn->errno . ": " . $conn->error);
 		}
 	}
 }

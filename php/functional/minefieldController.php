@@ -14,7 +14,7 @@ require_once($_SERVER['DOCUMENT_ROOT'] . '/multisweeper/php/functional/translate
 #@return The properly formatted double array with both visibility and player actions applied.
 function getMinefieldWithVisibility($gameID, $minefield, $visibility) {
 	if (count($minefield) !== count($visibility)) {
-		error_log("Error: Minefield size did not match visibility matrix size. Exiting.");
+		error_log("minefieldController.php - Minefield size did not match visibility matrix size.");
 		die("Fatal error, exiting.");
 	}
 
@@ -22,7 +22,7 @@ function getMinefieldWithVisibility($gameID, $minefield, $visibility) {
 
 	for ($x = 0; $x < count($minefield); $x++) {
 		if (count($minefield[$x]) !== count($visibility[$x])) {
-			error_log("Error: Minefield size did not match visibility matrix size. Exiting.");
+			error_log("minefieldController.php - Minefield size did not match visibility matrix size.");
 			die("Fatal error, exiting.");
 		}
 
@@ -70,7 +70,7 @@ function addPlayerActionsToMinefield($gameID, $map) {
 			$map[$xCoord][$yCoord] = "A";
 		}
 	} else {
-		error_log("Unable to add actions to map, returning with none.");
+		error_log("minefieldController.php - Unable to add actions to map, returning with none.");
 	}
 	return $map;
 }

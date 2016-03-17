@@ -16,7 +16,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
 	#Check if registration credentials are valid.
 	if (($xml->username == null) or ($xml->password == null)) {
-		error_log("Registration rejected");
+		error_log("registerPlayer.php - Registration rejected");
 		$error = $result->createElement('error', "Please fill out both fields and try again.");
 		$error = $resultBase->appendChild($error);
 	} else {
@@ -41,7 +41,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 		} else {
 			$conn = new mysqli($sqlhost, $sqlusername, $sqlpassword);
 			if ($conn->connect_error) {
-				die("Connection failed: " . $conn->connect_error);
+				die("registerPlayer.php - Connection failed: " . $conn->connect_error);
 			}
 
 			#Check if username already taken
@@ -62,7 +62,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 							$error = $result->createElement('success', "Successfully registered!");
 							$error = $resultBase->appendChild($error);
 						} else {
-							error_log("Unable to register player.");
+							error_log("registerPlayer.php - Unable to register player.");
 							$error = $result->createElement('error', "An internal error has occurred. Please try again later.");
 							$error = $resultBase->appendChild($error);
 						}
@@ -72,7 +72,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 					$error = $resultBase->appendChild($error);
 				}
 			} else {
-				error_log("Unable to prepare statement for checking registration.");
+				error_log("registerPlayer.php - Unable to prepare statement for checking registration.");
 				$error = $result->createElement('error', "An internal error has occurred. Please try again later.");
 				$error = $resultBase->appendChild($error);
 			}

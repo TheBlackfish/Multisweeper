@@ -49,6 +49,8 @@ var minefieldInitialized = false;
 //The size of the minefield tiles (in pixels).
 var minefieldSquareSize = 24;
 
+//minefieldInteractionEnabled [Boolean]
+//Whether or not hovering and tile selection are allowed on the minefield at the current time.
 var minefieldInteractionEnabled = true;
 
 //hoverFPS [double]
@@ -262,6 +264,9 @@ function drawTankAtCoordinates(x, y) {
 	minefieldContext.drawImage(minefieldImages["tank"], realX, realY);
 }
 
+//displayMinefieldOverlayMessage(msg)
+//Draws text over the main of the minefield. If the canvas is not ready due to loading or initialization, this will wait 0.5 seconds and then try again.
+//@param msg - The message to display in string form.
 function displayMinefieldOverlayMessage(msg) {
 	minefieldInteractionEnabled = false;
 

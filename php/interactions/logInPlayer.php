@@ -16,13 +16,13 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
 	#Check if log-in credentials are valid.
 	if (($xml->username == null) or ($xml->password == null)) {
-		error_log("Login rejected");
+		error_log("loginPlayer.php - Login rejected");
 		$error = $result->createElement('error', "Please fill out both fields and try again.");
 		$error = $resultBase->appendChild($error);
 	} else {
 		$conn = new mysqli($sqlhost, $sqlusername, $sqlpassword);
 		if ($conn->connect_error) {
-			die("Connection failed: " . $conn->connect_error);
+			die("loginPlayer.php - Connection failed: " . $conn->connect_error);
 		}
 
 		#Check if user exists.
@@ -61,7 +61,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 				}
 			}
 		} else {
-			error_log("Unable to prepare statement for logging in.");
+			error_log("loginPlayer.php - Unable to prepare statement for logging in.");
 			$error = $result->createElement('error', "An internal error has occurred. Please try again later.");
 			$error = $resultBase->appendChild($error);
 		}

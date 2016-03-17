@@ -6,7 +6,7 @@ require_once($_SERVER['DOCUMENT_ROOT'] . "/multisweeper/php/constants/localServe
 require_once($_SERVER['DOCUMENT_ROOT'] . "/multisweeper/php/constants/databaseConstants.php");
 
 #createResolveActionsTask($gameID)
-#Sets up a scheduled task to resolve all actions 15 minutes into the future.
+#Sets up a scheduled task to resolve all actions 10 minutes into the future.
 #@param $gameID (Integer) The game ID that this task is for.
 function createResolveActionsTask($gameID) {
 	global $scriptsDirectory, $phpFilepath, $phpSchedulerLogPath;
@@ -35,18 +35,18 @@ function createGameCreationTask() {
 
 	$conn = new mysqli($sqlhost, $sqlusername, $sqlpassword);
 	if ($conn->connect_error) {
-		die("Connection failed: " . $conn->connect_error);
+		die("taskScheduler.php - Connection failed: " . $conn->connect_error);
 	}
 
 	if ($timeStmt = $conn->prepare("INSERT INTO multisweeper.globalvars (k, v) VALUES ('nextGameTime', ?)")) {
 		$timeStmt->bind_param("s", $execTime);
 		if ($timeStmt->execute()) {
-			error_log("Successfully executed next game time statement.");
+			error_log("taskScheduler.php - Successfully executed next game time statement.");
 		} else {
-			error_log("Unable to set next game time in database. " . $timeStmt->errno . ": " . $timeStmt->error);
+			error_log("taskScheduler.php - Unable to set next game time in database. " . $timeStmt->errno . ": " . $timeStmt->error);
 		}
 	} else {
-		error_log("Unable to prepare next game time statement. " . $conn->errno . ": " . $conn->error);
+		error_log("taskScheduler.php - Unable to prepare next game time statement. " . $conn->errno . ": " . $conn->error);
 	}
 }
 

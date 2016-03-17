@@ -20,7 +20,7 @@ function initInteractions() {
 function handleInteractions(e) {
 	if (e.key == "Enter") {
 		console.log("testing");
-		if (getPlayerID == null) {
+		if (getPlayerID === null) {
 			attemptLogIn();
 		} else if (document.getElementById("chatEntry").value.length > 0) {
 			console.log("attempting chat");

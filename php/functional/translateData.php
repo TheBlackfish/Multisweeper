@@ -10,7 +10,7 @@
 #@return The double array representing the minefield.
 function translateMinefieldToPHP($data, $height, $width) {
 	if (strlen($data) != ($height * $width)) {
-		throw new Exception("translateMinefieldToPHP - Data provided does not match size given!", 1);
+		throw new Exception("translateData.php - MySQL data provided does not match size given!", 1);
 	}
 	$chunks = str_split($data, $height);
 	$result = array();
@@ -49,7 +49,7 @@ function translateTanksToPHP($data) {
 		foreach ($temptanks as $k => $v) {
 			$tankPos = explode(",", $v);
 			if (count($tankPos) !== 2) {
-				error_log("Unexpected number of numbers while translating tanks from MySQL to PHP!");
+				error_log("translateData.php - unexpected number of numbers while translating tanks from MySQL to PHP!");
 			} else {
 				$newTank = array(intval($tankPos[0]), intval($tankPos[1]));
 				array_push($tanks, $newTank);
@@ -67,7 +67,7 @@ function translateTanksToMySQL($data) {
 	$tempStrs = array();
 	foreach ($data as $k => $v) {
 		if (count($v) !== 2) {
-			error_log("Unexpected number of numbers while translating tanks from PHP to MySQL!");
+			error_log("translateData.php - unexpected number of numbers while translating tanks from PHP to MySQL!");
 		} else {
 			array_push($tempStrs, $v[0] . "," . $v[1]);
 		}

@@ -21,7 +21,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 	$resultBase = $result->appendChild($resultBase);
 
 	if (($xml->playerID == null) or ($xml->gameID == null) or ($xml->xCoord == null) or ($xml->yCoord == null) or ($xml->actionType == null)) {
-		error_log("Action rejected");
+		error_log("submitAction.php - Action rejected");
 		$error = $result->createElement('error', "Incomplete data in submission. Please try again.");
 		$error = $resultBase->appendChild($error);
 	} else {
@@ -30,7 +30,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
 		$conn = new mysqli($sqlhost, $sqlusername, $sqlpassword);
 		if ($conn->connect_error) {
-			die("Connection failed: " . $conn->connect_error);
+			die("submitAction.php - Connection failed: " . $conn->connect_error);
 		}
 
 		#Delete any previous actions from this player
@@ -39,7 +39,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 			$deleteStmt->execute();
 			$deleteStmt->close();
 		} else {
-			error_log("Unable to prepare delete statement, forging ahead anyways. " . $conn->errno . ": " . $conn->error);
+			error_log("submitAction.php - Unable to prepare delete statement, forging ahead anyways. " . $conn->errno . ": " . $conn->error);
 		}
 
 		#Check if player can actually submit actions or not
@@ -64,7 +64,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 							$insertStmt->bind_param("iiiii", $xml->playerID, $xml->gameID, $xml->xCoord, $xml->yCoord, $xml->actionType);
 							$updated = $insertStmt->execute();
 							if (!$updated) {
-								error_log("Error occurred inserting player action into queue. " . $insertStmt->errno . ": " . $insertStmt->error);
+								error_log("submitAction.php - Error occurred inserting player action into queue. " . $insertStmt->errno . ": " . $insertStmt->error);
 								$error = $result->createElement('error', "Internal error occurred, please try again later.");
 								$error = $resultBase->appendChild($error);
 								$insertStmt->close();
@@ -79,7 +79,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 									$updateStmt->execute();
 									$updateStmt->close();
 								} else {
-									error_log("Error occurred updating the fact that a player has submitted an action. Can manually run the action resolution later.");
+									error_log("submitAction.php - Error occurred updating the fact that a player has submitted an action. Can manually run the action resolution later.");
 								}
 
 								#Check if all players have submitted actions. If so, resolve the action queue.
@@ -96,16 +96,16 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 										createResolveActionsTask($xml->gameID);
 									}
 								} else {
-									error_log("Unable to prepare check status statement. " . $conn->errno . ": " . $conn->error);
+									error_log("submitAction.php - Unable to prepare check status statement. " . $conn->errno . ": " . $conn->error);
 								}
 							}
 						} else {
-							error_log("Unable to prepare insert statement, need to fail. " . $conn->errno . ": " . $conn->error);
+							error_log("submitAction.php - Unable to prepare insert statement, need to fail. " . $conn->errno . ": " . $conn->error);
 							$error = $result->createElement('error', "Internal error occurred, please try again later.");
 							$error = $resultBase->appendChild($error);
 						}
 					} else {
-						error_log("Player not allowed to submit actions.");
+						error_log("submitAction.php - Player not allowed to submit actions.");
 
 						#Find out why player is not allowed to submit actions.
 						if ($deadStmt = $conn->prepare("SELECT COUNT(*) FROM multisweeper.playerstatus WHERE gameID=? AND playerID=? AND status=0")) {
@@ -123,7 +123,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 								$error = $resultBase->appendChild($error);
 							}
 						} else {
-							error_log("Unable to prepare dead check statement. " . $conn->errno . ": " . $conn->error);
+							error_log("submitAction.php - Unable to prepare dead check statement. " . $conn->errno . ": " . $conn->error);
 							$error = $result->createElement('error', "You are not allowed to participate in this game at this time.");
 							$error = $resultBase->appendChild($error);
 						}
