@@ -65,7 +65,7 @@ function processMinefieldData(response) {
 
 	populatePlayerListTable(players);
 
-	var statusMsg = allInfo.getElementsByTagName("status")[0];
+	var statusMsg = allInfo.getElementsByTagName("status")[0].childNodes[0].nodeValue;
 
 	if (statusMsg !== "OPEN") {
 		displayMinefieldOverlayMessage(statusMsg);

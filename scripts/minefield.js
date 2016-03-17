@@ -262,13 +262,20 @@ function drawTankAtCoordinates(x, y) {
 	minefieldContext.drawImage(minefieldImages["tank"], realX, realY);
 }
 
-function displayMinefieldStatusMessage(msg) {
+function displayMinefieldOverlayMessage(msg) {
 	minefieldInteractionEnabled = false;
 
-	minefieldContext.font = "30px Arial";
-	minefieldContext.fillStyle = "rgba(0, 0, 0, 0.5);"
-	minefieldContext.textAlign = "center";
-	minefieldContext.fillText(msg, document.getElementById("gameArea").width/2, document.getElementById("gameArea").height/2);
+	if (minefieldContext !== null) {
+		minefieldContext.font = "30px Arial";
+		minefieldContext.fillStyle = "rgba(0, 0, 0, 0.5);"
+		minefieldContext.textAlign = "center";
+		minefieldContext.fillText(msg, document.getElementById("gameArea").width/2, document.getElementById("gameArea").height/2);
+	} else {
+		setTimeout(function() {
+			displayMinefieldOverlayMessage(msg);
+		}, 500);
+	}
+	
 }
 
 //getTileCoordinatesFromRealCoordinates(x, y)
