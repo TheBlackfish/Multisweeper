@@ -47,32 +47,29 @@ function getMinefieldWithVisibility($gameID, $minefield, $visibility) {
 		array_push($result, $temp);
 	}
 
-	return addPlayerActionsToMinefield($gameID, $result);
+	return $result;
 }
 
-#addPlayerActionsToMinefield($gameID, $map)
-#Takes a minefield with visibility modifiers and applies all currently queued actions to it as just visual indicators.
-#@param $gameID (Integer) The game ID that this operation is for.
-#@param $map (Double Array) The properly formatted double array representing the minefield with visibility applied.
-#@return The properly formatted double array with both visibility and player actions applied.
-function addPlayerActionsToMinefield($gameID, $map) {
+function getPlayerActionsForGame($excludePlayerID) {
 	global $sqlhost, $sqlusername, $sqlpassword;
 	$conn = new mysqli($sqlhost, $sqlusername, $sqlpassword);
 	if ($conn->connect_error) {
 		die("Connection failed: " . $conn->connect_error);
 	}
 
-	if ($query = $conn->prepare("SELECT xCoord, yCoord FROM multisweeper.actionqueue WHERE gameID=?")) {
-		$query->bind_param("i", $gameID);
+	$result = array();
+
+	if ($query = $conn->prepare("SELECT xCoord, yCoord FROM multisweeper.actionqueue WHERE gameID=? AND playerID!=?")) {
+		$query->bind_param("ii", $gameID, $excludePlayerID);
 		$query->execute();
 		$query->bind_result($xCoord, $yCoord);
 		while ($query->fetch()) {
-			$map[$xCoord][$yCoord] = "A";
+			array_push($result, array(xCoord, yCoord));
 		}
 	} else {
-		error_log("minefieldController.php - Unable to add actions to map, returning with none.");
+		error_log("minefieldController.php - Unable to get other player actions, returning with none.");
 	}
-	return $map;
+	return $result;
 }
 
 ?>

@@ -59,6 +59,19 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 			}
 		}
 
+		$otherPlayers = getPlayerActionsForGame(0);
+		if (count($otherPlayers) !== 0) {
+			$nodeF = $doc->createElement('otherPlayers');
+			$nodeF = $newrow->appendChild($nodeF);
+
+			foreach ($otherPlayers as $k => $v) {
+				if (count($v) === 2) {
+					$nodeOP = $doc->createElement('otherPlayer', $v[0] . "," . $v[1]);
+					$nodeOP = $nodeF->appendChild($nodeOP);
+				}
+			}
+		}
+
 		#Add all players in the game and their statuses to the XML.
 		if ($playerQuery = $conn->prepare("SELECT p.username, s.status FROM multisweeper.players as p INNER JOIN multisweeper.playerstatus as s ON p.playerID=s.playerID WHERE s.gameID=?
 ")) {

@@ -58,18 +58,18 @@ function processMinefieldData(response) {
 	if (allInfo.getElementsByTagName("tanks").length > 0) {
 		t = preprocessTankCoordinates(allInfo.getElementsByTagName("tanks")[0]);
 	}
+	var o = new Array();
+	if (allInfo.getElementsByTagName("otherPlayers").length > 0) {
+		o = preprocessOtherPlayerCoordinates(allInfo.getElementsByTagName("otherPlayers")[0]);
+	}
 	
-	initMinefield(map, h, w, t);
+	initMinefield(map, h, w, t, o);
 
 	var players = allInfo.getElementsByTagName("players")[0];
 
 	populatePlayerListTable(players);
 
 	var statusMsg = allInfo.getElementsByTagName("status")[0].childNodes[0].nodeValue;
-
-	if (statusMsg !== "OPEN") {
-		displayMinefieldOverlayMessage(statusMsg);
-	}
 
 	var gameTime = allInfo.getElementsByTagName("nextGameTime");
 
@@ -97,6 +97,21 @@ function preprocessMinefieldMap(input) {
  			result[i] = parseInt(result[i]);
  		}
 	}
+	return result;
+}
+
+function preprocessOtherPlayerCoordinates(input) {
+	var result = new Array();
+
+	var ops = input.getElementsByTagName('otherPlayer');
+	for (var i = 0; i < ops.length; i++) {
+		var tempPlayer = ops[i].childNodes[0].nodeValue.split(",");
+		for (var j = 0; j < tempPlayer.length; j++) {
+			tempPlayer[j] = parseInt(tempPlayer[j]);
+		}
+		result.push(tempPlayer);
+	}
+
 	return result;
 }
 

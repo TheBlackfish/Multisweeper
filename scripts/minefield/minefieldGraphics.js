@@ -121,13 +121,13 @@ function selectOverlayForTile(x, y) {
 		}
 	}
 
-	/*var o = getOtherPlayers();
+	var o = getOtherPlayers();
 
 	for (var i = 0; i < o.length; i++) {
 		if (o[0] == x && o[1] == y) {
 			return overlayImages["otherPlayer"];
 		}
-	}*/
+	}
 
 	var val = getTileValue(x, y);
 

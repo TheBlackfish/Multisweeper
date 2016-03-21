@@ -30,13 +30,13 @@ function processSelection(e) {
 			}
 
 			if (viable) {
-				/*var o = getOtherPlayers();
+				var o = getOtherPlayers();
 
 				for (var i = 0; i < o.length && viable; i++) {
 					if (o[0] == coord[0] && o[1] == coord[1]) {
 						viable = false;
 					}
-				}*/
+				}
 
 				if (viable) {
 					var val = getTileValue(coord[0], coord[1]);
