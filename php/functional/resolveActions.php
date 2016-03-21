@@ -259,12 +259,12 @@ function resolveAllActions($gameID) {
 												}
 											}
 										}
-										
+
 										#Update map and visibility values for the game by saving to database.
 										if ($updateStmt = $conn->prepare("UPDATE multisweeper.games SET map=?, visibility=?, tankCountdown=?, tanks=?, status=? WHERE gameID=?")) {
 											$statusStr = "OPEN";
 											if ($gameCompleted) {
-												$statusStr = "DONE";
+												$statusStr = "GAME OVER";
 											}
 											$updateStmt->bind_param("ssissi", translateMinefieldToMySQL($minefield), translateMinefieldToMySQL($visibility), $tankCount, translateTanksToMySQL($allTanks), $statusStr, $gameID);
 											$updated = $updateStmt->execute();

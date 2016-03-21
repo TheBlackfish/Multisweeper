@@ -4,12 +4,14 @@
 	This script file contains all server-client interactions with the server regarding actions.
 */
 
+var actionSubmitted = false;
+
 //submitAction()
 //Gets action information from various files and sends it to the server for processing.
 function submitAction() {
 	document.getElementById("submitMessage").innerHTML = "Submitting...";
 
-	var selectionTile = getSelectedTile();
+	var selectionTile = getSelectedActionArray();
 
 	if (selectionTile !== null) {
 		var xml = '<submit>';
@@ -37,6 +39,7 @@ function resolveActionSubmission(response) {
 	if (actionDone.length > 0) {
 		text = actionDone[0].nodeValue;
 		forceTimerToTime(3);
+		actionSubmitted = true;
 	} else {
 		text = "";
 		var errors = allInfo.getElementsByTagName("error");
@@ -49,4 +52,12 @@ function resolveActionSubmission(response) {
 	}
 
 	document.getElementById("submitMessage").innerHTML = text;
+}
+
+function hasSubmittedAction() {
+	if (actionSubmitted) {
+		actionSubmitted = false;
+		return true;
+	}
+	return false;
 }

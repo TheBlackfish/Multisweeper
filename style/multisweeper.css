@@ -13,13 +13,11 @@ canvas {
 	Top Bar
 */
 #topBar {
-	height: 200px;
 	width: 100%;
 }
 
 .topBarBox {
 	background: #E6F6DD;
-	height: 180px;
 	width: 180px;
 	margin: 10px 20px;
 	float: left;

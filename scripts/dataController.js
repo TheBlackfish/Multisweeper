@@ -52,8 +52,8 @@ function processMinefieldData(response) {
 	currentGameID = allInfo.getElementsByTagName("id")[0].childNodes[0].nodeValue;
 
 	var map = preprocessMinefieldMap(allInfo.getElementsByTagName("map")[0].childNodes[0].nodeValue);
-	var h = allInfo.getElementsByTagName("height")[0].childNodes[0].nodeValue;
-	var w = allInfo.getElementsByTagName("width")[0].childNodes[0].nodeValue;
+	var h = parseInt(allInfo.getElementsByTagName("height")[0].childNodes[0].nodeValue);
+	var w = parseInt(allInfo.getElementsByTagName("width")[0].childNodes[0].nodeValue);
 	var t = new Array();
 	if (allInfo.getElementsByTagName("tanks").length > 0) {
 		t = preprocessTankCoordinates(allInfo.getElementsByTagName("tanks")[0]);
@@ -93,8 +93,8 @@ function preprocessMinefieldMap(input) {
 			result[i] = -2;
 		} else if (result[i] === "F") {
 			result[i] = 9;
- 		} else if (result[i] === "A") {
- 			result[i] = 12;
+ 		} else {
+ 			result[i] = parseInt(result[i]);
  		}
 	}
 	return result;

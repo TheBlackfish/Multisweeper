@@ -8,7 +8,9 @@
 <script src="scripts/autoController.js"></script>
 <script src="scripts/dataController.js"></script>
 <script src="scripts/interactionController.js"></script>
-<script src="scripts/minefield.js"></script>
+<script src="scripts/minefield/minefieldController.js"></script>
+<script src="scripts/minefield/minefieldGraphics.js"></script>
+<script src="scripts/minefield/minefieldInteraction.js"></script>
 <script src="scripts/playerController.js"></script>
 <script src="scripts/socialController.js"></script>
 </head>
@@ -46,7 +48,7 @@
 
 	<div id="mainArea">
     <!-- Canvas for game -->
-    <canvas id="gameArea" height="720" width="1200">Your browser does not support the canvas element. Please use a HTML5 compatible browser.</canvas>
+    <canvas id="gameArea" height="900" width="1500">Your browser does not support the canvas element. Please use a HTML5 compatible browser.</canvas>
 
     <!-- Current Players -->
     <div id="playerList">
@@ -73,8 +75,7 @@
   </div>
     
   <script type="text/javascript">
-		function debug() {	
-      initInteractions();	
+		function debug() {
 			checkCookie();
       getMinefieldData();
 		}
