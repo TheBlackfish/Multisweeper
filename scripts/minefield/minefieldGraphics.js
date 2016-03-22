@@ -79,7 +79,7 @@ function drawTileAtCoordinates(x, y) {
 
 		var overlay = selectOverlayForTile(x, y);
 		if (overlay !== null) {
-			minefieldContext.drawImage(selectOverlayForTile(x, y), realX, realY);
+			minefieldContext.drawImage(overlay, realX, realY);
 		}
 	}
 }

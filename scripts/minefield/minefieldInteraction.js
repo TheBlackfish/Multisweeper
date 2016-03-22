@@ -1,14 +1,21 @@
 //initMinefieldInterface()
 //Adds event listeners to the canvas for various mouse interaction.
+
+var interfaceInitialized = false;
+
 function initMinefieldInterface() {
-	document.getElementById("gameArea").addEventListener('click', function(evt) {
-		processSelection(evt);	
-	}, false);
+	if (!interfaceInitialized) {
+		document.getElementById("gameArea").addEventListener('click', function(evt) {
+			processSelection(evt);	
+		}, false);
+		interfaceInitialized = true;
+	}
 }
 
 function processSelection(e) {
 	if (getPlayerID() !== "") {
 		if (minefieldInitialized && minefieldGraphicsInitialized) {
+			var canSelect = false;
 			var coord = calculateMousePosition(e.clientX, e.clientY);
 			coord = getTileCoordinatesFromRealCoordinates(coord[0], coord[1]);
 
@@ -16,35 +23,34 @@ function processSelection(e) {
 
 			if (s !== null) {
 				if (s["x"] === coord[0] && s["y"] === coord[1]) {
-					selectCoordinates(coord[0], coord[1]);
+					canSelect = true;
 				}
 			}
 
-			var viable = true;
+			var val = getTileValue(coord[0], coord[1]);
+
+			if (val === -1 || val === 9) {
+				canSelect = true;
+			}
+
 			var t = getTanks();
 
 			for (var i = 0; i < t.length && viable; i++) {
 				if (t[0] == coord[0] && t[1] == coord[1]) {
-					viable = false;
+					canSelect = false;
 				}
 			}
 
-			if (viable) {
-				var o = getOtherPlayers();
+			var o = getOtherPlayers();
 
-				for (var i = 0; i < o.length && viable; i++) {
-					if (o[0] == coord[0] && o[1] == coord[1]) {
-						viable = false;
-					}
+			for (var i = 0; i < o.length && viable; i++) {
+				if (o[0] == coord[0] && o[1] == coord[1]) {
+					canSelect = false;
 				}
+			}
 
-				if (viable) {
-					var val = getTileValue(coord[0], coord[1]);
-
-					if (val === -1 || val === 9) {
-						selectCoordinates(coord[0], coord[1]);
-					}
-				}
+			if (canSelect) {
+				selectCoordinates(coord[0], coord[1]);
 			}
 		}
 	}
