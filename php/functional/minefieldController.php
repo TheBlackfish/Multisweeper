@@ -50,6 +50,10 @@ function getMinefieldWithVisibility($gameID, $minefield, $visibility) {
 	return $result;
 }
 
+#getPlayerActionsForGame($excludePlayerID)
+#Returns an array of all other player action coordinates, excluding the one provided.
+#@param $excludePlayerID (Integer) The ID of the player to not pull actions for.
+#@return The properly formatted double array with coordinates for all other players listed.
 function getPlayerActionsForGame($excludePlayerID) {
 	global $sqlhost, $sqlusername, $sqlpassword;
 	$conn = new mysqli($sqlhost, $sqlusername, $sqlpassword);

@@ -100,6 +100,10 @@ function preprocessMinefieldMap(input) {
 	return result;
 }
 
+//preprocessOtherPlayerCoordinates(input)
+//Takes the other player coordinates in string form and returns them in array form.
+//@param input - The other player coordinates in string form
+//@return The array of values representing other player coordinates.
 function preprocessOtherPlayerCoordinates(input) {
 	var result = new Array();
 

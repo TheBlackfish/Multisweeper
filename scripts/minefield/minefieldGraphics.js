@@ -1,11 +1,37 @@
+/*
+	minefieldGraphics.js
+
+	This file controls all graphics-related functionality of the canvas/game area.
+
+	The main graphics control now is a combined overlay/underlay system. The underlay shows the basic terrain of a tile, while the overlay shows relevant information about that tile to the players. This is to 1) allow for more stylistic changes such as terrain and B) make it easier to switch out things such as tanks and other players.
+*/
+
+//overlayImages [array]
+//Contains all image files for overlay images.
 var overlayImages = [];
+
+//underlayImages [array]
+//Contains all image files for underlay images.
 var underlayImages = [];
 
+//minefieldContext [GraphicsContext]
+//The main context for drawing onto the canvas.
 var minefieldContext = null;
+
+//minefieldImagesLoaded [int]
+//The number of image files successfully loaded.
 var minefieldImagesLoaded = 0;
+
+//minefieldTileSize [int]
+//A control variable for tile sizes.
 var minefieldTileSize = 30;
+
+//minefieldGraphicsInitialized [boolean]
+//Whether or not the graphics engine has been fully initialized.
 var minefieldGraphicsInitialized = false;
 
+//initMinefieldGraphics()
+//Initializes the graphics appropriately.
 function initMinefieldGraphics() {
 	minefieldContext = document.getElementById("gameArea").getContext("2d");
 	if (minefieldImagesLoaded === 0) {
@@ -13,6 +39,8 @@ function initMinefieldGraphics() {
 	}
 }
 
+//initMinefieldImages()
+//Loads all of the images needed.
 function initMinefieldImages() {
 	var overlayFiles = ["0", "1", "2", "3", "4", "5", "6", "7", "8", "flag", "mine", "otherPlayer", "plantFlag", "shovel", "tank"];
 	var underlayFiles = ["revealed", "unrevealed"];
@@ -64,7 +92,6 @@ function drawMinefield() {
 
 //drawTileAtCoordinates(x, y)
 //Draws the appropriate image for the value specified at the tile position x, y.
-//@param value - The minefield tile value to draw at the specified tile position.
 //@param x - The x-coordinate to draw the tile at.
 //@param y - The y-coordinate to draw the tile at.
 function drawTileAtCoordinates(x, y) {
@@ -84,6 +111,11 @@ function drawTileAtCoordinates(x, y) {
 	}
 }
 
+//drawTileAtCoordinatesOverrideOverlay(x, y, override)
+//Draws the appropriate image for the value specified at the tile position x, y, using the specified overlay instead of the normal one.
+//@param x - The x-coordinate to draw the tile at.
+//@param y - The y-coordinate to draw the tile at.
+//@param override - The overlay image to draw on the tile instead of the normal overlay.
 function drawTileAtCoordinatesOverrideOverlay(x, y, override) {
 	if (minefieldGraphicsInitialized) {
 		if (override in overlayImages) {
@@ -100,6 +132,11 @@ function drawTileAtCoordinatesOverrideOverlay(x, y, override) {
 	}
 }
 
+//selectOverlayForTile(x, y)
+//Returns the appropriate overlay for the tile specified.
+//@param x - The x-coordinate of the tile specified.
+//@param y - The y-coordinate of the tile specified.
+//@return The image file that is the correct overlay for the tile, or null if no overlay specified.
 function selectOverlayForTile(x, y) {
 	var s = getSelectedActionArray();
 
@@ -144,6 +181,11 @@ function selectOverlayForTile(x, y) {
 	return null;
 }
 
+//selectUnderlayForTile(x, y)
+//Returns the appropriate underlay for the tile specified.
+//@param x - The x-coordinate of the tile specified.
+//@param y - The y-coordinate of the tile specified.
+//@return The image file that is the correct underlay for the tile.
 function selectUnderlayForTile(x, y) {
 	var val = getTileValue(x, y);
 	if (val === -1 || val > 8) {

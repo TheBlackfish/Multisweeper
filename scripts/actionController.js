@@ -4,6 +4,8 @@
 	This script file contains all server-client interactions with the server regarding actions.
 */
 
+//actionSubmitted [boolean]
+//Control variable for if the player has submitted an action this turn or not. Resets every time there is a major update.
 var actionSubmitted = false;
 
 //submitAction()
@@ -54,6 +56,8 @@ function resolveActionSubmission(response) {
 	document.getElementById("submitMessage").innerHTML = text;
 }
 
+//hasSubmittedAction()
+//Returns and resets the action submitted variable.
 function hasSubmittedAction() {
 	if (actionSubmitted) {
 		actionSubmitted = false;

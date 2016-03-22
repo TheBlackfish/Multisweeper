@@ -1,8 +1,15 @@
-//initMinefieldInterface()
-//Adds event listeners to the canvas for various mouse interaction.
+/*
+	minefieldInteraction.js
 
+	This file controls all functionality involving player interaction with the game area.
+*/
+
+//interfaceInitialized [boolean]
+//Control variable for if the interactions with the game area have been initialized yet or not.
 var interfaceInitialized = false;
 
+//initMinefieldInterface()
+//Adds event listeners to the canvas for various mouse interaction.
 function initMinefieldInterface() {
 	if (!interfaceInitialized) {
 		document.getElementById("gameArea").addEventListener('click', function(evt) {
@@ -12,6 +19,9 @@ function initMinefieldInterface() {
 	}
 }
 
+//processSelection(e)
+//Performs the correct action with a mouse click depending on the tile clicked on.
+//@param e - The mouse event for the mouse click.
 function processSelection(e) {
 	if (getPlayerID() !== "") {
 		if (minefieldInitialized && minefieldGraphicsInitialized) {
