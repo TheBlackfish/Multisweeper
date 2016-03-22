@@ -100,11 +100,11 @@ function populatePlayerListTable(playerXML) {
 //@param gameTime - The information about the next game in XML form.
 function updateUpcomingGameTime(gameTime) {
 	if (gameTime !== null) {
-		if (document.getElementById("gameTimePrompt") !== null) {
-			var promptBox = "<div id='gameTimePrompt' class='topBarBox'><p>" + gameTime.getChildNodes[0].nodeValue + "</p></div>";
+		if (document.getElementById("gameTimePrompt") === null) {
+			var promptBox = "<div id='gameTimePrompt' class='topBarBox'><p>" + gameTime.childNodes[0].nodeValue + "</p></div>";
 			document.getElementById("topBar").innerHTML += promptBox;
 		} else {
-			document.getElementById("gameTimePrompt").innerHTML = "<p>The next game starts at " + gameTime.getChildNodes[0].nodeValue + "</p>";
+			document.getElementById("gameTimePrompt").innerHTML = "<p>The next game starts at " + gameTime.childNodes[0].nodeValue + "</p>";
 		}
 	} else {
 		if (document.getElementById("gameTimePrompt") !== null) {
