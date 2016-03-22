@@ -35,7 +35,7 @@ function processSelection(e) {
 
 			var t = getTanks();
 
-			for (var i = 0; i < t.length && viable; i++) {
+			for (var i = 0; i < t.length && canSelect; i++) {
 				if (t[0] == coord[0] && t[1] == coord[1]) {
 					canSelect = false;
 				}
@@ -43,7 +43,7 @@ function processSelection(e) {
 
 			var o = getOtherPlayers();
 
-			for (var i = 0; i < o.length && viable; i++) {
+			for (var i = 0; i < o.length && canSelect; i++) {
 				if (o[0] == coord[0] && o[1] == coord[1]) {
 					canSelect = false;
 				}

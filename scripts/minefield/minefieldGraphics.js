@@ -116,7 +116,7 @@ function selectOverlayForTile(x, y) {
 	var t = getTanks();
 
 	for (var i = 0; i < t.length; i++) {
-		if (t[0] == x && t[1] == y) {
+		if (t[i][0] == x && t[i][1] == y) {
 			return overlayImages["tank"];
 		}
 	}
@@ -124,7 +124,7 @@ function selectOverlayForTile(x, y) {
 	var o = getOtherPlayers();
 
 	for (var i = 0; i < o.length; i++) {
-		if (o[0] == x && o[1] == y) {
+		if (o[i][0] == x && o[i][1] == y) {
 			return overlayImages["otherPlayer"];
 		}
 	}
