@@ -29,7 +29,24 @@ function resolveAllActions($gameID) {
 			$stmt->close();
 			$minefield = translateMinefieldToPHP($m, $h, $w);
 			$visibility = translateMinefieldToPHP($v, $h, $w);
-			$allTanks = translateTanksToPHP($t);			
+			$allTanks = translateTanksToPHP($t);
+
+			#Determine if we need to expand the map first due to tank movement.
+			$expand = false;
+			
+			foreach ($allTanks as $tankKey => $tankPos) {
+				if ($tankPos[0] == ($w - 1)) {
+					$expand = true;
+				}
+			}
+
+			if ($expand) {
+				error_log("Expanding field...");
+				$newVals = expandMinefield($minefield, $visibility, 10, 0);
+				$minefield = $newVals["minefield"];
+				$visibility = $newVals["visibility"];
+			}
+
 			#Retrieve all actions in the action queue for this game and throw them into unique objects in an array for easy access during resolution.
 			if ($actionStmt = $conn->prepare("SELECT playerID, actionType, xCoord, yCoord FROM multisweeper.actionqueue WHERE gameID=?")) {
 				$actionqueue = array();
@@ -71,6 +88,7 @@ function resolveAllActions($gameID) {
 								}
 							}
 						}
+
 						if ($legalMove) {
 							#Action Type 0 is a shovel action.
 							#When shoveling, the current tile is revealed no matter what.
@@ -261,12 +279,12 @@ function resolveAllActions($gameID) {
 										}
 
 										#Update map and visibility values for the game by saving to database.
-										if ($updateStmt = $conn->prepare("UPDATE multisweeper.games SET map=?, visibility=?, tankCountdown=?, tanks=?, status=? WHERE gameID=?")) {
+										if ($updateStmt = $conn->prepare("UPDATE multisweeper.games SET map=?, visibility=?, tankCountdown=?, tanks=?, status=?, width=?, height=? WHERE gameID=?")) {
 											$statusStr = "OPEN";
 											if ($gameCompleted) {
 												$statusStr = "GAME OVER";
 											}
-											$updateStmt->bind_param("ssissi", translateMinefieldToMySQL($minefield), translateMinefieldToMySQL($visibility), $tankCount, translateTanksToMySQL($allTanks), $statusStr, $gameID);
+											$updateStmt->bind_param("ssissiii", translateMinefieldToMySQL($minefield), translateMinefieldToMySQL($visibility), $tankCount, translateTanksToMySQL($allTanks), $statusStr, count($minefield), count($minefield[0]), $gameID);
 											$updated = $updateStmt->execute();
 											if ($updated === false) {
 												error_log("resolveActions.php - Error occurred during map update. " . $updateStmt->errno . ": " . $updateStmt->error);

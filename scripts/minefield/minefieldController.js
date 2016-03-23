@@ -68,6 +68,8 @@ function initMinefield(input, h, w, t, o) {
 //@param o [Double Array] - The double array containing all other player coordinates.
 function updateMinefield(input, h, w, t, o) {
 	minefield = importMinefieldFromArray(input, w, h);
+	minefieldWidth = w;
+	minefieldHeight = h;
 	tanks = t;
 	otherPlayers = o;
 	drawMinefield();
@@ -141,10 +143,12 @@ function selectCoordinates(x, y) {
 //clearSelectedCoordinates()
 //Removes any selection saved.
 function clearSelectedCoordinates() {
-	temp = selectedCoordinates.concat([]);
-	selectedAction = 0;
-	selectedCoordinates = null;
-	drawTileAtCoordinates(temp[0], temp[1]);
+	if (selectedCoordinates !== null) {
+		temp = selectedCoordinates.concat([]);
+		selectedAction = 0;
+		selectedCoordinates = null;
+		drawTileAtCoordinates(temp[0], temp[1]);
+	}
 }
 
 //getAllTilesWithValue(value)
