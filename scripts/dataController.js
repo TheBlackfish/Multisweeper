@@ -40,7 +40,18 @@ function handleDataWithPHP(data, phpFileName, responseFunction) {
 //getMinefieldData()
 //Gets all of the information about the current game being played from the server.
 function getMinefieldData() {
-	handleDataWithPHP("", "getGameInfo", processMinefieldData);
+	var x = -1;
+	if (getPlayerID() !== "") {
+		x = parseInt(getPlayerID());
+	}
+	getMinefieldDataWithID(x);
+}
+
+//getMinefieldDataWithID(id)
+//Gets all of the information about the current game being played from the server.
+//@param id - The ID of the current player.
+function getMinefieldDataWithID(id) {
+	handleDataWithPHP("<playerID>" + id + "</playerID>", "getGameInfo", processMinefieldData);
 }
 
 //processMinefieldData(response)
@@ -64,6 +75,15 @@ function processMinefieldData(response) {
 	}
 	
 	initMinefield(map, h, w, t, o);
+
+	if (allInfo.getElementsByTagName("selfAction").length > 0) {
+		var self = allInfo.getElementsByTagName("selfAction")[0];
+		var coord = self.getElementsByTagName("coordinates")[0].childNodes[0].nodeValue.split(",");
+		var actionType = self.getElementsByTagName("actionType")[0].childNodes[0].nodeValue;
+		setSelectionCoordinates(parseInt(coord[0]), parseInt(coord[1]), parseInt(actionType));
+	} else {
+		setSelectionCoordinates(-1, -1, 0);
+	}
 
 	var players = allInfo.getElementsByTagName("players")[0];
 
