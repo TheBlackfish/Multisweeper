@@ -32,6 +32,8 @@ canvas {
 */
 #mainArea {
 	clear: both;
+	width: 100%;
+	overflow-x: auto;
 }
 
 #gameArea {

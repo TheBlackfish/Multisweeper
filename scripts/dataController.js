@@ -89,7 +89,7 @@ function processMinefieldData(response) {
 
 	populatePlayerListTable(players);
 
-	var statusMsg = allInfo.getElementsByTagName("status")[0].childNodes[0].nodeValue;
+	//var statusMsg = allInfo.getElementsByTagName("status")[0].childNodes[0].nodeValue;
 
 	var gameTime = allInfo.getElementsByTagName("nextGameTime");
 

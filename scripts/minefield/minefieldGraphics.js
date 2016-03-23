@@ -74,6 +74,10 @@ function initMinefieldImages() {
 //Draws the minefield to the canvas.
 function drawMinefield() {
 	if (minefieldGraphicsInitialized) {
+		var canvas = document.getElementById("gameArea");
+		canvas.width = minefieldWidth * minefieldTileSize;
+		canvas.height = minefieldHeight * minefieldTileSize;
+
 		var field = getMinefield();
 		if (field !== null) {
 			for (var i = 0; i < field.length; i++) {
