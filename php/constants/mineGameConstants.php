@@ -18,7 +18,7 @@
 		array(-1, -1)
 	);
 
-	$tankMoves = array(
+	$friendlyTankMoves = array(
 		array(
 			array(1, 0),
 			array(1, 1),
@@ -28,6 +28,19 @@
 			array(1, 0),
 			array(1, -1),
 			array(1, 1)
+		)
+	);
+
+	$enemyTankMoves = array(
+		array(
+			array(-1, 0),
+			array(-1, 1),
+			array(-1, -1)
+		),
+		array(
+			array(-1, 0),
+			array(-1, -1),
+			array(-1, 1)
 		)
 	);
 ?>

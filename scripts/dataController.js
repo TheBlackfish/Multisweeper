@@ -65,16 +65,20 @@ function processMinefieldData(response) {
 	var map = preprocessMinefieldMap(allInfo.getElementsByTagName("map")[0].childNodes[0].nodeValue);
 	var h = parseInt(allInfo.getElementsByTagName("height")[0].childNodes[0].nodeValue);
 	var w = parseInt(allInfo.getElementsByTagName("width")[0].childNodes[0].nodeValue);
-	var t = new Array();
-	if (allInfo.getElementsByTagName("tanks").length > 0) {
-		t = preprocessTankCoordinates(allInfo.getElementsByTagName("tanks")[0]);
+	var ft = new Array();
+	if (allInfo.getElementsByTagName("friendlyTanks").length > 0) {
+		ft = preprocessTankCoordinates(allInfo.getElementsByTagName("friendlyTanks")[0]);
+	}
+	var et = new Array();
+	if (allInfo.getElementsByTagName("enemyTanks").length > 0) {
+		et = preprocessTankCoordinates(allInfo.getElementsByTagName("enemyTanks")[0]);
 	}
 	var o = new Array();
 	if (allInfo.getElementsByTagName("otherPlayers").length > 0) {
 		o = preprocessOtherPlayerCoordinates(allInfo.getElementsByTagName("otherPlayers")[0]);
 	}
 	
-	initMinefield(map, h, w, t, o);
+	initMinefield(map, h, w, ft, et, o);
 
 	if (allInfo.getElementsByTagName("selfAction").length > 0) {
 		var self = allInfo.getElementsByTagName("selfAction")[0];

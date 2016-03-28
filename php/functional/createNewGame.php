@@ -4,7 +4,8 @@
 
 require_once($_SERVER['DOCUMENT_ROOT'] . '/multisweeper/php/constants/databaseConstants.php');
 require_once($_SERVER['DOCUMENT_ROOT'] . '/multisweeper/php/constants/mineGameConstants.php');
-require_once($_SERVER['DOCUMENT_ROOT'] . '/multisweeper/php/functional/minefieldPopulater.php'); 
+require_once($_SERVER['DOCUMENT_ROOT'] . '/multisweeper/php/functional/minefieldPopulater.php');
+require_once($_SERVER['DOCUMENT_ROOT'] . '/multisweeper/php/functional/taskScheduler.php'); 
 require_once($_SERVER['DOCUMENT_ROOT'] . '/multisweeper/php/functional/translateData.php');
 
 #createNewGame($width, $height, $numMines)
@@ -14,6 +15,8 @@ require_once($_SERVER['DOCUMENT_ROOT'] . '/multisweeper/php/functional/translate
 #@param $numMines (Integer) The number of mines to place on the minefield.
 function createNewGame($width, $height, $numMines) {
 	global $sqlhost, $sqlusername, $sqlpassword;
+
+	$gameCreated = false;
 
 	#Initialize the connection to the MySQL database.
 	$conn = new mysqli($sqlhost, $sqlusername, $sqlpassword);
@@ -29,50 +32,48 @@ function createNewGame($width, $height, $numMines) {
 		error_log("createNewGame.php - Unable to prepare next game time deletion statement, only cosmetic in effects. " . $conn->errno . ": " . $conn->error);
 	}
 
-	#Creates a double array with all zeroes matching the width and height of the minefield, along with random mines inserted into it.
-	$minefield = createMinefieldArea($width, $height, $numMines);
+	#Retrieve all players currently in the sign-up queue and create statuses for them.
+	if ($playerStmt = $conn->prepare("SELECT playerID FROM multisweeper.upcomingsignup")) {
+		$playerIDs = array();
+		$playerStmt->execute();
+		$playerStmt->bind_result($curID);
+		while ($playerStmt->fetch()) {
+			array_push($playerIDs, $curID);
+		}
+		$playerStmt->close();
 
-	#Updates the minefield array to have each space without a mine have the number of adjacent mines to it instead of 0.
-	$minefield = updateMinefieldNumbers($minefield);
+		if (count($playerIDs) === 0) {
+			error_log("No players for new game.");
+		} else {
+			#Creates a double array with all zeroes matching the width and height of the minefield, along with random mines inserted into it.
+			$minefield = createMinefieldArea($width, $height, $numMines);
 
-	#Translates the minefield to a form that can be stored in the database.
-	$result = translateMinefieldToMySQL($minefield);
+			#Updates the minefield array to have each space without a mine have the number of adjacent mines to it instead of 0.
+			$minefield = updateMinefieldNumbers($minefield);
 
-	#Creates a generic visibility array of all 'unrevealed' tiles.
-	$visibility = str_pad("", strlen($result), "0");
+			#Translates the minefield to a form that can be stored in the database.
+			$result = translateMinefieldToMySQL($minefield);
 
-	#Attempt to upload the newly created game into the MySQL database.
-	if ($insertStmt = $conn->prepare("INSERT INTO multisweeper.games (map, visibility, height, width, status) VALUES (?,?,?,?,'OPEN')")) {
-		$insertStmt->bind_param("ssii", $result, $visibility, $height, $width);
-		$inserted = $insertStmt->execute();
-	
-		if ($inserted) {
-			$insertStmt->close();
+			#Creates a generic visibility array of all 'unrevealed' tiles.
+			$visibility = str_pad("", strlen($result), "0");
 
-			#Retrieve the unique ID of the game just uploaded to the MySQL database.
-			if ($idStmt = $conn->prepare("SELECT gameID FROM multisweeper.games WHERE map=? AND status='OPEN' LIMIT 1")) {
-				$idStmt->bind_param("s", $result);
-				$idStmt->execute();
-				$idStmt->bind_result($gameID);
-				$idStmt->fetch();
-				$idStmt->close();
+			#Attempt to upload the newly created game into the MySQL database.
+			if ($insertStmt = $conn->prepare("INSERT INTO multisweeper.games (map, visibility, height, width, status) VALUES (?,?,?,?,'OPEN')")) {
+				$insertStmt->bind_param("ssii", $result, $visibility, $height, $width);
+				$inserted = $insertStmt->execute();
+			
+				if ($inserted) {
+					$insertStmt->close();
 
-				if ($gameID !== null) {
+					#Retrieve the unique ID of the game just uploaded to the MySQL database.
+					if ($idStmt = $conn->prepare("SELECT gameID FROM multisweeper.games WHERE map=? AND status='OPEN' LIMIT 1")) {
+						$idStmt->bind_param("s", $result);
+						$idStmt->execute();
+						$idStmt->bind_result($gameID);
+						$idStmt->fetch();
+						$idStmt->close();
 
-					#Retrieve all players currently in the sign-up queue and create statuses for them.
-					if ($playerStmt = $conn->prepare("SELECT playerID FROM multisweeper.upcomingsignup")) {
-						$playerIDs = array();
-						$playerStmt->execute();
-						$playerStmt->bind_result($curID);
-						while ($playerStmt->fetch()) {
-							array_push($playerIDs, $curID);
-						}
-						$playerStmt->close();
-
-						if (count($playerIDs) === 0) {
-							error_log("No players for new game.");
-						} else {
-
+						if ($gameID !== null) {
 							#Upload all created statuses to the database.
 							if ($statusStmt = $conn->prepare("INSERT INTO multisweeper.playerstatus (gameID, playerID, awaitingAction) VALUES (?, ?, 1)")) {
 								for ($i=0; $i < count($playerIDs); $i++) { 
@@ -86,6 +87,11 @@ function createNewGame($width, $height, $numMines) {
 									$deleteStmt->execute();
 									$deleteStmt->close();
 
+									#Schedule the auto-resolution of actions.
+									createResolveActionsTask($gameID);
+
+									$gameCreated = true;
+
 									#Successfully created the new game.
 									error_log("createNewGame.php - New game successfully created, ID=" . $gameID);
 								} else {
@@ -93,22 +99,27 @@ function createNewGame($width, $height, $numMines) {
 								}
 							} else {
 								error_log("createNewGame.php - Unable to prepare sign-up finalize statement. " . $conn->errno . ": " . $conn->error);
-							}
+							}					
+						} else {
+							error_log("createNewGame.php - Unexpected results from ID statement. " . $idStmt->errno . ": " . $idStmt->error);
 						}
 					} else {
-						error_log("createNewGame.php - Unable to prepare sign-up statement. " . $conn->errno . ": " . $conn->error);
+						error_log("createNewGame.php - Unable to prepare ID statement. " . $conn->errno . ": " . $conn->error);
 					}
 				} else {
-					error_log("createNewGame.php - Unexpected results from ID statement. " . $idStmt->errno . ": " . $idStmt->error);
+					error_log("createNewGame.php - Unable to insert game during creation. " . $insertStmt->errno . ": " . $insertStmt->error);
 				}
 			} else {
-				error_log("createNewGame.php - Unable to prepare ID statement. " . $conn->errno . ": " . $conn->error);
+				error_log("createNewGame.php - Unable to prepare game insertation statement. " . $conn->errno . ": " . $conn->error);
 			}
-		} else {
-			error_log("createNewGame.php - Unable to insert game during creation. " . $insertStmt->errno . ": " . $insertStmt->error);
 		}
 	} else {
-		error_log("createNewGame.php - Unable to prepare game insertation statement. " . $conn->errno . ": " . $conn->error);
+		error_log("createNewGame.php - Unable to prepare sign-up statement. " . $conn->errno . ": " . $conn->error);
+	}	
+
+	if (!$gameCreated) {
+		error_log("Unable to continue with game creation, scheduling new game creation in 10 minutes.");
+		createGameCreationTask();
 	}
 }
 

@@ -45,15 +45,17 @@ function translateMinefieldToMySQL($data) {
 function translateTanksToPHP($data) {
 	$tanks = array();
 	if ($data !== null) {
-		$temptanks = explode("/", $data);
-		foreach ($temptanks as $k => $v) {
-			$tankPos = explode(",", $v);
-			if (count($tankPos) !== 2) {
-				error_log("translateData.php - unexpected number of numbers while translating tanks from MySQL to PHP!");
-			} else {
-				$newTank = array(intval($tankPos[0]), intval($tankPos[1]));
-				array_push($tanks, $newTank);
-			} 
+		if (strlen($data) > 0) {
+			$temptanks = explode("/", $data);
+			foreach ($temptanks as $k => $v) {
+				$tankPos = explode(",", $v);
+				if (count($tankPos) !== 2) {
+					error_log("translateData.php - unexpected number of numbers while translating tanks from MySQL to PHP!");
+				} else {
+					$newTank = array(intval($tankPos[0]), intval($tankPos[1]));
+					array_push($tanks, $newTank);
+				} 
+			}
 		}
 	}
 	return $tanks;

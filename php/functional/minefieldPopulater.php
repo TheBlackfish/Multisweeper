@@ -1,5 +1,11 @@
 <?php
 
+#createMinefieldArea($width, $height, $mines)
+#Creates a whole area for a minefield.
+#@param $width - The width of the area to create.
+#@param $height - The height of the area to create.
+#@param $mines - The number of mines to place in the area.
+#@return The double array representing the minefield.
 function createMinefieldArea($width, $height, $mines) {
 	$ret = array_fill(0, $width, array_fill(0, $height, 0));
 

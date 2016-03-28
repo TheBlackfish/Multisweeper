@@ -2,12 +2,12 @@
 
 require_once($_SERVER['DOCUMENT_ROOT'] . '/multisweeper/php/constants/mineGameConstants.php');
 
-#addTank($map, $visibility)
-#Adds a tank to the leftmost column to the map provided. This addition will never go onto a visible mine or flags, and will try 3 times to not place on an unrevealed mine. If not possible, the tank will be placed on a random row instead, regardless of mines or flags.
+#addFriendlyTank($map, $visibility)
+#Adds a friendly tank to the leftmost column to the map provided. This addition will never go onto a visible mine or flags, and will try 3 times to not place on an unrevealed mine. If not possible, the tank will be placed on a random row instead, regardless of mines or flags.
 #@param $map (Double Array) The map of the minefield to place a tank on.
 #@param $visibility (Double Array) The visibility map of the minefield to place a tank on.
 #@return An array with two values: 'newTankPosition', which if not null, is a coordinate for a new tank; and 'newVisibility', which if not null, is the updated visibility map
-function addTank($map, $visibility) {
+function addFriendlyTank($map, $visibility) {
 	$ret = array(
 		'newTankPosition'	=>	null,
 		'newVisibility'		=>	null
@@ -103,14 +103,119 @@ function addTank($map, $visibility) {
 	return $ret;
 }
 
+function addEnemyTank($map, $visibility) {
+	$ret = array(
+		'newTankPosition'	=>	null,
+		'newVisibility'		=>	null
+	);
+
+	$end = count($map) - 1;
+
+	#Find out all possible spaces on the leftmost column.
+	$candidates = array();
+
+	for ($i=0; $i < count($map[$end]); $i++) { 
+		array_push($candidates, $i);
+	}
+
+	#Eliminate all visible mines and flags from the possibilities.
+	foreach ($candidates as $k => $v) {
+		$remove = false;
+
+		if ($visibility[$end][$v] === 1) {
+			$remove = true;
+		} else if (($visibility[$end][$v] === 2) && ($map[$end][$v] === "M")) {
+			$remove = true;
+		}
+
+		if ($remove) {
+			unset($candidates[$k]);
+		}
+	}
+
+	if (count($candidates) > 0) {
+		$ret['newTankPosition'] = array($end, $candidates[rand(0, count($candidates))]);		
+	} else {
+		$target = array($end, rand(0, count($map[$end])));
+		if ($visibility[$target[0]][$target[1]] === 1) {
+			if ($map[$target[0]][$target[1]] === "M") {
+				$visibility[$target[0]][$target[1]] = 2;
+				$target = null;
+			} else {
+				$visibility[$target[0]][$target[1]] = 0;
+			}
+		}
+
+		if ($target !== null) {
+			$ret['newTankPosition'] = $target;
+		}
+		$ret['newVisibility'] = $visibility;
+	}
+
+	return $ret;
+}
+
 #updateTanks($map, $visibility, $tankPositions)
 #For each tank provided, this function finds the best path for that tank through the map and visibility. Tanks will move forward one column and either one up, straight forward, or one down. When path-finding, tanks will prefer revealed non-mine tiles over unrevealed tiles. Tanks will never move onto flags, revealed mines, or other tanks unless they do not have a choice.
 #@param $map (Double Array) The map for tanks to navigate.
 #@param $visibility (Double Array) The visibility of the minefield for the tanks to navigate.
 #@param $tankPositions (Double Array) The array containing all of the current tank coordinates.
 #@return The double array containing all of the tank coordinates in a game.
-function updateTanks($map, $visibility, $tankPositions) {
-	global $tankMoves;
+function updateTanks($map, $visibility, $friendlyTankPositions, $enemyTankPositions) {
+	#First eliminate any friendly and enemy tanks right next to each other in the same row.
+	foreach ($friendlyTankPositions as $friendlyKey => $friendlyVal) {
+		$removed = false;
+		foreach ($enemyTankPositions as $enemyKey => $enemyVal) {
+			if (!$removed) {
+				if ($friendlyVal[1] === $enemyVal[1]) {
+					if (abs($friendlyVal[0] - $enemyVal[0]) <= 1) {
+						unset($friendlyTankPositions[$friendlyKey]);
+						unset($enemyTankPositions[$enemyKey]);
+						$removed = true;
+					}
+				}
+			}
+		}
+	}
+
+	#Update friendly tanks
+	$friendlyResults = updateFriendlyTanks($map, $visibility, $friendlyTankPositions);
+
+	#Update enemy tanks
+	$enemyResults = updateEnemyTanks($map, $friendlyResults['updatedVisibility'], $enemyTankPositions);
+
+	$friendlyUpdated = $friendlyResults['updatedTanks'];
+	$enemyUpdated = $enemyResults['updatedTanks'];
+	$visUpdated = $enemyResults['updatedVisibility'];
+
+	#Elminate any friendly & enemy tanks that share the same space.
+	foreach ($friendlyUpdated as $friendlyKey => $friendlyVal) {
+		$removed = false;
+		foreach ($enemyUpdated as $enemyKey => $enemyVal) {
+			if (!$removed) {
+				if ($friendlyVal[1] === $enemyVal[1]) {
+					if ($friendlyVal[0] === $enemyVal[0]) {
+						unset($friendlyUpdated[$friendlyKey]);
+						unset($enemyUpdated[$enemyKey]);
+						$removed = true;
+					}
+				}
+			}
+		}
+	}
+
+	#Combine results and return
+	$ret = array(
+		'updatedFriendlyTanks'	=>	$friendlyUpdated,
+		'updatedEnemyTanks'		=>	$enemyUpdated,
+		'updatedVisibility'		=>	$visUpdated
+	);
+
+	return $ret;
+}
+
+function updateFriendlyTanks($map, $visibility, $friendlyTankPositions) {
+	global $friendlyTankMoves;
 
 	$maxX = count($map);
 	$maxY = count($map[0]);
@@ -118,10 +223,10 @@ function updateTanks($map, $visibility, $tankPositions) {
 	$updatedTankPositions = array();
 
 	#For each tank
-	foreach ($tankPositions as $key => $tank) {
+	foreach ($friendlyTankPositions as $key => $tank) {
 		$pathFound = false;
 		$allPaths = array();
-		$tempTankMoves = $tankMoves[rand(0,1)];
+		$tempTankMoves = $friendlyTankMoves[rand(0,1)];
 
 		#Add the initial space they are in to the array of paths.
 		$path = array(
@@ -249,8 +354,8 @@ function updateTanks($map, $visibility, $tankPositions) {
 			#Check value of tile
 			#If mine
 			if ($map[$value[0]][$value[1]] === "M") {
-				#Roll odds. 67% chance to reveal mine.
-				if (rand(0,2) !== 0) {
+				#Roll odds. 75% chance to reveal mine.
+				if (rand(0,3) !== 0) {
 					#Reveal tile and remove tank
 					$visibility[$value[0]][$value[1]] = 2;
 					unset($updatedTankPositions[$key]);
@@ -267,6 +372,162 @@ function updateTanks($map, $visibility, $tankPositions) {
 	);	
 
 	return $ret;
+}
+
+function updateEnemyTanks($map, $visibility, $enemyTankPositions) {
+	global $enemyTankMoves;
+
+	$maxX = count($map);
+	$maxY = count($map[0]);
+
+	$updatedTankPositions = array();
+
+	#For each tank
+	foreach ($enemyTankPositions as $key => $tank) {
+		$pathFound = false;
+		$allPaths = array();
+		$tempTankMoves = $enemyTankMoves[rand(0,1)];
+
+		#Add the initial space they are in to the array of paths.
+		$path = array(
+			'path' => array($tank),
+			'heur' => 0);
+		array_push($allPaths, $path);
+
+		#While path to end not found
+		while (!$pathFound && (count($allPaths) > 0)) {
+			#Remove first path from array
+			$curPathArray = array_shift($allPaths);
+			$curPath = $curPathArray['path'];
+			$curHeur = $curPathArray['heur'];
+			$numAdded = 0;
+
+			#If path goes past edge
+			if ((end($curPath)[0] <= 0) || (count($curPath) >= 6)) {
+				#Update tank position to move along the path chosen
+				reset($curPath);
+				$toPush = next($curPath);
+				#Only add to updated tank positions if the path is within the grid.
+				if ($toPush[0] >= 0) {
+					array_push($updatedTankPositions, $toPush);
+				}
+				$pathFound = true;
+			} else {
+				#For each vertical variation
+				foreach ($tempTankMoves as $key => $move) {
+					#If next movement with vertical variation is a legal move
+					$nextX = end($curPath)[0] + $move[0];
+					$nextY = end($curPath)[1] + $move[1];
+
+					$shouldAdd = true;
+					if ($nextX >= $maxX) {
+						#Tank somehow goes off map in opposite direction.
+						$shouldAdd = false;
+					} elseif ($nextX <= 0) {
+						$shouldAdd = true;
+					} elseif (($nextY < 0) || ($nextY >= $maxY)) {
+						#Tank goes off map vertically.
+						$shouldAdd = false;
+					} elseif (($visibility[$nextX][$nextY] == 2) && ($map[$nextX][$nextY] === "M")) {
+						#Tank would move onto a visible mine.
+						$shouldAdd = false;
+					} else {
+						#Tank would move onto a position occupied by another tank after moving.
+						foreach ($updatedTankPositions as $key => $otherTank) {
+							if (($otherTank[0] === $nextX) && ($otherTank[1] === $nextY)) {
+								$shouldAdd = false;
+							}
+						}
+					}
+
+					if ($shouldAdd === true) {
+						$copyPath = $curPath;
+						$numAdded = $numAdded + 1;
+
+						#Add square to path
+						$newPath = array($nextX, $nextY);
+						array_push($copyPath, $newPath);
+
+						$val = 0;
+						#If the tile is on the grid x-wise
+						if (($nextX < $maxX) && ($nextY < $maxY)) {
+							#If the next tile is unrevealed, add to the heuristic value.
+							#Otherwise, keep adding forward movements to the path until the next tile added would be an unrevealed tile.
+							if ($visibility[$nextX][$nextY] == 0) {
+								$val = 50;
+							} else {
+								$skipX = $nextX + 1;
+								if ($skipX < $maxX) {
+									while (($skipX < $maxX) && ($visibility[$skipX][$nextY] === 2) && ($map[$skipX][$nextY] !== "M")) {
+										$skipAhead = array($skipX, $nextY);
+										array_push($copyPath, $skipAhead);
+										$skipX = $skipX + 1;
+									}
+								}
+							}
+						} else {
+							#Decrease the heuristic value, as we have a path that goes off the grid.
+							$val = -5;
+						}
+						
+						$pathObjToAdd = array(
+							'path' => $copyPath,
+							'heur' => $val + $curHeur
+						);
+
+						#Insert path into array while sorting for heuristic value
+						array_push($allPaths, $pathObjToAdd);
+					}
+				}
+
+				if ($numAdded >= 6) {
+					usort($allPaths, "_sortTankPaths");
+					$numAdded = 0;
+				}
+			}				
+		}
+
+		if (!$pathFound && (count($allPaths) === 0)) {
+			array_push($updatedTankPositions, array(
+				$tank[0] + 1,
+				$tank[1]
+			));
+		}
+	}
+
+	#For each new position
+	foreach ($updatedTankPositions as $key => $value) {
+		#Validate that the updated position is valid.
+		$validated = false;
+		if (count($value) === 2) {
+			if (($value[0] >= 0) && ($value[0] < $maxX)) {
+				if (($value[1] >= 0) && ($value[1] < $maxY)) {
+					$validated = true;
+				}
+			}
+		}
+
+		if ($validated) {
+			#Check value of tile
+			#If mine
+			if ($map[$value[0]][$value[1]] === "M") {
+				#Check if mine is flagged
+				if ($visibility[$value[0]][$value[1]]) {
+					$visibility[$value[0]][$value[1]] = 2;
+					unset($updatedTankPositions[$key]);
+				}
+			}
+		} else {
+			unset($updatedTankPositions[$key]);
+		}
+	}
+
+	$ret = array(
+		'updatedVisibility' => $visibility,
+		'updatedTanks'		=> $updatedTankPositions
+	);	
+
+	return $ret;	
 }
 
 #_sortTankPaths($a, $b)

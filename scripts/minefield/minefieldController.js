@@ -21,9 +21,11 @@ var minefield = [];
 //The double array containing all coordinates of other players' actions.
 var otherPlayers = [];
 
-//tanks [Double Array]
+//friendlyTanks [Double Array]
 //The double array containing all coordinates of tanks.
-var tanks = [];
+var friendlyTanks = [];
+
+var enemyTanks = [];
 
 //minefieldWidth [int]
 //The current width of the minefield.
@@ -45,32 +47,19 @@ var selectedAction = 0; //0 for shovel, 1 for flag.
 //The selection variable denoting what coordinates are currently selected. Null for no selection.
 var selectedCoordinates = null;
 
-//initMinefield(input, h, w, t, o)
-//Takes the various input parameters and initializes the game.
-//@param input [Double Array] - The minefield in array form.
-//@param h [int] - The height of the minefield.
-//@param w [int] - The width of the minefield.
-//@param t [Double Array] - The double array containing all tank coordinates.
-//@param o [Double Array] - The double array containing all other player coordinates.
-function initMinefield(input, h, w, t, o) {
+function initMinefield(input, h, w, ft, et, o) {
 	initMinefieldGraphics();
 	initMinefieldInterface();
-	updateMinefield(input, h, w, t, o);
+	updateMinefield(input, h, w, ft, et, o);
 	minefieldInitialized = true;
 }
 
-//updateMinefield(input, h, w, t, o)
-//Takes the various input parameters and updates all of the current objects needed to match those inputs.
-//@param input [Double Array] - The minefield in array form.
-//@param h [int] - The height of the minefield.
-//@param w [int] - The width of the minefield.
-//@param t [Double Array] - The double array containing all tank coordinates.
-//@param o [Double Array] - The double array containing all other player coordinates.
-function updateMinefield(input, h, w, t, o) {
+function updateMinefield(input, h, w, ft, et, o) {
 	minefield = importMinefieldFromArray(input, w, h);
 	minefieldWidth = w;
 	minefieldHeight = h;
-	tanks = t;
+	friendlyTanks = ft;
+	enemyTanks = et;
 	otherPlayers = o;
 	drawMinefield();
 }
@@ -199,8 +188,12 @@ function getSelectedActionArray() {
 //getTanks()
 //Returns the tanks.
 //@return The tanks.
-function getTanks() {
-	return tanks;
+function getFriendlyTanks() {
+	return friendlyTanks;
+}
+
+function getEnemyTanks() {
+	return enemyTanks;
 }
 
 //getTileValue(x, y)

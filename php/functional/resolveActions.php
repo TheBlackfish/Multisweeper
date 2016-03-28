@@ -21,22 +21,30 @@ function resolveAllActions($gameID) {
 	}
 
 	#Get map information, both the minefield and the visibility, for this game.
-	if ($stmt = $conn->prepare("SELECT map, visibility, height, width, tankCountdown, tanks FROM multisweeper.games WHERE gameID=?")) {
+	if ($stmt = $conn->prepare("SELECT map, visibility, height, width, friendlyTankCountdown, friendlyTanks, enemyTankCountdown, enemyTankCountdownReset, enemyTanks FROM multisweeper.games WHERE gameID=?")) {
 		$stmt->bind_param("i", $gameID);
 		$stmt->execute();
-		$stmt->bind_result($m, $v, $h, $w, $tankCount, $t);
+		$stmt->bind_result($m, $v, $h, $w, $tankCount, $t, $enemyTankCount, $enemyTankReset, $e);
 		if ($stmt->fetch()) {
 			$stmt->close();
 			$minefield = translateMinefieldToPHP($m, $h, $w);
 			$visibility = translateMinefieldToPHP($v, $h, $w);
-			$allTanks = translateTanksToPHP($t);
+			$friendlyTanks = translateTanksToPHP($t);
+			$enemyTanks = translateTanksToPHP($e);
 
 			#Determine if we need to expand the map first due to tank movement.
 			$expand = false;
+			$baseExploded = false;
 			
-			foreach ($allTanks as $tankKey => $tankPos) {
+			foreach ($friendlyTanks as $tankKey => $tankPos) {
 				if ($tankPos[0] == ($w - 1)) {
 					$expand = true;
+				}
+			}
+
+			foreach ($enemyTanks as $tankKey => $tankPos) {
+				if ($tankPos[0] == 0) {
+					$baseExploded = true;
 				}
 			}
 
@@ -81,7 +89,15 @@ function resolveAllActions($gameID) {
 						#Check that current action is legal according to tank placement.
 						$legalMove = true;
 
-						foreach ($allTanks as $tankKey => $tankPos) {
+						foreach ($friendlyTanks as $tankKey => $tankPos) {
+							if ($cur['x'] == $tankPos[0]) {
+								if ($cur['y'] == $tankPos[1]) {
+									$legalMove = false;
+								}
+							}
+						}
+
+						foreach ($enemyTanks as $tankKey => $tankPos) {
 							if ($cur['x'] == $tankPos[0]) {
 								if ($cur['y'] == $tankPos[1]) {
 									$legalMove = false;
@@ -125,7 +141,14 @@ function resolveAllActions($gameID) {
 											}
 											if ($shouldAdd) {
 												$noTanks = true;
-												foreach ($allTanks as $tankKey => $tankPos) {
+												foreach ($friendlyTanks as $tankKey => $tankPos) {
+													if ($targetX == $tankPos[0]) {
+														if ($targetY == $tankPos[1]) {
+															$noTanks = false;
+														}
+													}
+												}
+												foreach ($enemyTanks as $tankKey => $tankPos) {
 													if ($targetX == $tankPos[0]) {
 														if ($targetY == $tankPos[1]) {
 															$noTanks = false;
@@ -160,21 +183,38 @@ function resolveAllActions($gameID) {
 					}
 
 					#All tanks are updated, and any stuff on the map is updated to reflect these changes.
-					$updatedTanks = updateTanks($minefield, $visibility, $allTanks);
-					$allTanks = $updatedTanks['updatedTanks'];
+					$updatedTanks = updateTanks($minefield, $visibility, $friendlyTanks, $enemyTanks);
+					$friendlyTanks = $updatedTanks['updatedFriendlyTanks'];
+					$enemyTanks = $updatedTanks['updatedEnemyTanks'];
 					$visibility = $updatedTanks['updatedVisibility'];
 
 					#Update the tank count. If it is at 0, add a tank and reset the count to 3.
 					$tankCount = $tankCount - 1;
 					if ($tankCount <= 0) {
-						$addedTank = addTank($minefield, $visibility);
+						$addedTank = addFriendlyTank($minefield, $visibility);
 						if ($addedTank['newTankPosition'] !== null) {
-							array_push($allTanks, $addedTank['newTankPosition']);
+							array_push($friendlyTanks, $addedTank['newTankPosition']);
 						}
 						if ($addedTank['newVisibility'] !== null) {
 							$visibility = $addedTank['newVisibility'];
 						}
 						$tankCount = 3;	
+					}
+
+					#Update the enemy tank count. If it is at 0, add an enemy and reset the count to the current threshold.
+					$enemyTankCount = $enemyTankCount - 1;
+					if ($enemyTankCount <= 0) {
+						$addedTank = addEnemyTank($minefield, $visibility);
+						if ($addedTank['newTankPosition'] !== null) {
+							array_push($enemyTanks, $addedTank['newTankPosition']);
+						}
+						if ($addedTank['newVisibility'] !== null) {
+							$visibility = $addedTank['newVisibility'];
+						}
+						$enemyTankCount = $enemyTankReset;
+						if ($enemyTankReset > 3) {
+							$enemyTankReset = $enemyTankReset - 1;
+						}
 					}
 
 					#Any players who are in the game but did not have an action in the queue are set to AFK.
@@ -245,27 +285,32 @@ function resolveAllActions($gameID) {
 
 										#Try to determine if the game is complete or not.
 										$gameCompleted = false;
-										if ($checkLivingPlayers = $conn->prepare("SELECT COUNT(playerID) FROM multisweeper.playerstatus WHERE gameID=? AND status=1")) {
-											$checkLivingPlayers->bind_param("i", $gameID);
-											$checkLivingPlayers->execute();
-											$checkLivingPlayers->bind_result($count);
-											$checkLivingPlayers->fetch();
-											$checkLivingPlayers->close();
-											if ($count > 0) {
-												$gameCompleted = true;
-												for ($x = 0; ($x < count($visibility)) && $gameCompleted; $x++) {
-													for ($y = 0; ($y < count($visibility[$x])) && $gameCompleted; $y++) {
-														if ($visibility[$x][$y] == 0) {
-															if ($minefield[$x][$y] === "M") {
-																$gameCompleted = false;
+										if ($baseExploded) {
+											$gameCompleted = true;
+										} else {
+											if ($checkLivingPlayers = $conn->prepare("SELECT COUNT(playerID) FROM multisweeper.playerstatus WHERE gameID=? AND status=1")) {
+												$checkLivingPlayers->bind_param("i", $gameID);
+												$checkLivingPlayers->execute();
+												$checkLivingPlayers->bind_result($count);
+												$checkLivingPlayers->fetch();
+												$checkLivingPlayers->close();
+												if ($count > 0) {
+													$gameCompleted = true;
+													for ($x = 0; ($x < count($visibility)) && $gameCompleted; $x++) {
+														for ($y = 0; ($y < count($visibility[$x])) && $gameCompleted; $y++) {
+															if ($visibility[$x][$y] == 0) {
+																if ($minefield[$x][$y] === "M") {
+																	$gameCompleted = false;
+																}
 															}
 														}
 													}
+												} else {
+													$gameCompleted = true;
 												}
-											} else {
-												$gameCompleted = true;
 											}
 										}
+										
 
 										#If game is done, all unrevealed tiles become visible instead.
 										if ($gameCompleted) {
@@ -279,12 +324,12 @@ function resolveAllActions($gameID) {
 										}
 
 										#Update map and visibility values for the game by saving to database.
-										if ($updateStmt = $conn->prepare("UPDATE multisweeper.games SET map=?, visibility=?, tankCountdown=?, tanks=?, status=?, width=?, height=? WHERE gameID=?")) {
+										if ($updateStmt = $conn->prepare("UPDATE multisweeper.games SET map=?, visibility=?, friendlyTankCountdown=?, friendlyTanks=?, enemyTankCountdown=?, enemyTanks=?, enemyTankCountdownReset=?, status=?, width=?, height=? WHERE gameID=?")) {
 											$statusStr = "OPEN";
 											if ($gameCompleted) {
 												$statusStr = "GAME OVER";
 											}
-											$updateStmt->bind_param("ssissiii", translateMinefieldToMySQL($minefield), translateMinefieldToMySQL($visibility), $tankCount, translateTanksToMySQL($allTanks), $statusStr, count($minefield), count($minefield[0]), $gameID);
+											$updateStmt->bind_param("ssisisisiii", translateMinefieldToMySQL($minefield), translateMinefieldToMySQL($visibility), $tankCount, translateTanksToMySQL($friendlyTanks), $enemyTankCount, translateTanksToMySQL($enemyTanks), $enemyTankReset, $statusStr, count($minefield), count($minefield[0]), $gameID);
 											$updated = $updateStmt->execute();
 											if ($updated === false) {
 												error_log("resolveActions.php - Error occurred during map update. " . $updateStmt->errno . ": " . $updateStmt->error);
@@ -293,6 +338,8 @@ function resolveAllActions($gameID) {
 
 											if ($gameCompleted) {
 												createGameCreationTask();
+											} else {
+												createResolveActionsTask($gameID);
 											}
 										} else {
 											error_log("resolveActions.php - Unable to prepare map update after resolving action queue. " . $conn->errno . ": " . $conn->error);

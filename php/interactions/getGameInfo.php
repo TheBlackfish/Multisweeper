@@ -26,15 +26,16 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 		}
 
 		#Select all information about the game from the game's status columns in the MySQL database and parse it into XML form. 
-		if ($query = $conn->prepare("SELECT map, visibility, tanks, height, width, gameID, status FROM multisweeper.games ORDER BY gameID DESC LIMIT 1")) {
+		if ($query = $conn->prepare("SELECT map, visibility, friendlyTanks, enemyTanks, height, width, gameID, status FROM multisweeper.games ORDER BY gameID DESC LIMIT 1")) {
 			$query->execute();
-			$query->bind_result($map, $vis, $tanks, $height, $width, $gameID, $status);
+			$query->bind_result($map, $vis, $friendlyTanks, $enemyTanks, $height, $width, $gameID, $status);
 			$query->fetch();
 			$query->close();
 
 			$finalMap = translateMinefieldToMySQL(getMinefieldWithVisibility($gameID, translateMinefieldToPHP($map, $height, $width), translateMinefieldToPHP($vis, $height, $width)));
 
-			$finalTanks = translateTanksToPHP($tanks);
+			$finalFriendlies = translateTanksToPHP($friendlyTanks);
+			$finalEnemies = translateTanksToPHP($enemyTanks);
 
 			$newrow = $doc->createElement('minefield');
 			$newrow = $doc->appendChild($newrow);
@@ -54,14 +55,26 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 			$nodeD = $doc->createElement('status', $status);
 			$nodeD = $newrow->appendChild($nodeD);
 
-			if ($tanks !== null) {
-				$nodeE = $doc->createElement('tanks');
+			if ($finalFriendlies !== null) {
+				$nodeE = $doc->createElement('friendlyTanks');
 				$nodeE = $newrow->appendChild($nodeE);
 
-				foreach ($finalTanks as $k => $v) {
+				foreach ($finalFriendlies as $k => $v) {
 					if (count($v) === 2) {
 						$nodeT = $doc->createElement('tank', $v[0] . "," . $v[1]);
 						$nodeT = $nodeE->appendChild($nodeT);
+					}
+				}
+			}
+
+			if ($finalEnemies !== null) {
+				$nodeJ = $doc->createElement('enemyTanks');
+				$nodeJ = $newrow->appendChild($nodeJ);
+
+				foreach ($finalEnemies as $k => $v) {
+					if (count($v) === 2) {
+						$nodeT = $doc->createElement('tank', $v[0] . "," . $v[1]);
+						$nodeT = $nodeJ->appendChild($nodeT);
 					}
 				}
 			}

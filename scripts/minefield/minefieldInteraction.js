@@ -43,10 +43,18 @@ function processSelection(e) {
 				canSelect = true;
 			}
 
-			var t = getTanks();
+			var ft = getFriendlyTanks();
 
-			for (var i = 0; i < t.length && canSelect; i++) {
-				if (t[0] == coord[0] && t[1] == coord[1]) {
+			for (var i = 0; i < ft.length && canSelect; i++) {
+				if (ft[0] == coord[0] && ft[1] == coord[1]) {
+					canSelect = false;
+				}
+			}
+
+			var et = getEnemyTanks();
+
+			for (var i = 0; i < et.length && canSelect; i++) {
+				if (et[0] == coord[0] && et[1] == coord[1]) {
 					canSelect = false;
 				}
 			}

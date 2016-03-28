@@ -42,7 +42,7 @@ function initMinefieldGraphics() {
 //initMinefieldImages()
 //Loads all of the images needed.
 function initMinefieldImages() {
-	var overlayFiles = ["0", "1", "2", "3", "4", "5", "6", "7", "8", "flag", "mine", "otherPlayer", "plantFlag", "shovel", "tank"];
+	var overlayFiles = ["0", "1", "2", "3", "4", "5", "6", "7", "8", "flag", "mine", "otherPlayer", "plantFlag", "shovel", "friendlyTank", "enemyTank"];
 	var underlayFiles = ["revealed", "unrevealed"];
 	var targetNum = overlayFiles.length + underlayFiles.length;
 	for (var i = 0; i < overlayFiles.length; i++) {
@@ -154,11 +154,19 @@ function selectOverlayForTile(x, y) {
 		}
 	}
 
-	var t = getTanks();
+	var ft = getFriendlyTanks();
 
-	for (var i = 0; i < t.length; i++) {
-		if (t[i][0] == x && t[i][1] == y) {
-			return overlayImages["tank"];
+	for (var i = 0; i < ft.length; i++) {
+		if (ft[i][0] == x && ft[i][1] == y) {
+			return overlayImages["friendlyTank"];
+		}
+	}
+
+	var et = getEnemyTanks();
+
+	for (var i = 0; i < et.length; i++) {
+		if (et[i][0] == x && et[i][1] == y) {
+			return overlayImages["enemyTank"];
 		}
 	}
 

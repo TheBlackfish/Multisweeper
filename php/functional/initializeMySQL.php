@@ -49,14 +49,19 @@ function initMySQL() {
 		KEY `playerID_idx` (`playerID`), CONSTRAINT `chatPlayerID` FOREIGN KEY (`playerID`) REFERENCES `players` (`playerID`) ON DELETE NO ACTION ON UPDATE NO 
 	)";
 
-	$gameTableStatement = "CREATE TABLE IF NOT EXISTS multisweeper.games (
-		`gameID` int(11) NOT NULL AUTO_INCREMENT,
-		`map` varchar(2000) NOT NULL, `visibility` varchar(2000) NOT NULL, 
-		`height` int(11) NOT NULL, 
-		`width` int(11) NOT NULL, 
-		`status` varchar(45) NOT NULL, 
-		`tankCountdown` int(4) NOT NULL DEFAULT '3', 
-		`tanks` varchar(2000) DEFAULT NULL, PRIMARY KEY (`gameID`)
+	$gameTableStatement = "CREATE TABLE `games` (
+  		`gameID` int(11) NOT NULL AUTO_INCREMENT,
+  		`map` varchar(2000) NOT NULL,
+  		`visibility` varchar(2000) NOT NULL,
+  		`height` int(11) NOT NULL,
+ 		`width` int(11) NOT NULL,
+  		`status` varchar(45) NOT NULL,
+  		`friendlyTankCountdown` int(4) NOT NULL DEFAULT '3',
+  		`friendlyTanks` varchar(2000) NOT NULL,
+  		`enemyTankCountdown` int(4) NOT NULL DEFAULT '10',
+  		`enemyTankCountdownReset` int(4) NOT NULL DEFAULT '9',
+  		`enemyTanks` varchar(2000) NOT NULL,
+  		PRIMARY KEY (`gameID`)
 	)";
 
 	$globalTableStatement = "CREATE TABLE IF NOT EXISTS multisweeper.globalvars (
