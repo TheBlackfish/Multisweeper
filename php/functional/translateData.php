@@ -19,6 +19,15 @@ function translateMinefieldToPHP($data, $height, $width) {
 		$tempArray = str_split($currentChunk, 1);
 		array_push($result, $tempArray);
 	}
+
+	for ($x = 0; $x < $width; $x++) {
+		for ($y = 0; $y < $height; $y++) {
+			if ($result[$x][$y] !== "M") {
+				$result[$x][$y] = intval($result[$x][$y]);
+			}
+		}
+	}
+
 	return $result;
 }
 

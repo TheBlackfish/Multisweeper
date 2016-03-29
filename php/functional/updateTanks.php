@@ -134,7 +134,7 @@ function addEnemyTank($map, $visibility) {
 	}
 
 	if (count($candidates) > 0) {
-		$ret['newTankPosition'] = array($end, $candidates[rand(0, count($candidates))]);		
+		$ret['newTankPosition'] = array($end, $candidates[rand(0, count($candidates) - 1)]);		
 	} else {
 		$target = array($end, rand(0, count($map[$end])));
 		if ($visibility[$target[0]][$target[1]] === 1) {
@@ -172,6 +172,7 @@ function updateTanks($map, $visibility, $friendlyTankPositions, $enemyTankPositi
 						unset($friendlyTankPositions[$friendlyKey]);
 						unset($enemyTankPositions[$enemyKey]);
 						$removed = true;
+						error_log("Removed tanks!");
 					}
 				}
 			}
@@ -198,6 +199,7 @@ function updateTanks($map, $visibility, $friendlyTankPositions, $enemyTankPositi
 						unset($friendlyUpdated[$friendlyKey]);
 						unset($enemyUpdated[$enemyKey]);
 						$removed = true;
+						error_log("Removed tanks!");
 					}
 				}
 			}
@@ -509,14 +511,16 @@ function updateEnemyTanks($map, $visibility, $enemyTankPositions) {
 
 		if ($validated) {
 			#Check value of tile
-			#If mine
-			if ($map[$value[0]][$value[1]] === "M") {
-				#Check if mine is flagged
-				if ($visibility[$value[0]][$value[1]]) {
+			#If flagged
+			if ($visibility[$value[0]][$value[1]] === 1) {
+				#Check if mine
+				if ($map[$value[0]][$value[1]] === "M") {
 					$visibility[$value[0]][$value[1]] = 2;
 					unset($updatedTankPositions[$key]);
+				} else {
+					$visibility[$value[0]][$value[1]] = 0;
 				}
-			}
+			} 
 		} else {
 			unset($updatedTankPositions[$key]);
 		}

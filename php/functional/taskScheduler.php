@@ -11,9 +11,12 @@ require_once($_SERVER['DOCUMENT_ROOT'] . "/multisweeper/php/constants/databaseCo
 function createResolveActionsTask($gameID) {
 	global $scriptsDirectory, $phpFilepath, $phpSchedulerLogPath;
 
+	deleteResolveActionsTask($gameID);
+
 	$taskDetails = $phpFilepath . " -f " . $scriptsDirectory . "resolveActionsScript.php " . $gameID;
-	$execTime = date("H:i", time() + 10 * 60);
+	$execTime = date("H:i", time() + 2 * 60);
 	exec("schtasks.exe /CREATE /RU SYSTEM /SC ONCE /TN \"MultisweeperResolveActions-{$gameID}\" /TR \"{$taskDetails}\" /ST {$execTime} /F > \"{$phpSchedulerLogPath}\"");
+	error_log("Successfully created new resolution task.");
 }
 
 #createResolveActionsTask($gameID)
@@ -29,7 +32,7 @@ function createGameCreationTask() {
 	global $scriptsDirectory, $phpFilepath, $phpSchedulerLogPath, $sqlhost,	$sqlusername, $sqlpassword;
 
 	$taskDetails = $phpFilepath . " -f " . $scriptsDirectory . "gameCreationScript.php";
-	$exactTime = time() + 10 * 60;
+	$exactTime = time() + 2 * 60;
 	$execTime = date("H:i", $exactTime);
 	exec("schtasks.exe /CREATE /RU SYSTEM /SC ONCE /TN \"MultisweeperCreateGame\" /TR \"{$taskDetails}\" /ST {$execTime} /F > \"{$phpSchedulerLogPath}\"");
 

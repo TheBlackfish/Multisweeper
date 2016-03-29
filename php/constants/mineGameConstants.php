@@ -5,7 +5,7 @@
 
 	$minefieldWidth = 50;
 	$minefieldHeight = 30;
-	$startingMines = 300;
+	$startingMines = 200;
 	
 	$adjacencies = array(
 		array(0, -1),
