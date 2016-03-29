@@ -96,7 +96,7 @@ function getOtherPlayerActionsForGame($gameID, $excludePlayerID) {
 		$query->execute();
 		$query->bind_result($xCoord, $yCoord);
 		while ($query->fetch()) {
-			array_push($result, array(xCoord, yCoord));
+			array_push($result, array($xCoord, $yCoord));
 		}
 	} else {
 		error_log("minefieldController.php - Unable to get other player actions, returning with none.");

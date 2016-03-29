@@ -16,7 +16,6 @@ function createResolveActionsTask($gameID) {
 	$taskDetails = $phpFilepath . " -f " . $scriptsDirectory . "resolveActionsScript.php " . $gameID;
 	$execTime = date("H:i", time() + 2 * 60);
 	exec("schtasks.exe /CREATE /RU SYSTEM /SC ONCE /TN \"MultisweeperResolveActions-{$gameID}\" /TR \"{$taskDetails}\" /ST {$execTime} /F > \"{$phpSchedulerLogPath}\"");
-	error_log("Successfully created new resolution task.");
 }
 
 #createResolveActionsTask($gameID)
@@ -44,7 +43,7 @@ function createGameCreationTask() {
 	if ($timeStmt = $conn->prepare("INSERT INTO multisweeper.globalvars (k, v) VALUES ('nextGameTime', ?)")) {
 		$timeStmt->bind_param("s", $execTime);
 		if ($timeStmt->execute()) {
-			error_log("taskScheduler.php - Successfully executed next game time statement.");
+			#error_log("taskScheduler.php - Successfully executed next game time statement.");
 		} else {
 			error_log("taskScheduler.php - Unable to set next game time in database. " . $timeStmt->errno . ": " . $timeStmt->error);
 		}
