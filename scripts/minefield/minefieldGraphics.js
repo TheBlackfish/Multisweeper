@@ -42,7 +42,7 @@ function initMinefieldGraphics() {
 //initMinefieldImages()
 //Loads all of the images needed.
 function initMinefieldImages() {
-	var overlayFiles = ["0", "1", "2", "3", "4", "5", "6", "7", "8", "flag", "mine", "otherPlayer", "plantFlag", "shovel", "friendlyTank", "enemyTank"];
+	var overlayFiles = ["0", "1", "2", "3", "4", "5", "6", "7", "8", "flag", "mine", "otherPlayer", "plantFlag", "shovel", "friendlyTank", "enemyTank", "wreck"];
 	var underlayFiles = ["revealed", "unrevealed"];
 	var targetNum = overlayFiles.length + underlayFiles.length;
 	for (var i = 0; i < overlayFiles.length; i++) {
@@ -186,6 +186,8 @@ function selectOverlayForTile(x, y) {
 		return overlayImages["mine"];
 	} else if (val === 9) {
 		return overlayImages["flag"];
+	} else if (val === 10) {
+		return overlayImages["wreck"];
 	} else {
 		return overlayImages[""+val];
 	}
@@ -200,7 +202,7 @@ function selectOverlayForTile(x, y) {
 //@return The image file that is the correct underlay for the tile.
 function selectUnderlayForTile(x, y) {
 	var val = getTileValue(x, y);
-	if (val === -1 || val > 8) {
+	if (val === -1 || val === 9) {
 		return underlayImages["unrevealed"];
 	} else {
 		return underlayImages["revealed"];

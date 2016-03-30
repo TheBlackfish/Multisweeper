@@ -117,7 +117,9 @@ function preprocessMinefieldMap(input) {
 			result[i] = -2;
 		} else if (result[i] === "F") {
 			result[i] = 9;
- 		} else {
+		} else if (result[i] === "W") {
+			result[i] = 10;
+		} else {
  			result[i] = parseInt(result[i]);
  		}
 	}

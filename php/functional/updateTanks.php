@@ -1,6 +1,7 @@
 <?php
 
 require_once($_SERVER['DOCUMENT_ROOT'] . '/multisweeper/php/constants/mineGameConstants.php');
+require_once($_SERVER['DOCUMENT_ROOT'] . '/multisweeper/php/functional/updateWrecks.php');
 
 #addFriendlyTank($map, $visibility)
 #Adds a friendly tank to the leftmost column to the map provided. This addition will never go onto a visible mine or flags, and will try 3 times to not place on an unrevealed mine. If not possible, the tank will be placed on a random row instead, regardless of mines or flags.
@@ -161,7 +162,7 @@ function addEnemyTank($map, $visibility) {
 #@param $visibility (Double Array) The visibility of the minefield for the tanks to navigate.
 #@param $tankPositions (Double Array) The array containing all of the current tank coordinates.
 #@return The double array containing all of the tank coordinates in a game.
-function updateTanks($map, $visibility, $friendlyTankPositions, $enemyTankPositions) {
+function updateTanks($map, $visibility, $friendlyTankPositions, $enemyTankPositions, $wrecks) {
 	#First eliminate any friendly and enemy tanks right next to each other in the same row.
 	foreach ($friendlyTankPositions as $friendlyKey => $friendlyVal) {
 		$removed = false;
@@ -170,7 +171,9 @@ function updateTanks($map, $visibility, $friendlyTankPositions, $enemyTankPositi
 				if ($friendlyVal[1] === $enemyVal[1]) {
 					if (abs($friendlyVal[0] - $enemyVal[0]) <= 1) {
 						unset($friendlyTankPositions[$friendlyKey]);
+						$wrecks = addWreck($map, $wrecks, $friendlyVal);
 						unset($enemyTankPositions[$enemyKey]);
+						$wrecks = addWreck($map, $wrecks, $enemyVal);
 						$removed = true;
 						error_log("Removed tanks!");
 					}
@@ -180,13 +183,14 @@ function updateTanks($map, $visibility, $friendlyTankPositions, $enemyTankPositi
 	}
 
 	#Update friendly tanks
-	$friendlyResults = updateFriendlyTanks($map, $visibility, $friendlyTankPositions);
+	$friendlyResults = updateFriendlyTanks($map, $visibility, $friendlyTankPositions, $wrecks);
 
 	#Update enemy tanks
-	$enemyResults = updateEnemyTanks($map, $friendlyResults['updatedVisibility'], $enemyTankPositions);
+	$enemyResults = updateEnemyTanks($map, $friendlyResults['updatedVisibility'], $enemyTankPositions, $friendlyResults['updatedWrecks']);
 
 	$friendlyUpdated = $friendlyResults['updatedTanks'];
 	$enemyUpdated = $enemyResults['updatedTanks'];
+	$wrecksUpdated = $enemyResults['updatedWrecks'];
 	$visUpdated = $enemyResults['updatedVisibility'];
 
 	#Elminate any friendly & enemy tanks that share the same space.
@@ -197,10 +201,31 @@ function updateTanks($map, $visibility, $friendlyTankPositions, $enemyTankPositi
 				if ($friendlyVal[1] === $enemyVal[1]) {
 					if ($friendlyVal[0] === $enemyVal[0]) {
 						unset($friendlyUpdated[$friendlyKey]);
+						$wrecksUpdated = addWreck($map, $wrecksUpdated, $friendlyVal);
 						unset($enemyUpdated[$enemyKey]);
+						$wrecksUpdated = addWreck($map, $wrecksUpdated, $enemyVal);
 						$removed = true;
-						error_log("Removed tanks!");
 					}
+				}	
+			}
+		}
+
+		if (!$removed) {
+			foreach ($wrecksUpdated as $wreckKey => $wreckVal) {
+				if ($friendlyVal[0] === $wreckVal[0]) {
+					if ($friendlyVal[1] === $wreckVal[1]) {
+						unset($wrecksUpdated[$wreckKey]);
+					}
+				}
+			}
+		}
+	}
+
+	foreach ($enemyUpdated as $enemyKey => $enemyVal) {
+		foreach ($wrecksUpdated as $wreckKey => $wreckVal) {
+			if ($enemyVal[0] === $wreckVal[0]) {
+				if ($enemyVal[1] === $wreckVal[1]) {
+					unset($wrecksUpdated[$wreckKey]);
 				}
 			}
 		}
@@ -210,13 +235,14 @@ function updateTanks($map, $visibility, $friendlyTankPositions, $enemyTankPositi
 	$ret = array(
 		'updatedFriendlyTanks'	=>	$friendlyUpdated,
 		'updatedEnemyTanks'		=>	$enemyUpdated,
+		'updatedWrecks'			=>	$wrecksUpdated,
 		'updatedVisibility'		=>	$visUpdated
 	);
 
 	return $ret;
 }
 
-function updateFriendlyTanks($map, $visibility, $friendlyTankPositions) {
+function updateFriendlyTanks($map, $visibility, $friendlyTankPositions, $wrecks) {
 	global $friendlyTankMoves;
 
 	$maxX = count($map);
@@ -361,6 +387,7 @@ function updateFriendlyTanks($map, $visibility, $friendlyTankPositions) {
 					#Reveal tile and remove tank
 					$visibility[$value[0]][$value[1]] = 2;
 					unset($updatedTankPositions[$key]);
+					$wrecks = addWreck($map, $wrecks, $value);
 				}
 			}
 		} else {
@@ -370,13 +397,14 @@ function updateFriendlyTanks($map, $visibility, $friendlyTankPositions) {
 
 	$ret = array(
 		'updatedVisibility' => $visibility,
-		'updatedTanks'		=> $updatedTankPositions
+		'updatedTanks'		=> $updatedTankPositions,
+		'updatedWrecks'		=> $wrecks
 	);	
 
 	return $ret;
 }
 
-function updateEnemyTanks($map, $visibility, $enemyTankPositions) {
+function updateEnemyTanks($map, $visibility, $enemyTankPositions, $wrecks) {
 	global $enemyTankMoves;
 
 	$maxX = count($map);
@@ -517,6 +545,7 @@ function updateEnemyTanks($map, $visibility, $enemyTankPositions) {
 				if ($map[$value[0]][$value[1]] === "M") {
 					$visibility[$value[0]][$value[1]] = 2;
 					unset($updatedTankPositions[$key]);
+					$wrecks = addWreck($map, $wrecks, $value);
 				} else {
 					$visibility[$value[0]][$value[1]] = 0;
 				}
@@ -528,8 +557,9 @@ function updateEnemyTanks($map, $visibility, $enemyTankPositions) {
 
 	$ret = array(
 		'updatedVisibility' => $visibility,
-		'updatedTanks'		=> $updatedTankPositions
-	);	
+		'updatedTanks'		=> $updatedTankPositions,
+		'updatedWrecks'		=> $wrecks
+	);		
 
 	return $ret;	
 }

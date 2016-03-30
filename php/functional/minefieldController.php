@@ -12,7 +12,7 @@ require_once($_SERVER['DOCUMENT_ROOT'] . '/multisweeper/php/functional/translate
 #@param $minefield (Double Array) The properly formatted double array representing the minefield with all tiles revealed.
 #@param $visibility (Double Array) The properly formatted double array representing the visibility of the minefield, including flags.
 #@return The properly formatted double array with both visibility and player actions applied.
-function getMinefieldWithVisibility($gameID, $minefield, $visibility) {
+function getMinefieldWithVisibility($gameID, $minefield, $visibility, $wrecks) {
 	if (count($minefield) !== count($visibility)) {
 		error_log("minefieldController.php - Minefield size did not match visibility matrix size.");
 		die("Fatal error, exiting.");
@@ -45,6 +45,12 @@ function getMinefieldWithVisibility($gameID, $minefield, $visibility) {
 		}
 
 		array_push($result, $temp);
+	}
+
+	foreach ($wrecks as $wreckKey => $wreckVal) {
+		if (count($wreckVal) === 2) {
+			$result[$wreckVal[0]][$wreckVal[1]] = "W";
+		}
 	}
 
 	return $result;

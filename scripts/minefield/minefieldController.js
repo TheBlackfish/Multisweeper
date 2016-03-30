@@ -8,6 +8,7 @@
 	-1	Unrevealed
 	0-8	Number of adjacent mines
 	9	Flag placed
+	10	Wreckage
 
 	Tanks and other players are in their own arrays.
 	Flag & shovel actions are stored in the selected* set of variables. 

@@ -51,16 +51,17 @@ function initMySQL() {
 
 	$gameTableStatement = "CREATE TABLE `games` (
 	  	`gameID` int(11) NOT NULL AUTO_INCREMENT,
-	 	`map` varchar(2000) NOT NULL,
-	  	`visibility` varchar(2000) NOT NULL,
+	  	`map` varchar(20000) NOT NULL,
+	  	`visibility` varchar(20000) NOT NULL,
 	  	`height` int(11) NOT NULL,
 	  	`width` int(11) NOT NULL,
-	  	`status` varchar(45) NOT NULL,
+	 	`status` varchar(45) NOT NULL,
 	  	`friendlyTankCountdown` int(4) NOT NULL DEFAULT '3',
 	  	`friendlyTanks` varchar(2000) NOT NULL,
 	  	`enemyTankCountdown` int(6) NOT NULL DEFAULT '15',
 	  	`enemyTankCountdownReset` int(6) NOT NULL DEFAULT '14',
 	  	`enemyTanks` varchar(2000) NOT NULL,
+	  	`wrecks` varchar(2000) NOT NULL,
 	  	PRIMARY KEY (`gameID`)
 	)";
 

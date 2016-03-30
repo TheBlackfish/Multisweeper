@@ -23,10 +23,10 @@ function resolveAllActions($gameID) {
 	}
 
 	#Get map information, both the minefield and the visibility, for this game.
-	if ($stmt = $conn->prepare("SELECT map, visibility, height, width, friendlyTankCountdown, friendlyTanks, enemyTankCountdown, enemyTankCountdownReset, enemyTanks FROM multisweeper.games WHERE gameID=?")) {
+	if ($stmt = $conn->prepare("SELECT map, visibility, height, width, friendlyTankCountdown, friendlyTanks, enemyTankCountdown, enemyTankCountdownReset, enemyTanks, wrecks FROM multisweeper.games WHERE gameID=?")) {
 		$stmt->bind_param("i", $gameID);
 		$stmt->execute();
-		$stmt->bind_result($m, $v, $h, $w, $tankCount, $t, $enemyTankCount, $enemyTankReset, $e);
+		$stmt->bind_result($m, $v, $h, $w, $tankCount, $t, $enemyTankCount, $enemyTankReset, $e, $wr);
 		if ($stmt->fetch()) {
 			$stmt->close();
 
@@ -41,6 +41,7 @@ function resolveAllActions($gameID) {
 			$visibility = translateMinefieldToPHP($v, $h, $w);
 			$friendlyTanks = translateTanksToPHP($t);
 			$enemyTanks = translateTanksToPHP($e);
+			$wrecks = translateTanksToPHP($wr);
 
 			#Determine if we need to expand the map first due to tank movement.
 			$expand = false;
@@ -114,6 +115,14 @@ function resolveAllActions($gameID) {
 						}
 					}
 
+					foreach ($wrecks as $wkey => $wval) {
+						if ($cur['x'] == $wval[0]) {
+							if ($cur['y'] == $wval[1]) {
+								$legalMove = false;
+							}
+						}
+					}
+
 					if ($legalMove) {
 						#Action Type 0 is a shovel action.
 						#When shoveling, the current tile is revealed no matter what.
@@ -177,6 +186,13 @@ function resolveAllActions($gameID) {
 													}
 												}
 											}
+											foreach ($wrecks as $wkey => $wval) {
+												if ($targetX == $wval[0]) {
+													if ($targetY == $wval[1]) {
+														$noTanks = false;
+													}
+												}
+											}
 											if ($noTanks) {
 												if ($visibility[$targetX][$targetY] == 0) {
 													$newAction = array(
@@ -205,9 +221,10 @@ function resolveAllActions($gameID) {
 				}
 
 				#All tanks are updated, and any stuff on the map is updated to reflect these changes.
-				$updatedTanks = updateTanks($minefield, $visibility, $friendlyTanks, $enemyTanks);
+				$updatedTanks = updateTanks($minefield, $visibility, $friendlyTanks, $enemyTanks, $wrecks);
 				$friendlyTanks = $updatedTanks['updatedFriendlyTanks'];
 				$enemyTanks = $updatedTanks['updatedEnemyTanks'];
+				$wrecks = $updatedTanks['updatedWrecks'];
 				$visibility = $updatedTanks['updatedVisibility'];
 
 				#Update the tank count. If it is at 0, add a tank and reset the count to 3.
@@ -346,12 +363,12 @@ function resolveAllActions($gameID) {
 									}
 
 									#Update map and visibility values for the game by saving to database.
-									if ($updateStmt = $conn->prepare("UPDATE multisweeper.games SET map=?, visibility=?, friendlyTankCountdown=?, friendlyTanks=?, enemyTankCountdown=?, enemyTanks=?, enemyTankCountdownReset=?, status=?, width=?, height=? WHERE gameID=?")) {
+									if ($updateStmt = $conn->prepare("UPDATE multisweeper.games SET map=?, visibility=?, friendlyTankCountdown=?, friendlyTanks=?, enemyTankCountdown=?, enemyTanks=?, enemyTankCountdownReset=?, wrecks=?, status=?, width=?, height=? WHERE gameID=?")) {
 										$statusStr = "OPEN";
 										if ($gameCompleted) {
 											$statusStr = "GAME OVER";
 										}
-										$updateStmt->bind_param("ssisisisiii", translateMinefieldToMySQL($minefield), translateMinefieldToMySQL($visibility), $tankCount, translateTanksToMySQL($friendlyTanks), $enemyTankCount, translateTanksToMySQL($enemyTanks), $enemyTankReset, $statusStr, count($minefield), count($minefield[0]), $gameID);
+										$updateStmt->bind_param("ssisisissiii", translateMinefieldToMySQL($minefield), translateMinefieldToMySQL($visibility), $tankCount, translateTanksToMySQL($friendlyTanks), $enemyTankCount, translateTanksToMySQL($enemyTanks), $enemyTankReset, translateTanksToMySQL($wrecks), $statusStr, count($minefield), count($minefield[0]), $gameID);
 										$updated = $updateStmt->execute();
 										if ($updated === false) {
 											error_log("resolveActions.php - Error occurred during map update. " . $updateStmt->errno . ": " . $updateStmt->error);

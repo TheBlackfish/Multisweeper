@@ -26,16 +26,17 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 		}
 
 		#Select all information about the game from the game's status columns in the MySQL database and parse it into XML form. 
-		if ($query = $conn->prepare("SELECT map, visibility, friendlyTanks, enemyTanks, height, width, gameID, status FROM multisweeper.games ORDER BY gameID DESC LIMIT 1")) {
+		if ($query = $conn->prepare("SELECT map, visibility, friendlyTanks, enemyTanks, wrecks, height, width, gameID, status FROM multisweeper.games ORDER BY gameID DESC LIMIT 1")) {
 			$query->execute();
-			$query->bind_result($map, $vis, $friendlyTanks, $enemyTanks, $height, $width, $gameID, $status);
+			$query->bind_result($map, $vis, $friendlyTanks, $enemyTanks, $wrecks, $height, $width, $gameID, $status);
 			$query->fetch();
 			$query->close();
 
-			$finalMap = translateMinefieldToMySQL(getMinefieldWithVisibility($gameID, translateMinefieldToPHP($map, $height, $width), translateMinefieldToPHP($vis, $height, $width)));
-
 			$finalFriendlies = translateTanksToPHP($friendlyTanks);
 			$finalEnemies = translateTanksToPHP($enemyTanks);
+			$finalWrecks = translateTanksToPHP($wrecks);
+
+			$finalMap = translateMinefieldToMySQL(getMinefieldWithVisibility($gameID, translateMinefieldToPHP($map, $height, $width), translateMinefieldToPHP($vis, $height, $width), $finalWrecks));
 
 			$newrow = $doc->createElement('minefield');
 			$newrow = $doc->appendChild($newrow);
@@ -78,7 +79,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 					}
 				}
 			}
-
+ 
 			$otherPlayers = getOtherPlayerActionsForGame($gameID, $xml->playerID);
 			if (count($otherPlayers) !== 0) {
 				$nodeF = $doc->createElement('otherPlayers');
@@ -147,6 +148,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 	}
 	
 	$r = $doc->saveXML();
+	error_log($r);
 	echo $r;
 }
 ?>
