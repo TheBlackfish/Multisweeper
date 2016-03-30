@@ -64,6 +64,9 @@ function resolveAllActions($gameID) {
 				$newVals = expandMinefield($minefield, $visibility, 10, 0);
 				$minefield = $newVals["minefield"];
 				$visibility = $newVals["visibility"];
+				if ($enemyTankReset > 3) {
+					$enemyTankReset = $enemyTankReset - 1;
+				}
 			}
 
 			#Retrieve all actions in the action queue for this game and throw them into unique objects in an array for easy access during resolution.
@@ -251,9 +254,7 @@ function resolveAllActions($gameID) {
 						$visibility = $addedTank['newVisibility'];
 					}
 					$enemyTankCount = $enemyTankReset;
-					if ($enemyTankReset > 3) {
-						$enemyTankReset = $enemyTankReset - 1;
-					}
+					$enemyTankReset = $enemyTankReset - 1;
 				}
 
 				#Any players who are in the game but did not have an action in the queue are set to AFK.
