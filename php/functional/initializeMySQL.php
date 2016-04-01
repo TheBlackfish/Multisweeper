@@ -32,7 +32,7 @@ function initMySQL() {
 	$actionTableStatement = "CREATE TABLE IF NOT EXISTS multisweeper.actionqueue (
 		`gameID` int(11) NOT NULL, 
 		`playerID` int(11) NOT NULL, 
-		`actionType` bit(1) NOT NULL, 
+		`actionType` int(2) NOT NULL, 
 		`xCoord` int(11) NOT NULL, 
 		`yCoord` int(11) NOT NULL, 
 		KEY `gameID_idx` (`gameID`), 
@@ -59,9 +59,10 @@ function initMySQL() {
 	  	`friendlyTankCountdown` int(4) NOT NULL DEFAULT '3',
 	  	`friendlyTanks` varchar(2000) NOT NULL,
 	  	`enemyTankCountdown` int(6) NOT NULL DEFAULT '15',
-	  	`enemyTankCountdownReset` int(6) NOT NULL DEFAULT '14',
+	  	`enemyTankCountdownReset` int(6) NOT NULL DEFAULT '15',
 	  	`enemyTanks` varchar(2000) NOT NULL,
 	  	`wrecks` varchar(2000) NOT NULL,
+	  	`traps` varchar(2000) NOT NULL,
 	  	PRIMARY KEY (`gameID`)
 	)";
 
@@ -85,14 +86,17 @@ function initMySQL() {
 		CONSTRAINT `playerIDy` FOREIGN KEY (`playerID`) REFERENCES `players` (`playerID`) ON DELETE NO ACTION ON UPDATE NO ACTION
 	)";
 
-	$statusTableStatement = "CREATE TABLE IF NOT EXISTS multisweeper.playerstatus (
-		`status` int(2) NOT NULL DEFAULT '1', 
-		`awaitingAction` bit(1) NOT NULL, `gameID` int(11) NOT NULL, 
-		`playerID` int(11) NOT NULL, 
-		`afkCount` int(4) NOT NULL DEFAULT '0', 
-		KEY `gameID_idx` (`gameID`), 
-		KEY `playerID_idx` (`playerID`), 
-		CONSTRAINT `gameID` FOREIGN KEY (`gameID`) REFERENCES `games` (`gameID`) ON DELETE NO ACTION ON UPDATE NO ACTION, 
+	$statusTableStatement = "CREATE TABLE `playerstatus` (
+		`status` int(2) NOT NULL DEFAULT '1',
+		`awaitingAction` bit(1) NOT NULL,
+		`gameID` int(11) NOT NULL,
+		`playerID` int(11) NOT NULL,
+		`afkCount` int(4) NOT NULL DEFAULT '0',
+		`trapType` int(4) NOT NULL DEFAULT '0',
+		`trapCooldown` int(6) NOT NULL DEFAULT '0',
+		KEY `gameID_idx` (`gameID`),
+		KEY `playerID_idx` (`playerID`),
+		CONSTRAINT `gameID` FOREIGN KEY (`gameID`) REFERENCES `games` (`gameID`) ON DELETE NO ACTION ON UPDATE NO ACTION,
 		CONSTRAINT `playerID` FOREIGN KEY (`playerID`) REFERENCES `players` (`playerID`) ON DELETE NO ACTION ON UPDATE NO ACTION
 	)";
 

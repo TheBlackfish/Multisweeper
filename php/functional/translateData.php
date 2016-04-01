@@ -89,4 +89,40 @@ function translateTanksToMySQL($data) {
 	return "";
 } 
 
+function translateTrapsToPHP($data) {
+	$traps = array();
+	if ($data !== null) {
+		if (strlen($data) > 0) {
+			$temptraps = explode("/", $data);
+			foreach ($temptraps as $k => $v) {
+				$trapDetails = explode(",", $v);
+				if (count($trapDetails) !== 3) {
+					error_log("translateData.php - unexpected details of traps while translating traps from MySQL to PHP!");
+				} else {
+					foreach ($trapDetails as $k2 => $v2) {
+						$v2 = intval($v2);
+					}
+					array_push($traps, $trapDetails);
+				}
+			}
+		}
+	}
+	return $traps;
+}
+
+function translateTrapsToMySQL($data) {
+	$tempStrs = array();
+	foreach ($data as $k => $v) {
+		if (count($v) !== 3) {
+			error_log("translateData.php - unexpected number of numbers while translating traps from PHP to MySQL!");
+		} else {
+			array_push($tempStrs, $v[0] . "," . $v[1] . "," . $v[2]);
+		}
+	}
+	if (count($tempStrs) > 0) {
+		return implode("/", $tempStrs);
+	}
+	return "";
+}
+
 ?>

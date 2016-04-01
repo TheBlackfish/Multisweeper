@@ -20,6 +20,8 @@ function submitAction() {
 		xml += '<actionType>' + selectionTile["action"] + '</actionType>';
 		xml += '</submit>';
 
+		console.log(xml);
+
 		handleDataWithPHP(xml, 'submitAction', resolveActionSubmission);
 	} else {
 		document.getElementById("submitMessage").innerHTML = "Please select a tile to dig above!";

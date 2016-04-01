@@ -69,8 +69,21 @@ function populatePlayerListTable(playerXML) {
 			statusStr = "AFK";
 		}
 
-		tempStr += "<td>" + statusStr + "</td></tr>";
+		tempStr += "<td>" + statusStr + "</td>";
 
+		var trapStr = "None";
+		switch (parseInt(playerNodes[i].getAttribute("trapType"))) {
+			case 0:
+				trapStr = "Proximity Mine";
+				break;
+		}
+		if (parseInt(playerNodes[i].getAttribute("trapCooldown")) == 0) {
+			trapStr += " - !";
+		} else {
+			trapStr += " - " + playerNodes[i].getAttribute("trapCooldown");
+		}
+
+		tempStr += "<td>" + trapStr + "</td></tr>";
 
 		if (playerNodes[i].childNodes[0].nodeValue === getPlayerName()) {
 			clientPlayerText += tempStr.replace("<tr><td>", "<tr><td><img src='images/star.png'/>");

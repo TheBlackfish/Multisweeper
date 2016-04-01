@@ -26,15 +26,16 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 		}
 
 		#Select all information about the game from the game's status columns in the MySQL database and parse it into XML form. 
-		if ($query = $conn->prepare("SELECT map, visibility, friendlyTanks, enemyTanks, wrecks, height, width, gameID, status FROM multisweeper.games ORDER BY gameID DESC LIMIT 1")) {
+		if ($query = $conn->prepare("SELECT map, visibility, friendlyTanks, enemyTanks, wrecks, traps, height, width, gameID, status FROM multisweeper.games ORDER BY gameID DESC LIMIT 1")) {
 			$query->execute();
-			$query->bind_result($map, $vis, $friendlyTanks, $enemyTanks, $wrecks, $height, $width, $gameID, $status);
+			$query->bind_result($map, $vis, $friendlyTanks, $enemyTanks, $wrecks, $traps, $height, $width, $gameID, $status);
 			$query->fetch();
 			$query->close();
 
 			$finalFriendlies = translateTanksToPHP($friendlyTanks);
 			$finalEnemies = translateTanksToPHP($enemyTanks);
 			$finalWrecks = translateTanksToPHP($wrecks);
+			$finalTraps = translateTrapsToPHP($traps);
 
 			$finalMap = translateMinefieldToMySQL(getMinefieldWithVisibility($gameID, translateMinefieldToPHP($map, $height, $width), translateMinefieldToPHP($vis, $height, $width), $finalWrecks));
 
@@ -79,6 +80,17 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 					}
 				}
 			}
+
+			if ($finalTraps !== null) {
+				$nodeTR = $doc->createElement('traps');
+				$nodeTR = $newrow->appendChild($nodeTR);
+				foreach ($finalTraps as $k => $v) {
+					if (count($v) === 3) {
+						$nodeTRP = $doc->createElement('trap', $v[0] . "," . $v[1] . "," . $v[2]);
+						$nodeTRP = $nodeTR->appendChild($nodeTRP);
+					}
+				}
+			}
  
 			$otherPlayers = getOtherPlayerActionsForGame($gameID, $xml->playerID);
 			if (count($otherPlayers) !== 0) {
@@ -108,11 +120,10 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 			}
 			
 			#Add all players in the game and their statuses to the XML.
-			if ($playerQuery = $conn->prepare("SELECT p.username, s.status FROM multisweeper.players as p INNER JOIN multisweeper.playerstatus as s ON p.playerID=s.playerID WHERE s.gameID=?
-	")) {
+			if ($playerQuery = $conn->prepare("SELECT p.username, s.status, s.trapType, s.trapCooldown FROM multisweeper.players as p INNER JOIN multisweeper.playerstatus as s ON p.playerID=s.playerID WHERE s.gameID=?")) {
 				$playerQuery->bind_param("i", $gameID);
 				$playerQuery->execute();
-				$playerQuery->bind_result($user, $status);
+				$playerQuery->bind_result($user, $status, $trapType, $trapCooldown);
 
 				$playerRow = $doc->createElement('players');
 				$playerRow = $newrow->appendChild($playerRow);
@@ -121,6 +132,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 					$playerInfo = $doc->createElement('player', $user);
 					$playerInfo = $playerRow->appendChild($playerInfo);
 					$playerInfo->setAttribute('status', $status);
+					$playerInfo->setAttribute('trapType', $trapType);
+					$playerInfo->setAttribute('trapCooldown', $trapCooldown);
 				}
 
 				$playerQuery->close();
@@ -148,7 +161,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 	}
 	
 	$r = $doc->saveXML();
-	error_log($r);
 	echo $r;
 }
 ?>

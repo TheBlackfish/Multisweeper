@@ -28,6 +28,8 @@ var friendlyTanks = [];
 
 var enemyTanks = [];
 
+var traps = [];
+
 //minefieldWidth [int]
 //The current width of the minefield.
 var minefieldWidth = 0;
@@ -48,19 +50,20 @@ var selectedAction = 0; //0 for shovel, 1 for flag.
 //The selection variable denoting what coordinates are currently selected. Null for no selection.
 var selectedCoordinates = null;
 
-function initMinefield(input, h, w, ft, et, o) {
+function initMinefield(input, h, w, ft, et, tr, o) {
 	initMinefieldGraphics();
 	initMinefieldInterface();
-	updateMinefield(input, h, w, ft, et, o);
+	updateMinefield(input, h, w, ft, et, tr, o);
 	minefieldInitialized = true;
 }
 
-function updateMinefield(input, h, w, ft, et, o) {
+function updateMinefield(input, h, w, ft, et, tr, o) {
 	minefield = importMinefieldFromArray(input, w, h);
 	minefieldWidth = w;
 	minefieldHeight = h;
 	friendlyTanks = ft;
 	enemyTanks = et;
+	traps = tr;
 	otherPlayers = o;
 	drawMinefield();
 }
@@ -113,10 +116,10 @@ function selectCoordinates(x, y) {
 	} else {
 		//If the coordinates are the same, switch what our selected action is.
 		if (selectedCoordinates[0] === x && selectedCoordinates[1] === y) {
-			if (selectedAction === 0) {
-				selectedAction = 1;
-			} else {
+			if (selectedAction >= 2) {
 				selectedAction = 0;
+			} else {
+				selectedAction++;
 			}
 		//Else, set our selection to 0 and the current coordinates.
 		//Also, reset the previous tile.
@@ -195,6 +198,10 @@ function getFriendlyTanks() {
 
 function getEnemyTanks() {
 	return enemyTanks;
+}
+
+function getTraps() {
+	return traps;
 }
 
 //getTileValue(x, y)

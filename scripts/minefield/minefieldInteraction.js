@@ -46,7 +46,7 @@ function processSelection(e) {
 			var ft = getFriendlyTanks();
 
 			for (var i = 0; i < ft.length && canSelect; i++) {
-				if (ft[0] == coord[0] && ft[1] == coord[1]) {
+				if (ft[i][0] == coord[0] && ft[i][1] == coord[1]) {
 					canSelect = false;
 				}
 			}
@@ -54,7 +54,14 @@ function processSelection(e) {
 			var et = getEnemyTanks();
 
 			for (var i = 0; i < et.length && canSelect; i++) {
-				if (et[0] == coord[0] && et[1] == coord[1]) {
+				if (et[i][0] == coord[0] && et[i][1] == coord[1]) {
+					canSelect = false;
+				}
+			}
+
+			var tr = getTraps();
+			for (var i = 0; i < tr.length && canSelect; i++) {
+				if (tr[i][1] == coord[0] && tr[i][2] == coord[1]) {
 					canSelect = false;
 				}
 			}
@@ -62,7 +69,7 @@ function processSelection(e) {
 			var o = getOtherPlayers();
 
 			for (var i = 0; i < o.length && canSelect; i++) {
-				if (o[0] == coord[0] && o[1] == coord[1]) {
+				if (o[i][0] == coord[0] && o[i][1] == coord[1]) {
 					canSelect = false;
 				}
 			}

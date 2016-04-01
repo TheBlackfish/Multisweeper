@@ -519,7 +519,7 @@ function updateEnemyTanks($map, $visibility, $enemyTankPositions, $wrecks) {
 
 		if (!$pathFound && (count($allPaths) === 0)) {
 			array_push($updatedTankPositions, array(
-				$tank[0] + 1,
+				$tank[0] - 1,
 				$tank[1]
 			));
 		}
@@ -540,14 +540,16 @@ function updateEnemyTanks($map, $visibility, $enemyTankPositions, $wrecks) {
 		if ($validated) {
 			#Check value of tile
 			#If flagged
-			if ($visibility[$value[0]][$value[1]] === 1) {
+			if ($visibility[$value[0]][$value[1]] >= 1) {
 				#Check if mine
 				if ($map[$value[0]][$value[1]] === "M") {
 					$visibility[$value[0]][$value[1]] = 2;
 					unset($updatedTankPositions[$key]);
 					$wrecks = addWreck($map, $wrecks, $value);
 				} else {
-					$visibility[$value[0]][$value[1]] = 0;
+					if ($visibility[$value[0]][$value[1]] === 1) {
+						$visibility[$value[0]][$value[1]] = 0;
+					}
 				}
 			} 
 		} else {

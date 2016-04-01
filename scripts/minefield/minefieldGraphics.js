@@ -42,7 +42,7 @@ function initMinefieldGraphics() {
 //initMinefieldImages()
 //Loads all of the images needed.
 function initMinefieldImages() {
-	var overlayFiles = ["0", "1", "2", "3", "4", "5", "6", "7", "8", "flag", "mine", "otherPlayer", "plantFlag", "shovel", "friendlyTank", "enemyTank", "wreck"];
+	var overlayFiles = ["0", "1", "2", "3", "4", "5", "6", "7", "8", "flag", "mine", "otherPlayer", "plantFlag", "shovel", "friendlyTank", "enemyTank", "wreck", "layTrap", "proximityMine"];
 	var underlayFiles = ["revealed", "unrevealed"];
 	var targetNum = overlayFiles.length + underlayFiles.length;
 	for (var i = 0; i < overlayFiles.length; i++) {
@@ -150,6 +150,8 @@ function selectOverlayForTile(x, y) {
 				return overlayImages["shovel"];
 			} else if (s["action"] === 1) {
 				return overlayImages["plantFlag"];
+			} else if (s["action"] === 2) {
+				return overlayImages["layTrap"];
 			}
 		}
 	}
@@ -167,6 +169,16 @@ function selectOverlayForTile(x, y) {
 	for (var i = 0; i < et.length; i++) {
 		if (et[i][0] == x && et[i][1] == y) {
 			return overlayImages["enemyTank"];
+		}
+	}
+
+	var tr = getTraps();
+
+	for (var i = 0; i < tr.length; i++) {
+		if (tr[i][1] == x && tr[i][2] == y) {
+			if (tr[i][0] == 0) {
+				return overlayImages["proximityMine"];
+			}
 		}
 	}
 

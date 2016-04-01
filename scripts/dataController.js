@@ -73,12 +73,16 @@ function processMinefieldData(response) {
 	if (allInfo.getElementsByTagName("enemyTanks").length > 0) {
 		et = preprocessTankCoordinates(allInfo.getElementsByTagName("enemyTanks")[0]);
 	}
+	var tr = new Array();
+	if (allInfo.getElementsByTagName("traps").length > 0) {
+		tr = preprocessTrapCoordinates(allInfo.getElementsByTagName("traps")[0]);
+	}
 	var o = new Array();
 	if (allInfo.getElementsByTagName("otherPlayers").length > 0) {
 		o = preprocessOtherPlayerCoordinates(allInfo.getElementsByTagName("otherPlayers")[0]);
 	}
 	
-	initMinefield(map, h, w, ft, et, o);
+	initMinefield(map, h, w, ft, et, tr, o);
 
 	if (allInfo.getElementsByTagName("selfAction").length > 0) {
 		var self = allInfo.getElementsByTagName("selfAction")[0];
@@ -159,6 +163,21 @@ function preprocessTankCoordinates(input) {
 			tempTank[j] = parseInt(tempTank[j]);
 		}
 		result.push(tempTank);
+	}
+
+	return result;
+}
+
+function preprocessTrapCoordinates(input) {
+	var result = new Array();
+
+	var traps = input.getElementsByTagName('trap');
+	for (var i = 0; i < traps.length; i++) {
+		var tempTrap = traps[i].childNodes[0].nodeValue.split(",");
+		for (var j = 0; j < tempTrap.length; j++) {
+			tempTrap[j] = parseInt(tempTrap[j]);
+		}
+		result.push(tempTrap);
 	}
 
 	return result;

@@ -15,6 +15,7 @@ require_once($_SERVER['DOCUMENT_ROOT'] . '/multisweeper/php/functional/translate
 #@param $numMines (Integer) The number of mines to place on the minefield.
 function createNewGame($width, $height, $numMines) {
 	global $sqlhost, $sqlusername, $sqlpassword;
+	global $numTraps;
 
 	$gameCreated = false;
 
@@ -75,9 +76,10 @@ function createNewGame($width, $height, $numMines) {
 
 						if ($gameID !== null) {
 							#Upload all created statuses to the database.
-							if ($statusStmt = $conn->prepare("INSERT INTO multisweeper.playerstatus (gameID, playerID, awaitingAction) VALUES (?, ?, 1)")) {
+							if ($statusStmt = $conn->prepare("INSERT INTO multisweeper.playerstatus (gameID, playerID, trapType, awaitingAction) VALUES (?, ?, ?, 1)")) {
 								for ($i=0; $i < count($playerIDs); $i++) { 
-									$statusStmt->bind_param("ii", $gameID, $playerIDs[$i]);
+									$trapID = ($gameID + $playerIDs[$i]) % $numTraps;
+									$statusStmt->bind_param("iii", $gameID, $playerIDs[$i], $trapID);
 									$statusStmt->execute();
 								}
 								$statusStmt->close();

@@ -41,6 +41,11 @@ function addWreck($map, $allWrecks, $sourceCoordinates) {
 	return removeDuplicateWrecks($allWrecks);
 }
 
+function addWreckOverrideDrift($allWrecks, $sourceCoordinates) {
+	array_push($allWrecks, $sourceCoordinates);
+	return removeDuplicateWrecks($allWrecks);
+}
+
 function removeDuplicateWrecks($allWrecks) {
 	$copy = array();
 
