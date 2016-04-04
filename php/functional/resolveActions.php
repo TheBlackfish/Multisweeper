@@ -162,6 +162,7 @@ function resolveAllActions($gameID) {
 										if ($firstMove) {
 											#Temporarily just remove the mine.
 											$minefield[$cur["x"]][$cur["y"]] = 0;
+											$visibility[$cur["x"]][$cur["y"]] = 0;
 											$minefield = updateMinefieldNumbers($minefield);
 											$newAction = array(
 												"playerID"		=> $cur["playerID"],
