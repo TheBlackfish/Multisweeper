@@ -20,6 +20,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 		$error = $doc->createElement('error', "Incorrect data sent. Please try again.");
 		$error = $doc->appendChild($error);
 	} else {
+		$requestID = (int) $xml->playerID;
+
 		$conn = new mysqli($sqlhost, $sqlusername, $sqlpassword);
 		if ($conn->connect_error) {
 			die("getGameInfo.php - Connection failed: " . $conn->connect_error);
@@ -92,7 +94,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 				}
 			}
  
-			$otherPlayers = getOtherPlayerActionsForGame($gameID, $xml->playerID);
+			$otherPlayers = getOtherPlayerActionsForGame($gameID, $requestID);
 			if (count($otherPlayers) !== 0) {
 				$nodeF = $doc->createElement('otherPlayers');
 				$nodeF = $newrow->appendChild($nodeF);
@@ -106,7 +108,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 			}
 
 			if ($xml->playerID !== null) {
-				$selfPlayer = getPlayerActionsForGame($gameID, $xml->playerID);
+				$selfPlayer = getPlayerActionsForGame($gameID, $requestID);
 				if (count($selfPlayer) === 3) {
 					$nodeG = $doc->createElement('selfAction');
 					$nodeG = $newrow->appendChild($nodeG);
@@ -120,10 +122,10 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 			}
 			
 			#Add all players in the game and their statuses to the XML.
-			if ($playerQuery = $conn->prepare("SELECT p.username, s.status, s.trapType, s.trapCooldown FROM multisweeper.players as p INNER JOIN multisweeper.playerstatus as s ON p.playerID=s.playerID WHERE s.gameID=?")) {
+			if ($playerQuery = $conn->prepare("SELECT p.username, p.playerID, s.status, s.trapType, s.trapCooldown FROM multisweeper.players as p INNER JOIN multisweeper.playerstatus as s ON p.playerID=s.playerID WHERE s.gameID=?")) {
 				$playerQuery->bind_param("i", $gameID);
 				$playerQuery->execute();
-				$playerQuery->bind_result($user, $status, $trapType, $trapCooldown);
+				$playerQuery->bind_result($user, $currentID, $status, $trapType, $trapCooldown);
 
 				$playerRow = $doc->createElement('players');
 				$playerRow = $newrow->appendChild($playerRow);
@@ -134,6 +136,15 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 					$playerInfo->setAttribute('status', $status);
 					$playerInfo->setAttribute('trapType', $trapType);
 					$playerInfo->setAttribute('trapCooldown', $trapCooldown);
+
+					if ($currentID === $requestID) {
+						$cltVal = 0;
+						if ($trapCooldown === 0) {
+							$cltVal = 1;
+						}
+						$canLayTraps = $doc->createElement('canLayTraps', $cltVal);
+						$canLayTraps = $newrow->appendChild($canLayTraps);
+					}
 				}
 
 				$playerQuery->close();
@@ -161,6 +172,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 	}
 	
 	$r = $doc->saveXML();
+	error_log($r);
 	echo $r;
 }
 ?>

@@ -19,6 +19,10 @@ function initMinefieldInterface() {
 	}
 }
 
+function setInteractionPolicy(canLayTraps) {
+	setActionState(2, canLayTraps);
+}
+
 //processSelection(e)
 //Performs the correct action with a mouse click depending on the tile clicked on.
 //@param e - The mouse event for the mouse click.

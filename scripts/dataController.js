@@ -51,7 +51,7 @@ function getMinefieldData() {
 //Gets all of the information about the current game being played from the server.
 //@param id - The ID of the current player.
 function getMinefieldDataWithID(id) {
-	handleDataWithPHP("<playerID>" + id + "</playerID>", "getGameInfo", processMinefieldData);
+	handleDataWithPHP("<xml><playerID>" + id + "</playerID></xml>", "getGameInfo", processMinefieldData);
 }
 
 //processMinefieldData(response)
@@ -96,6 +96,11 @@ function processMinefieldData(response) {
 	var players = allInfo.getElementsByTagName("players")[0];
 
 	populatePlayerListTable(players);
+
+	if (allInfo.getElementsByTagName("canLayTraps").length > 0) {
+		var canLayTraps = parseInt(allInfo.getElementsByTagName("canLayTraps")[0].childNodes[0].nodeValue);
+		setInteractionPolicy(canLayTraps);
+	}
 
 	//var statusMsg = allInfo.getElementsByTagName("status")[0].childNodes[0].nodeValue;
 

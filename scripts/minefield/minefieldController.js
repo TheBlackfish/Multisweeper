@@ -50,6 +50,8 @@ var selectedAction = 0; //0 for shovel, 1 for flag.
 //The selection variable denoting what coordinates are currently selected. Null for no selection.
 var selectedCoordinates = null;
 
+var allowedActions = [0, 1, 2];
+
 function initMinefield(input, h, w, ft, et, tr, o) {
 	initMinefieldGraphics();
 	initMinefieldInterface();
@@ -110,48 +112,66 @@ function setSelectionCoordinates(x, y, action) {
 //@param y [int] - The y-coordinate to select.
 function selectCoordinates(x, y) {
 	//If coordinates are null, set our selection to 0 and the current coordinates. 
-	if (selectedCoordinates === null) {
-		selectedAction = 0;
-		selectedCoordinates = [x,y];
-	} else {
-		//If the coordinates are the same, switch what our selected action is.
-		if (selectedCoordinates[0] === x && selectedCoordinates[1] === y) {
-			if (selectedAction >= 2) {
-				selectedAction = 0;
-			} else {
-				selectedAction++;
-			}
-		//Else, set our selection to 0 and the current coordinates.
-		//Also, reset the previous tile.
-		} else {
-			temp = selectedCoordinates.concat([]);
+	if (allowedActions.length > 0) {
+		if (selectedCoordinates === null) {
 			selectedAction = 0;
 			selectedCoordinates = [x,y];
-			drawTileAtCoordinates(temp[0], temp[1]);
-		}	
+		} else {
+			//If the coordinates are the same, switch what our selected action is.
+			if (selectedCoordinates[0] === x && selectedCoordinates[1] === y) {
+				if (selectedAction >= 2) {
+					selectedAction = 0;
+				} else {
+					selectedAction++;
+				}
+				while (allowedActions.lastIndexOf(selectedAction) === -1) {
+					if (selectedAction >= 2) {
+						selectedAction = 0;
+					} else {
+						selectedAction++;
+					}
+				}
+			//Else, set our selection to 0 and the current coordinates.
+			//Also, reset the previous tile.
+			} else {
+				temp = selectedCoordinates.concat([]);
+				selectedAction = 0;
+				while (allowedActions.lastIndexOf(selectedAction) === -1) {
+					if (selectedAction >= 2) {
+						selectedAction = 0;
+					} else {
+						selectedAction++;
+					}
+				}
+				selectedCoordinates = [x,y];
+				drawTileAtCoordinates(temp[0], temp[1]);
+			}	
+		}
+		drawTileAtCoordinates(x, y);
 	}
-	drawTileAtCoordinates(x, y);
 }
 
 function selectCoordinatesVisible(x, y) {
-	//If coordinates are null, set our selection to 2 and the current coordinates. 
-	if (selectedCoordinates === null) {
-		selectedAction = 2;
-		selectedCoordinates = [x,y];
-	} else {
-		//If the coordinates are the same, switch what our selected action is.
-		if (selectedCoordinates[0] === x && selectedCoordinates[1] === y) {
-			selectedAction = 2;
-		//Else, set our selection to 0 and the current coordinates.
-		//Also, reset the previous tile.
-		} else {
-			temp = selectedCoordinates.concat([]);
+	if (allowedActions.lastIndexOf(2) > -1) {
+		//If coordinates are null, set our selection to 2 and the current coordinates. 
+		if (selectedCoordinates === null) {
 			selectedAction = 2;
 			selectedCoordinates = [x,y];
-			drawTileAtCoordinates(temp[0], temp[1]);
-		}	
+		} else {
+			//If the coordinates are the same, switch what our selected action is.
+			if (selectedCoordinates[0] === x && selectedCoordinates[1] === y) {
+				selectedAction = 2;
+			//Else, set our selection to 0 and the current coordinates.
+			//Also, reset the previous tile.
+			} else {
+				temp = selectedCoordinates.concat([]);
+				selectedAction = 2;
+				selectedCoordinates = [x,y];
+				drawTileAtCoordinates(temp[0], temp[1]);
+			}	
+		}
+		drawTileAtCoordinates(x, y);
 	}
-	drawTileAtCoordinates(x, y);
 }
 
 //clearSelectedCoordinates()
@@ -162,6 +182,18 @@ function clearSelectedCoordinates() {
 		selectedAction = 0;
 		selectedCoordinates = null;
 		drawTileAtCoordinates(temp[0], temp[1]);
+	}
+}
+
+function setActionState(action, val) {
+	if (val) {
+		if (allowedActions.lastIndexOf(action) === -1) {
+			allowedActions.push(action);
+		}
+	} else {
+		while (allowedActions.lastIndexOf(action) > -1) {
+			allowedActions.splice(allowedActions.lastIndexOf(action), 1);
+		}
 	}
 }
 
