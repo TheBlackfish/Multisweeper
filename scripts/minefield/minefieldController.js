@@ -133,6 +133,27 @@ function selectCoordinates(x, y) {
 	drawTileAtCoordinates(x, y);
 }
 
+function selectCoordinatesVisible(x, y) {
+	//If coordinates are null, set our selection to 2 and the current coordinates. 
+	if (selectedCoordinates === null) {
+		selectedAction = 2;
+		selectedCoordinates = [x,y];
+	} else {
+		//If the coordinates are the same, switch what our selected action is.
+		if (selectedCoordinates[0] === x && selectedCoordinates[1] === y) {
+			selectedAction = 2;
+		//Else, set our selection to 0 and the current coordinates.
+		//Also, reset the previous tile.
+		} else {
+			temp = selectedCoordinates.concat([]);
+			selectedAction = 2;
+			selectedCoordinates = [x,y];
+			drawTileAtCoordinates(temp[0], temp[1]);
+		}	
+	}
+	drawTileAtCoordinates(x, y);
+}
+
 //clearSelectedCoordinates()
 //Removes any selection saved.
 function clearSelectedCoordinates() {

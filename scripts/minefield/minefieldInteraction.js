@@ -26,6 +26,7 @@ function processSelection(e) {
 	if (getPlayerID() !== "") {
 		if (minefieldInitialized && minefieldGraphicsInitialized) {
 			var canSelect = false;
+			var altSelect = false;
 			var coord = calculateMousePosition(e.clientX, e.clientY);
 			coord = getTileCoordinatesFromRealCoordinates(coord[0], coord[1]);
 
@@ -41,6 +42,9 @@ function processSelection(e) {
 
 			if (val === -1 || val === 9) {
 				canSelect = true;
+			} else if (val >= 0 && val <= 8) {
+				canSelect = true;
+				altSelect = true;
 			}
 
 			var ft = getFriendlyTanks();
@@ -75,7 +79,11 @@ function processSelection(e) {
 			}
 
 			if (canSelect) {
-				selectCoordinates(coord[0], coord[1]);
+				if (altSelect) {
+					selectCoordinatesVisible(coord[0], coord[1]);
+				} else {
+					selectCoordinates(coord[0], coord[1]);
+				}
 			}
 		}
 	}
