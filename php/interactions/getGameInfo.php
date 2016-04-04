@@ -138,6 +138,13 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 					$playerInfo->setAttribute('trapCooldown', $trapCooldown);
 
 					if ($currentID === $requestID) {
+						$piaVal = 1;
+						if ($status === 0) {
+							$piaVal = 0;
+						}
+						$playerIsAlive = $doc->createElement('playerIsAlive', $piaVal);
+						$playerIsAlive = $newrow->appendChild($playerIsAlive);
+
 						$cltVal = 0;
 						if ($trapCooldown === 0) {
 							$cltVal = 1;

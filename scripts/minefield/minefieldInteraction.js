@@ -19,8 +19,14 @@ function initMinefieldInterface() {
 	}
 }
 
-function setInteractionPolicy(canLayTraps) {
-	setActionState(2, canLayTraps);
+function setInteractionPolicy(playerIsAlive, canLayTraps) {
+	if (playerIsAlive) {
+		setActionState(2, canLayTraps);
+	} else {
+		for (var i = 0; i < 16; i++) {
+			setActionState(i, false);
+		}
+	}
 }
 
 //processSelection(e)

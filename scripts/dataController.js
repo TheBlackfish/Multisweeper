@@ -97,9 +97,10 @@ function processMinefieldData(response) {
 
 	populatePlayerListTable(players);
 
-	if (allInfo.getElementsByTagName("canLayTraps").length > 0) {
+	if (allInfo.getElementsByTagName("playerIsAlive").length > 0) {
 		var canLayTraps = parseInt(allInfo.getElementsByTagName("canLayTraps")[0].childNodes[0].nodeValue);
-		setInteractionPolicy(canLayTraps);
+		var isAlive = parseInt(allInfo.getElementsByTagName("playerIsAlive")[0].childNodes[0].nodeValue);
+		setInteractionPolicy(isAlive, canLayTraps);
 	}
 
 	//var statusMsg = allInfo.getElementsByTagName("status")[0].childNodes[0].nodeValue;
