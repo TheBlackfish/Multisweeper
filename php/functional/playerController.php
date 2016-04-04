@@ -1,7 +1,19 @@
 <?php
 
+#This file controls all player interactions by storing player information in associative arrays.
+#The overall player array contains several player arrays. The indices for these player arrays is their respective player IDs.
+#Each player array stores the following data:
+	#status - The player's status. 0 = DEAD, 1 = ALIVE, 2 = AFK.
+	#trapType - The index of the trap the player is currently using.
+	#trapCooldown - The amount of digs the player needs to perform to get their trap back.
+	#hasActed - Whether or not the player has acted this action resolution.
+
 require_once($_SERVER['DOCUMENT_ROOT'] . '/multisweeper/php/constants/databaseConstants.php');
 
+#getPlayersForGame($gameID)
+#This function compiles all player information relating to the game provided into the standard player information array.
+#@param $gameID - The ID of the game to retrieve information for.
+#@return The associative array containing all player information.
 function getPlayersForGame($gameID) {
 	global $sqlhost, $sqlusername, $sqlpassword;
 
@@ -36,6 +48,13 @@ function getPlayersForGame($gameID) {
 	return array();
 }
 
+#alterPlayervalue($allPlayers, $playerID, $key, $value)
+#Changes the associative array for players by altering the k-v pair specified for the player specified.
+#@param $allPlayers - The associative array with all players to alter.
+#@param $playerID - The ID of the player to alter.
+#@param $key - The value to change.
+#@param $value - What to change the value to.
+#@return The updated associative array.
 function alterPlayerValue($allPlayers, $playerID, $key, $value) {
 	if (array_key_exists($playerID, $allPlayers)) {
 		$cur = $allPlayers[$playerID];
@@ -51,6 +70,12 @@ function alterPlayerValue($allPlayers, $playerID, $key, $value) {
 	return $allPlayers;
 }
 
+#getPlayerValue($allPlayers, $playerID, $key)
+#Retrieves the value of the key for the player specified.
+#@param $allPlayers - The associative array with all players.
+#@param $playerID - The ID of the player to check.
+#@param $key - The value to retrieve.
+#@return The player's value in the original form.
 function getPlayerValue($allPlayers, $playerID, $key) {
 	if (array_key_exists($playerID, $allPlayers)) {
 		$cur = $allPlayers[$playerID];
@@ -65,6 +90,12 @@ function getPlayerValue($allPlayers, $playerID, $key) {
 	return null;
 }
 
+#countPlayersWithValue($allPlayers, $key, $value)
+#Counts how many players have the specified value for the key provided.
+#@param $allPlayers - The associative array to count through.
+#@param $key - The key to check against.
+#@param $value - The value to check for.
+#@return The number of players with the specified value for the specified key.
 function countPlayersWithValue($allPlayers, $key, $value) {
 	$count = 0;
 	foreach ($allPlayers as $playerID => $player) {
@@ -77,6 +108,10 @@ function countPlayersWithValue($allPlayers, $key, $value) {
 	return $count;
 }
 
+#savePlayersForGame($data, $gameID)
+#Saves the player information provided to the MySQL database.
+#@param $data - The associative array to save to the database.
+#@param $gameID - The ID of the game to save for.
 function savePlayersForGame($data, $gameID) {
 	global $sqlhost, $sqlusername, $sqlpassword;
 

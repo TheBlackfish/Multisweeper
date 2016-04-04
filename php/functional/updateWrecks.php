@@ -1,7 +1,16 @@
 <?php
 
+#This file contains all of the functionality relating to wreckages.
+#All wreckages are stored in a double array as coordinates.
+
 require_once($_SERVER['DOCUMENT_ROOT'] . '/multisweeper/php/constants/mineGameConstants.php');
 
+#addWreck($map, $allWrecks, $sourceCoordinates)
+#Adds a wreckage to the map randomly one space away from the source coordinates provided.
+#@param $map - The map of the minefield.
+#@param $allWrecks - All of the wreckages thus far in double array form.
+#@param $sourceCoordinates - The coordinates to make a wreckage from in array form.
+#@return The updated wreckage array.
 function addWreck($map, $allWrecks, $sourceCoordinates) {
 	global $adjacencies;
 
@@ -21,7 +30,6 @@ function addWreck($map, $allWrecks, $sourceCoordinates) {
 		}
 
 		if ($valid) {
-
 			foreach ($allWrecks as $wkey => $wval) {
 				if ($wval[0] === $targetX) {
 					if ($wval[1] === $targetY) {
@@ -41,11 +49,20 @@ function addWreck($map, $allWrecks, $sourceCoordinates) {
 	return removeDuplicateWrecks($allWrecks);
 }
 
+#addWreckOverrideDrift($allWrecks, $sourceCoordinates)
+#Adds a wreckage to the map, ignoring any drift.
+#@param $allWrecks - The array containing all current wreckages.
+#@param $sourceCoordinates - The coordinates to add a wreckage to, ignoring drift.
+#@return The updated wreckage array.
 function addWreckOverrideDrift($allWrecks, $sourceCoordinates) {
 	array_push($allWrecks, $sourceCoordinates);
 	return removeDuplicateWrecks($allWrecks);
 }
 
+#removeDuplicateWrecks($allWrecks)
+#Helper function to remove duplicate wreckages.
+#@param $allWrecks - The array containing all of the wreckages to clean.
+#@return The updated wreckage array.
 function removeDuplicateWrecks($allWrecks) {
 	$copy = array();
 

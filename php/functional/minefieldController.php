@@ -56,7 +56,7 @@ function getMinefieldWithVisibility($gameID, $minefield, $visibility, $wrecks) {
 	return $result;
 }
 
-#getPlayerActionsForGame($playerID)
+#getPlayerActionsForGame($gameID, $playerID)
 #Returns the coordinates and action type of all actions that the player specified are performing in the current game.
 #@param $gameID (Interger) The ID of the game to pull for.
 #@param $playerID (Integer) The ID of the player to pull actions for.

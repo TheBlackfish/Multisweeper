@@ -70,7 +70,7 @@ function translateTanksToPHP($data) {
 	return $tanks;
 }
 
-#translateMinefieldToMySQL($data)
+#translateTanksToMySQL($data)
 #Takes a double array representing tank coordinates and returns a string containing all of those coordinates.
 #@param $data (Double Array) The coordinates of all the tanks in double array form.
 #@return The string representing the tank coordinates.
@@ -89,6 +89,10 @@ function translateTanksToMySQL($data) {
 	return "";
 } 
 
+#translateTrapsToPHP($data)
+#Takes a string representing trap coordinates and returns a double array containing all of those coordinates.
+#@param $data (String) The coordinates of all of the traps in string form.
+#@return The double array containing all of the trap coordinates.
 function translateTrapsToPHP($data) {
 	$traps = array();
 	if ($data !== null) {
@@ -110,6 +114,10 @@ function translateTrapsToPHP($data) {
 	return $traps;
 }
 
+#translateTrapsToMySQL($data)
+#Takes a double array representing trap coordinates and returns a string containing all of those coordinates.
+#@param $data (Double Array) The coordinates of all the traps in double array form.
+#@return The string representing the trap coordinates.
 function translateTrapsToMySQL($data) {
 	$tempStrs = array();
 	foreach ($data as $k => $v) {

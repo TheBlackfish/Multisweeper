@@ -12,6 +12,11 @@
 
 	Tanks and other players are in their own arrays.
 	Flag & shovel actions are stored in the selected* set of variables. 
+
+	Actions are also stored by number. They are as follows:
+	0	Shovel tile
+	1	Plant flag
+	2	Lay trap
 */
 
 //minefield [Double Array]
@@ -26,8 +31,12 @@ var otherPlayers = [];
 //The double array containing all coordinates of tanks.
 var friendlyTanks = [];
 
+//enemyTanks [Double Array]
+//The double array containing all coordinates of enemy tanks.
 var enemyTanks = [];
 
+//traps [Double Array]
+//The double array containing all coordinates of traps.
 var traps = [];
 
 //minefieldWidth [int]
@@ -50,8 +59,19 @@ var selectedAction = 0; //0 for shovel, 1 for flag.
 //The selection variable denoting what coordinates are currently selected. Null for no selection.
 var selectedCoordinates = null;
 
+//allowedActions [Array]
+//The array containing which actions are currently allowed due to various factors.
 var allowedActions = [0, 1, 2];
 
+//initMinefield(input, h, w, ft, et, tr, o)
+//Initializes the minefield entirely.
+//@param input [Array] The minefield in array form.
+//@param h [int] The height of the minefield.
+//@param w [int] The width of the minefield.
+//@param ft [Array] All friendly tanks in array form.
+//@param et [Array] All enemy tanks in array form.
+//@param tr [Array] All traps in array form.
+//@param o [Array] All other players' actions in array form.
 function initMinefield(input, h, w, ft, et, tr, o) {
 	initMinefieldGraphics();
 	initMinefieldInterface();
@@ -59,6 +79,15 @@ function initMinefield(input, h, w, ft, et, tr, o) {
 	minefieldInitialized = true;
 }
 
+//updateMinefield(input, h, w, ft, et, tr, o)
+//Updates the minefield on-screen to match the data provided.
+//@param input [Array] The minefield in array form.
+//@param h [int] The height of the minefield.
+//@param w [int] The width of the minefield.
+//@param ft [Array] All friendly tanks in array form.
+//@param et [Array] All enemy tanks in array form.
+//@param tr [Array] All traps in array form.
+//@param o [Array] All other players' actions in array form.
 function updateMinefield(input, h, w, ft, et, tr, o) {
 	minefield = importMinefieldFromArray(input, w, h);
 	minefieldWidth = w;
@@ -96,6 +125,11 @@ function importMinefieldFromArray(input, width, height) {
 	return null;
 }
 
+//setSelectionCoordinates(x, y, action)
+//Overrides any current selection.
+//@param x [int] The x-coordinate of the selection.
+//@param y [int] The y-coordinate of the selection.
+//@param action [int] The action to have the selection correspond to.
 function setSelectionCoordinates(x, y, action) {
 	if (x === -1 || y === -1) {
 		clearSelectedCoordinates();
@@ -151,6 +185,10 @@ function selectCoordinates(x, y) {
 	}
 }
 
+//selectCoordinatesVisible(x, y)
+//Depending on the tile at (x,y), this method highlights it and saves it into the selection variable appropriately. The difference this method makes is that only pre-approved actions for already visible tiles are allowed.
+//@param x [int] - The x-coordinate to select.
+//@param y [int] - The y-coordinate to select.
 function selectCoordinatesVisible(x, y) {
 	if (allowedActions.lastIndexOf(2) > -1) {
 		//If coordinates are null, set our selection to 2 and the current coordinates. 
@@ -185,6 +223,10 @@ function clearSelectedCoordinates() {
 	}
 }
 
+//setActionState(action, val)
+//Allows or disallows the action provided based on the boolean provided.
+//@param action [int] The flag of the action to alter.
+//@param val [bool] The state to set the flag to.
 function setActionState(action, val) {
 	if (val) {
 		if (allowedActions.lastIndexOf(action) === -1) {
@@ -249,10 +291,16 @@ function getFriendlyTanks() {
 	return friendlyTanks;
 }
 
+//getEnemyTanks()
+//Returns the enemy tanks.
+//@return The enemy tanks.
 function getEnemyTanks() {
 	return enemyTanks;
 }
 
+//getTraps()
+//Returns the traps.
+//@return The traps.
 function getTraps() {
 	return traps;
 }

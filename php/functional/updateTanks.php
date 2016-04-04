@@ -104,6 +104,11 @@ function addFriendlyTank($map, $visibility) {
 	return $ret;
 }
 
+#addEnemyTank($map, $visibility)
+#Adds a enemy tank to the rightmost column to the map provided. This addition will never go onto a visible mine.
+#@param $map (Double Array) The map of the minefield to place a tank on.
+#@param $visibility (Double Array) The visibility map of the minefield to place a tank on.
+#@return An array with two values: 'newTankPosition', which if not null, is a coordinate for a new tank; and 'newVisibility', which if not null, is the updated visibility map
 function addEnemyTank($map, $visibility) {
 	$ret = array(
 		'newTankPosition'	=>	null,
@@ -156,12 +161,14 @@ function addEnemyTank($map, $visibility) {
 	return $ret;
 }
 
-#updateTanks($map, $visibility, $tankPositions)
-#For each tank provided, this function finds the best path for that tank through the map and visibility. Tanks will move forward one column and either one up, straight forward, or one down. When path-finding, tanks will prefer revealed non-mine tiles over unrevealed tiles. Tanks will never move onto flags, revealed mines, or other tanks unless they do not have a choice.
+#updateTanks($map, $visibility, $friendlyTankPositions, $enemyTankPositions, $wrecks)
+#This function updates all tanks, both friendly and enemy. Before and after updating, collisions are checked and wrecked.
 #@param $map (Double Array) The map for tanks to navigate.
 #@param $visibility (Double Array) The visibility of the minefield for the tanks to navigate.
-#@param $tankPositions (Double Array) The array containing all of the current tank coordinates.
-#@return The double array containing all of the tank coordinates in a game.
+#@param $friendlyTankPositions (Double Array) The array containing all of the current friendly tank coordinates.
+#@param $enemyTanksPositions (Double Array) The array containing all of the current enemy tank coordinates.
+#@param $wrecks (Double Array) The array containing all of the current wreckages.
+#@return The associative array containing updated values for all parameters provided.
 function updateTanks($map, $visibility, $friendlyTankPositions, $enemyTankPositions, $wrecks) {
 	#First eliminate any friendly and enemy tanks right next to each other in the same row.
 	foreach ($friendlyTankPositions as $friendlyKey => $friendlyVal) {
@@ -242,6 +249,13 @@ function updateTanks($map, $visibility, $friendlyTankPositions, $enemyTankPositi
 	return $ret;
 }
 
+#updateFriendlyTanks($map, $visibility, $friendlyTankPositions, $wrecks)
+#This function updates all friendly tanks, avoiding visible mines and flags. Any wreckages moved over are removed.
+#@param $map (Double Array) The map for tanks to navigate.
+#@param $visibility (Double Array) The visibility of the minefield for the tanks to navigate.
+#@param $friendlyTankPositions (Double Array) The array containing all of the current friendly tank coordinates.
+#@param $wrecks (Double Array) The array containing all of the current wreckages.
+#@return The associative array containing updated values for all parameters provided.
 function updateFriendlyTanks($map, $visibility, $friendlyTankPositions, $wrecks) {
 	global $friendlyTankMoves;
 
@@ -404,6 +418,13 @@ function updateFriendlyTanks($map, $visibility, $friendlyTankPositions, $wrecks)
 	return $ret;
 }
 
+#updateEnemyTanks($map, $visibility, $enemyTankPositions, $wrecks)
+#This function updates all enemy tanks, avoiding visible mines and flags. Any wreckages moved over are removed.
+#@param $map (Double Array) The map for tanks to navigate.
+#@param $visibility (Double Array) The visibility of the minefield for the tanks to navigate.
+#@param $enemyTankPositions (Double Array) The array containing all of the current friendly tank coordinates.
+#@param $wrecks (Double Array) The array containing all of the current wreckages.
+#@return The associative array containing updated values for all parameters provided.
 function updateEnemyTanks($map, $visibility, $enemyTankPositions, $wrecks) {
 	global $enemyTankMoves;
 

@@ -19,6 +19,10 @@ function initMinefieldInterface() {
 	}
 }
 
+//setInteractionPolicy(playerIsAlive, canLayTraps)
+//Forces an interaction policy.
+//@param playerIsAlive [bool] If false, no interaction is allowed.
+//@param canLayTraps [bool] If false, the player cannot lay traps.
 function setInteractionPolicy(playerIsAlive, canLayTraps) {
 	if (playerIsAlive) {
 		setActionState(2, canLayTraps);
