@@ -129,10 +129,10 @@ function resolveTraps($map, $visibility, $tanks, $enemyTanks, $traps, $wrecks) {
 
 				$visibility[$targetVal[0]][$targetVal[1]] = 2;
 			}
-
-			unset($traps[$key]);
 		}
 	}
+
+	$traps = array_diff_key($traps, array_flip($activatedTrapKeys));
 
 	$ret = array(
 		'map'			=>	$map,
