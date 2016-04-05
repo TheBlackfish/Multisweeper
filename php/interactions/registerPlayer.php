@@ -8,7 +8,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 	header('Content-Type: text/xml');
 
 	$xml = simplexml_load_file('php://input');
-
+	
 	$result = new DOMDocument('1.0');
 	$result->formatOutput = true;
 	$resultBase = $result->createElement('login');
@@ -25,6 +25,9 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 		$tempUsername = preg_replace("/[^A-Za-z0-9]/", '', $xml->username);
 		$tempPassword = preg_replace("/[^A-Za-z0-9]/", '', $xml->password);
 
+		error_log("Username=" . $tempUsername . ", password=" . $tempPassword);
+		error_log($xml->asXML());
+
 		#Validate that username and password are legal.
 		if (strlen($xml->username) == 0) {
 			$error = $result->createElement('error', "Username cannot be blank!");
@@ -32,10 +35,10 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 		} else if (strlen($xml->password) == 0) {
 			$error = $result->createElement('error', "Username cannot be blank!");
 			$error = $resultBase->appendChild($error);
-		} else if ($tempUsername !== $xml->username) {
+		} else if ($tempUsername !== (string) $xml->username) {
 			$error = $result->createElement('error', "Username contains illegal characters, please only use A-Z and 0-9.");
 			$error = $resultBase->appendChild($error);
-		} else if ($tempPassword !== $xml->password) {
+		} else if ($tempPassword !== (string) $xml->password) {
 			$error = $result->createElement('error', "Password contains illegal characters, please only use A-Z and 0-9.");
 			$error = $resultBase->appendChild($error);
 		} else {

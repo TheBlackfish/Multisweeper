@@ -157,8 +157,28 @@ function resolveTraps($map, $visibility, $tanks, $enemyTanks, $traps, $wrecks) {
 				$finalTarget = $targets[array_rand($targets)];
 				$visibility[$finalTarget[0]][$finalTarget[1]] = 1;
 
-				#Remove the nest from the activated traps
-				unset($activatedTrapKeys[$eh]);
+				#Remove the nest from the activated traps if no tanks on the same space.
+				$remove = true;
+
+				foreach ($tanks as $tankKey => $tankVal) {
+					if ($tankVal[0] === $curTrap[1]) {
+						if ($tankVal[1] === $curTrap[2]) {
+							$remove = false;
+						}
+					}
+				}
+
+				foreach ($enemyTanks as $tankKey => $tankVal) {
+					if ($tankVal[0] === $curTrap[1]) {
+						if ($tankVal[1] === $curTrap[2]) {
+							$remove = false;
+						}
+					}
+				}
+
+				if ($remove) {
+					unset($activatedTrapKeys[$eh]);
+				}
 			}	
 		}
 	}
