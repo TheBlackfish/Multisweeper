@@ -7,7 +7,7 @@
 	$minefieldHeight = 30;
 	$startingMines = 200;
 
-	$numTraps = 1;
+	$numTraps = 2;
 	
 	$adjacencies = array(
 		array(0, -1),

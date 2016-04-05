@@ -42,7 +42,7 @@ function initMinefieldGraphics() {
 //initMinefieldImages()
 //Loads all of the images needed.
 function initMinefieldImages() {
-	var overlayFiles = ["0", "1", "2", "3", "4", "5", "6", "7", "8", "flag", "mine", "otherPlayer", "plantFlag", "shovel", "friendlyTank", "enemyTank", "wreck", "layTrap", "proximityMine"];
+	var overlayFiles = ["0", "1", "2", "3", "4", "5", "6", "7", "8", "flag", "mine", "otherPlayer", "plantFlag", "shovel", "friendlyTank", "enemyTank", "wreck", "layTrap", "proximityMine", "radioNest"];
 	var underlayFiles = ["revealed", "unrevealed"];
 	var targetNum = overlayFiles.length + underlayFiles.length;
 	for (var i = 0; i < overlayFiles.length; i++) {
@@ -178,6 +178,8 @@ function selectOverlayForTile(x, y) {
 		if (tr[i][1] == x && tr[i][2] == y) {
 			if (tr[i][0] == 0) {
 				return overlayImages["proximityMine"];
+			} else if (tr[i][0] == 1) {
+				return overlayImages["radioNest"];
 			}
 		}
 	}

@@ -6,6 +6,9 @@
 	#0 - Proximity Mine
 		#Activates when a tank moves within range.
 		#Destroys all tanks and reveals all tiles within that same range.
+	#1 - Radio Nest
+		#Activates constantly.
+		#Flags all mines in the near-by area.
 
 require_once($_SERVER['DOCUMENT_ROOT'] . '/multisweeper/php/constants/mineGameConstants.php');
 require_once($_SERVER['DOCUMENT_ROOT'] . '/multisweeper/php/functional/updateWrecks.php');
@@ -31,6 +34,8 @@ function addTrap($traps, $type, $x, $y) {
 function getCooldownForTrapType($type) {
 	if ($type === 0) { #Proximity Mine
 		return 8;
+	} else if ($type === 1) { #Radio Nest
+		return 20;
 	}
 	return 3;
 }
@@ -48,6 +53,7 @@ function resolveTraps($map, $visibility, $tanks, $enemyTanks, $traps, $wrecks) {
 	$maxX = count($map);
 	$maxY = count($map[0]);
 	$proximityRange = 3;
+	$radioRange = 5;
 
 	#Go through each trap and "activate" certain types if certain criteria are met.
 	$activatedTrapKeys = array();
@@ -85,8 +91,9 @@ function resolveTraps($map, $visibility, $tanks, $enemyTanks, $traps, $wrecks) {
 
 			if ($activated) {
 				array_push($activatedTrapKeys, $trapKey);
-				error_log("Proximity activated!");
 			}
+		} else if (intval($trapVal[0]) === 1) {	#Radio Nest
+			array_push($activatedTrapKeys, $trapKey);
 		}
 	}
 
@@ -129,6 +136,30 @@ function resolveTraps($map, $visibility, $tanks, $enemyTanks, $traps, $wrecks) {
 
 				$visibility[$targetVal[0]][$targetVal[1]] = 2;
 			}
+		} else if (intval($curTrap[0]) === 1) {	#Radio Nest
+			#Get all nearby tiles.
+			$tilesInRange = getAllCoordinatesWithinRange($trapVal[1], $trapVal[2], $radioRange, $maxX, $maxY);
+			
+			#Get all unflagged mines in the targets.
+			$targets = array();
+
+			foreach($tilesInRange as $meh => $tile) {
+				if ($map[$tile[0]][$tile[1]] === "M") {
+					if ($visibility[$tile[0]][$tile[1]] !== 1) {
+						array_push($targets, $tile);
+					}
+				}
+			}
+
+			#If one or more
+			if (count($targets) > 0) {
+				#Change a random mine's visibility to flagged.
+				$finalTarget = $targets[array_rand($targets)];
+				$visibility[$finalTarget[0]][$finalTarget[1]] = 1;
+
+				#Remove the nest from the activated traps
+				unset($activatedTrapKeys[$eh]);
+			}	
 		}
 	}
 
@@ -169,8 +200,8 @@ function getAllCoordinatesWithinRange($x, $y, $range, $maxX, $maxY) {
 		$cur = array_shift($possibilities);
 
 		$valid = false;
-		if ($cur[0] >= 0 || $cur[0] < $maxX) {
-			if ($cur[1] >= 0 || $cur[1] < $maxY) {
+		if ($cur[0] >= 0 && $cur[0] < $maxX) {
+			if ($cur[1] >= 0 && $cur[1] < $maxY) {
 				$valid = true;
 			}
 		}
