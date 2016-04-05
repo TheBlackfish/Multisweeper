@@ -13,7 +13,9 @@ function expandMinefield($minefield, $visibility, $widthToAdd, $minesToAdd) {
 	$height = count($minefield[0]);
 
 	if ($minesToAdd <= 0) {
-		$minesToAdd = floor($widthToAdd * $height * 0.25);
+		$minesToAdd = floor($widthToAdd * $height * 0.15);
+		$minesToAdd += count($minefield)/10;
+		$minesToAdd = ceil($minesToAdd);
 	}
 
 	error_log("Adding to minefield an area of size (" . $widthToAdd . "," . $height . ") with " . $minesToAdd . " mines.");
