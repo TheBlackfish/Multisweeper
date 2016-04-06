@@ -9,6 +9,9 @@
 	#1 - Radio Nest
 		#Activates constantly.
 		#Flags all mines in the near-by area.
+	#2 - Ballista
+		#Activates when there is a tank within the line in front of it.
+		#Destroys all tanks in front of it and leaves wreckages at the end of the map.
 
 require_once($_SERVER['DOCUMENT_ROOT'] . '/multisweeper/php/constants/mineGameConstants.php');
 require_once($_SERVER['DOCUMENT_ROOT'] . '/multisweeper/php/functional/updateWrecks.php');
@@ -52,6 +55,7 @@ function getCooldownForTrapType($type) {
 function resolveTraps($map, $visibility, $tanks, $enemyTanks, $traps, $wrecks) {
 	$maxX = count($map);
 	$maxY = count($map[0]);
+	$ballistaSpotRange = 4;
 	$proximityRange = 3;
 	$radioRange = 5;
 
@@ -94,8 +98,32 @@ function resolveTraps($map, $visibility, $tanks, $enemyTanks, $traps, $wrecks) {
 			}
 		} else if (intval($trapVal[0]) === 1) {	#Radio Nest
 			array_push($activatedTrapKeys, $trapKey);
+		} else if (intval($trapVal[0]) === 2) { #Ballista
+			$activated = false;
+
+			foreach ($tanks as $tankKey => $tankVal) {
+				if ($trapVal[2] === $tankVal[1]) {
+					if (($tankVal[0] >= $trapVal[1]) && (($tankVal[0] - $trapVal[1]) <= $ballistaSpotRange)) {
+						$activated = true;
+					}
+				}
+			}
+
+			if (!$activated) {
+				foreach ($enemyTanks as $tankKey => $tankVal) {
+					if ($trapVal[2] === $tankVal[1]) {
+						if (($tankVal[0] >= $trapVal[1]) && (($tankVal[0] - $trapVal[1]) <= $ballistaSpotRange)) {
+							$activated = true;
+						}
+					}
+				}
+			}
+
+			if ($activated) {
+				array_push($activatedTrapKeys, $trapKey);
+			}
 		}
-	}
+	} 
 
 	#For each activated trap
 	foreach ($activatedTrapKeys as $eh => $key) {
@@ -180,6 +208,32 @@ function resolveTraps($map, $visibility, $tanks, $enemyTanks, $traps, $wrecks) {
 					unset($activatedTrapKeys[$eh]);
 				}
 			}	
+		} else if (intval($curTrap[0]) === 2) { #Ballista
+			#Remove all tanks and enemy tanks in the same row as the ballista with an equal or greater X-value.
+			$destroyedCount = 0;
+
+			foreach ($tanks as $tankKey => $tankVal) {
+				if ($tankVal[0] >= $curTrap[1]) {
+					if ($tankVal[1] === $curTrap[2]) {
+						unset($tanks[$tankKey]);
+						$destroyedCount++;
+					}
+				}
+			}
+
+			foreach ($enemyTanks as $tankKey => $tankVal) {
+				if ($tankVal[0] >= $curTrap[1]) {
+					if ($tankVal[1] === $curTrap[2]) {
+						unset($enemyTanks[$tankKey]);
+						$destroyedCount++;
+					}
+				}
+			}
+
+			for ($i=0; $i < $destoryedCount; $i++) { 
+				$targetX = $maxX - $i;
+				$wrecks = addWreckOverrideDrift($wrecks, [$targetX, $curTrap[2]]);
+			}
 		}
 	}
 

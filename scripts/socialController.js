@@ -79,6 +79,9 @@ function populatePlayerListTable(playerXML) {
 			case 1:
 				trapStr = "Radio Nest";
 				break;
+			case 2:
+				trapStr = "Ballista";
+				break;
 		}
 		if (parseInt(playerNodes[i].getAttribute("trapCooldown")) == 0) {
 			trapStr += " - !";

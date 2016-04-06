@@ -16,6 +16,10 @@ var timerMax = 60;
 //This is the current amount of time (in seconds) until the next time the callback function is called.
 var timerCurrent = timerMax;
 
+//timerEnabled [boolean]
+//The control variable for if the timer is currently running or not.
+var timerEnabled = false;
+
 //initQueryTimer()
 //This function initializes the timer with the appropriate variables and functions.
 function initQueryTimer() {
@@ -27,20 +31,33 @@ function initQueryTimer() {
 //@param time - The number of seconds to set the timer to.
 function forceTimerToTime(time) {
 	timerCurrent = time + 1;
+	timerEnabled = true;
 }
 
 //timerCallback()
 //This function updates the timer by lowering the number of seconds remaining. Then, if the timer is at 0 seconds, various automatic callback functions are called.
 function timerCallback() {
-	timerCurrent--;
+	if (timerEnabled) {
+		document.getElementById("timerBox").className = document.getElementById("timerBox").className.replace(/hidden/g, "");
 
-	if (timerCurrent == 0) {
-		document.getElementById("timerText").innerHTML = "Updating...";
+		timerCurrent--;
 
-		getMinefieldData();
+		if (timerCurrent == 0) {
+			document.getElementById("timerText").innerHTML = "Updating...";
 
-		timerCurrent = timerMax;
+			getMinefieldData();
+
+			timerCurrent = timerMax;
+
+			timerEnabled = false;
+
+			document.getElementById("timerBox").className += " hidden";
+		}
+
+		document.getElementById("timerText").innerHTML = "Updating in " + timerCurrent;
+	} else {
+		if (document.getElementById("timerBox").className.lastIndexOf("hidden") === -1) {
+			document.getElementById("timerBox").className += " hidden";
+		}
 	}
-
-	document.getElementById("timerText").innerHTML = "Updating in " + timerCurrent;
 }
