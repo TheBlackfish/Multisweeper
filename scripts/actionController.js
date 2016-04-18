@@ -12,42 +12,33 @@ function submitAction() {
 	var selectionTile = getSelectedActionArray();
 
 	if (selectionTile !== null) {
-		var xml = '<submit>';
-		xml += '<playerID>' + getPlayerID() + '</playerID>';
-		xml += '<gameID>' + getGameID() + '</gameID>';
+		var xml = '<action>';
 		xml += '<xCoord>' + selectionTile["x"] + '</xCoord>';
 		xml += '<yCoord>' + selectionTile["y"] + '</yCoord>';
 		xml += '<actionType>' + selectionTile["action"] + '</actionType>';
-		xml += '</submit>';
+		xml += '</action>';
 
-		console.log(xml);
-
-		handleDataWithPHP(xml, 'submitAction', resolveActionSubmission);
+		sendSocketRequest(xml);
 	} else {
 		document.getElementById("submitMessage").innerHTML = "Please select a tile to dig above!";
 	}
 }
 
-//resolveActionSubmission(response)
-//Takes the response from the server for submitting an action and properly resolves it.
-//@param response - The response from the server for the submission in XML form.
-function resolveActionSubmission(response) {
-	var text = "Unexpected client error!";
-	var allInfo = response.getElementsByTagName("submission")[0];
-	var actionDone = allInfo.getElementsByTagName("action");
+function handleActionResponse(success, xmlNodes) {
+	xmlNodes = xmlNodes || 0;
 
-	if (actionDone.length > 0) {
-		text = actionDone[0].nodeValue;
-		forceTimerToTime(3);
+	var text = "Unexpected client error!";
+
+	if (success) {
 		actionSubmitted = true;
+		text = "";
 	} else {
 		text = "";
-		var errors = allInfo.getElementsByTagName("error");
-		for (var i = 0; i < errors.length; i++) {
-			if (i != 0) {
+		for (var i = 0; i < xmlNodes.length; i++) {
+			text += xmlNodes[i].getChildNodes[0].nodeValue;
+			if ((xmlNodes.length - i) > 2) {
 				text += "<br>";
 			}
-			text += errors[i].childNodes[0].nodeValue;
 		}
 	}
 

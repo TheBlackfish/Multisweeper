@@ -5,7 +5,6 @@
 require_once($_SERVER['DOCUMENT_ROOT'] . '/multisweeper/php/constants/databaseConstants.php');
 require_once($_SERVER['DOCUMENT_ROOT'] . '/multisweeper/php/constants/mineGameConstants.php');
 require_once($_SERVER['DOCUMENT_ROOT'] . '/multisweeper/php/functional/minefieldPopulater.php');
-require_once($_SERVER['DOCUMENT_ROOT'] . '/multisweeper/php/functional/taskScheduler.php'); 
 require_once($_SERVER['DOCUMENT_ROOT'] . '/multisweeper/php/functional/translateData.php');
 
 #createNewGame($width, $height, $numMines)
@@ -86,16 +85,15 @@ function createNewGame($width, $height, $numMines) {
 
 								#Delete everyone from the sign-up queue.
 								if ($deleteStmt = $conn->prepare("TRUNCATE multisweeper.upcomingsignup")) {
-									$deleteStmt->execute();
+									#$deleteStmt->execute();
 									$deleteStmt->close();
-
-									#Schedule the auto-resolution of actions.
-									createResolveActionsTask($gameID);
 
 									$gameCreated = true;
 
 									#Successfully created the new game.
 									error_log("createNewGame.php - New game successfully created, ID=" . $gameID);
+
+									return $gameID;
 								} else {
 									error_log("createNewGame.php - Unable to prepare delete statement. " . $conn->errno . ": " . $conn->error);
 								}
@@ -121,8 +119,10 @@ function createNewGame($width, $height, $numMines) {
 
 	if (!$gameCreated) {
 		error_log("Unable to continue with game creation, scheduling new game creation in 10 minutes.");
-		createGameCreationTask();
+		createGameCreationTask(600);
 	}
+
+	return false;
 }
 
 ?>

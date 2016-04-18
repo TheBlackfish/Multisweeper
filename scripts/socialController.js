@@ -4,46 +4,50 @@
 	This script file holds all functionality relating to social interactions between players, including the player list and chat area.
 */
 
-//attemptChatSubmit(evt)
-//Attempts to submit chat data to the server for the chat area.
-//@param evt - The event object handling the keyboard input.
+var chatLog = [];
+
+var chatID = 0;
+
 function attemptChatSubmit(evt) {
 	if (evt.key == "Enter") {
 		if (!evt.shiftKey) {
 			evt.preventDefault();
 
-			var xml = "<chat><userID>" + getPlayerID() + "</userID><msg>" + document.getElementById("chatEntry").value + "</msg></chat>";
-			console.log(xml);
-			handleDataWithPHP(xml, "submitGameChat", handleChatUpdate);
+			if (document.getElementById("chatEntry").value !== null) {
+				var xml = "<chat><msg>" + document.getElementById("chatEntry").value + "</msg></chat>";
+				sendSocketRequest(xml);
+			}
 		}
 	}
 }
 
-//attemptChatUpdate()
-//Contacts the server to get any new chat messages.
-function attemptChatUpdate() {
-	handleDataWithPHP("", "getGameChat", handleChatUpdate);
+function handleChatResponse(success) {
+	document.getElementById("chatEntry").value = null;
 }
 
-//handleChatUpdate(response)
-//Formats any chat messages recieved from the server into a format the player can read.
-//@param response - The XML chat log from the server.
-function handleChatUpdate(response) {
-	var htmlStr = "";
+function handleChatUpdate(chatlog) {
+	nodesToAdd = [];
+	chatNodes = chatLog.getElementsByTagName("chat");
+	for (var i = 0; i < chatNodes.length; i++) {
+		var tempStr = "<div id='chatMsg" + chatID + "'><p>";
+		tempStr += chatNodes[i].getElementsByTagName("user")[0].childNodes[0].nodeValue;
+		tempStr += "</p><p>";
+		tempStr += chatNodes[i].getElementsByTagName("message")[0].childNodes[0].nodeValue;
+		tempStr += "</p></div>";
+		nodesToAdd.push(tempStr);
+		chatID++;
+	}
 
-	var chatNodes = response.getElementsByTagName("chat");
-	if (chatNodes.length > 0) {
-		for (var i = 0; i < chatNodes.length; i++) {
-			var tempStr = "<div><p>";
-			tempStr += chatNodes[i].getElementsByTagName("user")[0].childNodes[0].nodeValue;
-			tempStr += "</p><p>";
-			tempStr += chatNodes[i].getElementsByTagName("msg")[0].childNodes[0].nodeValue;
-			tempStr += "</p></div>";
-
-			htmlStr += tempStr;
+	if (nodesToAdd.length > 0) {
+		while (nodesToAdd.length + chatLog.length > 50) {
+			var remove = chatLog.pop();
+			document.getElementById("chatLog").innerHTML = document.getElementById("chatLog").replace(remove, "");
 		}
-
-		document.getElementById("chatLog").innerHTML = htmlStr;
+		for (var i = 0; i < nodesToAdd.length; i++) {
+			var cur = nodesToAdd[i];
+			chatLog.unshift(cur);
+			document.getElementById("chatLog").innerHTML = cur + document.getElementById("chatLog").innerHTML;
+		}
 	}
 }
 
@@ -51,7 +55,7 @@ function handleChatUpdate(response) {
 //Formats and presents the table of players currently in the game being played.
 //@param playerXML - The list of players in XML form.
 function populatePlayerListTable(playerXML) {
-	var htmlStr = "<tr><td>Player Name</td></tr>";
+	var htmlStr = "<tr><td>Player Name</td><td>Status</td><td>Trap</td></tr>";
 
 	var clientPlayerText = "";
 	var livingPlayersText = "";
@@ -114,20 +118,23 @@ function populatePlayerListTable(playerXML) {
 	document.getElementById("playerListTable").innerHTML = htmlStr + clientPlayerText + livingPlayersText + deadPlayersText;
 }
 
-//updateUpcomingGameTime(gameTime)
-//Formats and presents the time until the next game on the UI.
-//@param gameTime - The information about the next game in XML form.
-function updateUpcomingGameTime(gameTime) {
-	if (gameTime !== null) {
-		if (document.getElementById("gameTimePrompt") === null) {
-			var promptBox = "<div id='gameTimePrompt' class='topBarBox'><p>" + gameTime.childNodes[0].nodeValue + "</p></div>";
-			document.getElementById("topBar").innerHTML += promptBox;
-		} else {
-			document.getElementById("gameTimePrompt").innerHTML = "<p>The next game starts at " + gameTime.childNodes[0].nodeValue + "</p>";
-		}
-	} else {
-		if (document.getElementById("gameTimePrompt") !== null) {
-			document.getElementById("topBar").innerHTML = document.getElementById("topBar").innerHTML.replace(document.getElementById("gameTimePrompt").outerHTML, "");
-		}
+function updatePlayerListForCurrentPlayer() {
+	var currentPlayer = getPlayerName();
+	if (currentPlayer !== null) {
+		var list = document.getElementById("playerListTable").getElementsByTagName("tbody")[0];
+		if (list.innerHTML.lastIndexOf(currentPlayer) !== -1) {
+			var listNodes = list.getElementsByTagName("tr");
+			for (var i = 0; i < listNodes.length; i++) {
+				var currentName = listNodes[i].getElementsByTagName("td")[0];
+				if (currentPlayer === currentName.innerHTML) {
+					currentName.innerHTML = "<img src='images/star.png'/>" + currentName.innerHTML;
+					return;
+				}
+			}
+		} 
+		
+		window.setTimeout(function() {
+			updatePlayerListForCurrentPlayer();
+		}, 300);
 	}
 }

@@ -7,178 +7,149 @@ require_once($_SERVER['DOCUMENT_ROOT'] . '/multisweeper/php/functional/initializ
 require_once($_SERVER['DOCUMENT_ROOT'] . '/multisweeper/php/functional/minefieldController.php');
 require_once($_SERVER['DOCUMENT_ROOT'] . '/multisweeper/php/functional/translateData.php');
 
-if ($_SERVER["REQUEST_METHOD"] == "POST") {
-	header('Content-Type: text/xml');
+function getGameInfo($gameID, $lastUpdated = 0, $ignoreUpdateTime = false) {
+	global $sqlhost, $sqlusername, $sqlpassword;
 
-	$xml = simplexml_load_file('php://input');
+	if ($ignoreUpdateTime) {
+		$lastUpdated = 0;
+	}
+	$compDate = new DateTime();
+	$compDate->setTimestamp($lastUpdated);
 
-	$doc = new DOMDocument('1.0');
-	$doc->formatOutput = true;
+	$conn = new mysqli($sqlhost, $sqlusername, $sqlpassword);
+	if ($conn->connect_error) {
+		error_log("getGameInfo.php - Connection failed: " . $conn->connect_error);
+		return "";
+	}
 
-	if ($xml->playerID === null) {
-		error_log("loginPlayer.php - Login rejected");
-		$error = $doc->createElement('error', "Incorrect data sent. Please try again.");
-		$error = $doc->appendChild($error);
-	} else {
-		$requestID = (int) $xml->playerID;
-
-		$conn = new mysqli($sqlhost, $sqlusername, $sqlpassword);
-		if ($conn->connect_error) {
-			die("getGameInfo.php - Connection failed: " . $conn->connect_error);
+	if ($timeStmt = $conn->prepare("SELECT lastUpdated, fullUpdate FROM multisweeper.games WHERE gameID = ?")) {
+		$updatedTime = null;
+		$timeStmt->bind_param("i", $gameID);
+		$timeStmt->execute();
+		$timeStmt->bind_result($updated, $fullUpdate);
+		while ($timeStmt->fetch()) {
+			$updatedTime = $updated;
 		}
+		$timeStmt->close();
 
-		#Select all information about the game from the game's status columns in the MySQL database and parse it into XML form. 
-		if ($query = $conn->prepare("SELECT map, visibility, friendlyTanks, enemyTanks, wrecks, traps, height, width, gameID, status FROM multisweeper.games ORDER BY gameID DESC LIMIT 1")) {
-			$query->execute();
-			$query->bind_result($map, $vis, $friendlyTanks, $enemyTanks, $wrecks, $traps, $height, $width, $gameID, $status);
-			$query->fetch();
-			$query->close();
+		if ($updatedTime !== null) {
+			if ($updatedTime > $lastUpdated) {
+				$ret = new SimpleXMLElement("<update/>");
+				$ret->addAttribute("id", $gameID);
 
-			$finalFriendlies = translateTanksToPHP($friendlyTanks);
-			$finalEnemies = translateTanksToPHP($enemyTanks);
-			$finalWrecks = translateTanksToPHP($wrecks);
-			$finalTraps = translateTrapsToPHP($traps);
+				if ($fullUpdate) {
+					#Select all information about the game from the game's status columns in the MySQL database and parse it into XML form. 
+					if ($query = $conn->prepare("SELECT map, visibility, friendlyTanks, enemyTanks, wrecks, traps, height, width, status FROM multisweeper.games WHERE gameID = ?")) {
+						$query->bind_param("i", $gameID);
+						$query->execute();
+						$query->bind_result($map, $vis, $friendlyTanks, $enemyTanks, $wrecks, $traps, $height, $width, $status);
+						$query->fetch();
+						$query->close();
 
-			$finalMap = translateMinefieldToMySQL(getMinefieldWithVisibility($gameID, translateMinefieldToPHP($map, $height, $width), translateMinefieldToPHP($vis, $height, $width), $finalWrecks));
+						$finalFriendlies = translateTanksToPHP($friendlyTanks);
+						$finalEnemies = translateTanksToPHP($enemyTanks);
+						$finalWrecks = translateTanksToPHP($wrecks);
+						$finalTraps = translateTrapsToPHP($traps);
 
-			$newrow = $doc->createElement('minefield');
-			$newrow = $doc->appendChild($newrow);
+						$finalMap = translateMinefieldToMySQL(getMinefieldWithVisibility($gameID, translateMinefieldToPHP($map, $height, $width), translateMinefieldToPHP($vis, $height, $width), $finalWrecks));
 
-			$nodeID = $doc->createElement('id', $gameID);
-			$nodeID = $newrow->appendChild($nodeID);
+						$ret->addChild('map', $finalMap);
+						$ret->addChild('height', $height);
+						$ret->addChild('width', $width);
+						$ret->addChild('status', $status);
 
-			$nodeA = $doc->createElement('map', $finalMap);
-			$nodeA = $newrow->appendChild($nodeA);
+						if ($finalFriendlies !== null) {
+							$ret->addChild('friendlyTanks');
 
-			$nodeB = $doc->createElement('height', $height);
-			$nodeB = $newrow->appendChild($nodeB);
-
-			$nodeC = $doc->createElement('width', $width);
-			$nodeC = $newrow->appendChild($nodeC);
-
-			$nodeD = $doc->createElement('status', $status);
-			$nodeD = $newrow->appendChild($nodeD);
-
-			if ($finalFriendlies !== null) {
-				$nodeE = $doc->createElement('friendlyTanks');
-				$nodeE = $newrow->appendChild($nodeE);
-
-				foreach ($finalFriendlies as $k => $v) {
-					if (count($v) === 2) {
-						$nodeT = $doc->createElement('tank', $v[0] . "," . $v[1]);
-						$nodeT = $nodeE->appendChild($nodeT);
-					}
-				}
-			}
-
-			if ($finalEnemies !== null) {
-				$nodeJ = $doc->createElement('enemyTanks');
-				$nodeJ = $newrow->appendChild($nodeJ);
-
-				foreach ($finalEnemies as $k => $v) {
-					if (count($v) === 2) {
-						$nodeT = $doc->createElement('tank', $v[0] . "," . $v[1]);
-						$nodeT = $nodeJ->appendChild($nodeT);
-					}
-				}
-			}
-
-			if ($finalTraps !== null) {
-				$nodeTR = $doc->createElement('traps');
-				$nodeTR = $newrow->appendChild($nodeTR);
-				foreach ($finalTraps as $k => $v) {
-					if (count($v) === 3) {
-						$nodeTRP = $doc->createElement('trap', $v[0] . "," . $v[1] . "," . $v[2]);
-						$nodeTRP = $nodeTR->appendChild($nodeTRP);
-					}
-				}
-			}
- 
-			$otherPlayers = getOtherPlayerActionsForGame($gameID, $requestID);
-			if (count($otherPlayers) !== 0) {
-				$nodeF = $doc->createElement('otherPlayers');
-				$nodeF = $newrow->appendChild($nodeF);
-
-				foreach ($otherPlayers as $k => $v) {
-					if (count($v) === 2) {
-						$nodeOP = $doc->createElement('otherPlayer', $v[0] . "," . $v[1]);
-						$nodeOP = $nodeF->appendChild($nodeOP);
-					}
-				}
-			}
-
-			if ($xml->playerID !== null) {
-				$selfPlayer = getPlayerActionsForGame($gameID, $requestID);
-				if (count($selfPlayer) === 3) {
-					$nodeG = $doc->createElement('selfAction');
-					$nodeG = $newrow->appendChild($nodeG);
-
-					$nodeH = $doc->createElement('coordinates', $selfPlayer[0] . "," . $selfPlayer[1]);
-					$nodeH = $nodeG->appendChild($nodeH);
-
-					$nodeI = $doc->createElement('actionType', $selfPlayer[2]);
-					$nodeI = $nodeG->appendChild($nodeI);
-				}
-			}
-			
-			#Add all players in the game and their statuses to the XML.
-			if ($playerQuery = $conn->prepare("SELECT p.username, p.playerID, s.status, s.trapType, s.trapCooldown FROM multisweeper.players as p INNER JOIN multisweeper.playerstatus as s ON p.playerID=s.playerID WHERE s.gameID=?")) {
-				$playerQuery->bind_param("i", $gameID);
-				$playerQuery->execute();
-				$playerQuery->bind_result($user, $currentID, $status, $trapType, $trapCooldown);
-
-				$playerRow = $doc->createElement('players');
-				$playerRow = $newrow->appendChild($playerRow);
-
-				while ($playerQuery->fetch()) {
-					$playerInfo = $doc->createElement('player', $user);
-					$playerInfo = $playerRow->appendChild($playerInfo);
-					$playerInfo->setAttribute('status', $status);
-					$playerInfo->setAttribute('trapType', $trapType);
-					$playerInfo->setAttribute('trapCooldown', $trapCooldown);
-
-					if ($currentID === $requestID) {
-						$piaVal = 1;
-						if ($status === 0) {
-							$piaVal = 0;
+							foreach ($finalFriendlies as $k => $v) {
+								if (count($v) === 2) {
+									$ret->friendlyTanks->addChild('tank', $v[0] . "," . $v[1]);
+								}
+							}
 						}
-						$playerIsAlive = $doc->createElement('playerIsAlive', $piaVal);
-						$playerIsAlive = $newrow->appendChild($playerIsAlive);
 
-						$cltVal = 0;
-						if ($trapCooldown === 0) {
-							$cltVal = 1;
+						if ($finalEnemies !== null) {
+							$ret->addChild('enemyTanks');
+
+							foreach ($finalEnemies as $k => $v) {
+								if (count($v) === 2) {
+									$ret->enemyTanks->addChild('tank', $v[0] . "," . $v[1]);
+								}
+							}
 						}
-						$canLayTraps = $doc->createElement('canLayTraps', $cltVal);
-						$canLayTraps = $newrow->appendChild($canLayTraps);
+
+						if ($finalTraps !== null) {
+							$ret->addChild('traps');
+
+							foreach ($finalTraps as $k => $v) {
+								if (count($v) === 3) {
+									$ret->traps->addChild('trap', $v[0] . "," . $v[1] . "," . $v[2]);
+								}
+							}
+						}
+						
+						#Add all players in the game and their statuses to the XML.
+						if ($playerQuery = $conn->prepare("SELECT p.username, p.playerID, s.status, s.trapType, s.trapCooldown FROM multisweeper.players as p INNER JOIN multisweeper.playerstatus as s ON p.playerID=s.playerID WHERE s.gameID=?")) {
+							$playerQuery->bind_param("i", $gameID);
+							$playerQuery->execute();
+							$playerQuery->bind_result($user, $currentID, $status, $trapType, $trapCooldown);
+
+							$ret->addChild('players');
+
+							while ($playerQuery->fetch()) {
+								$playerInfo = $ret->players->addChild('player', $user);
+								$playerInfo->addAttribute('status', $status);
+								$playerInfo->addAttribute('trapType', $trapType);
+								$playerInfo->addAttribute('trapCooldown', $trapCooldown);
+							}
+
+							$playerQuery->close();
+
+							if ($gameTimeStmt = $conn->prepare("SELECT v FROM multisweeper.globalvars WHERE k='nextGameTime'")) {
+								$gameTimeStmt->execute();
+								$gameTimeStmt->bind_result($time);
+								while ($gameTimeStmt->fetch()) {
+									$ret->addChild('nextGameTime', $time);
+								}
+							} else {
+								error_log("getGameInfo.php - Unable to prepare next game time statement. " . $conn->errno . ": " . $conn->error);
+							}
+						} else {
+							error_log("getGameInfo.php - Unable to prepare player gathering statement. " . $conn->errno . ": " . $conn->error);
+							$ret->addChild('error', "Internal error occurred, please try again later.");
+						}
+
+						if (!$ignoreUpdateTime) {
+							if ($updateQuery = $conn->prepare("UPDATE multisweeper.games SET fullUpdate=0 WHERE gameID=?")) {
+								$updateQuery->bind_param("i", $gameID);
+								$updateQuery->execute();
+								$updateQuery->close();
+							}
+						}
+					}
+				} 
+
+				#Add other player actions
+				$otherPlayers = getPlayerActionsForGame($gameID);
+				if (count($otherPlayers) !== 0) {
+					$opNode = $ret->addChild('otherPlayers');
+
+					foreach ($otherPlayers as $k => $v) {
+						if (count($v) === 2) {
+							$opNode->addChild('otherPlayer', $v[0] . "," . $v[1]);
+						}
 					}
 				}
 
-				$playerQuery->close();
-
-				if ($gameTimeStmt = $conn->prepare("SELECT v FROM multisweeper.globalvars WHERE k='nextGameTime'")) {
-					$gameTimeStmt->execute();
-					$gameTimeStmt->bind_result($time);
-					while ($gameTimeStmt->fetch()) {
-						$gt = $doc->createElement('nextGameTime', "The next game will start at " . $time . ".");
-						$gt = $newrow->appendChild($gt);
-					}
-				} else {
-					error_log("getGameInfo.php - Unable to prepare next game time statement. " . $conn->errno . ": " . $conn->error);
-				}
-			} else {
-				error_log("getGameInfo.php - Unable to prepare player gathering statement. " . $conn->errno . ": " . $conn->error);
-				$error = $doc->createElement('error', "Internal error occurred, please try again later.");
-				$error = $doc->appendChild($error);
-			}
+				$finalRet = str_replace('<?xml version="1.0"?>', "", $ret->asXML());
+				return $finalRet;
+			} 
 		} else {
-			error_log("getGameInfo.php - Unable to prepare map gathering statement. " . $conn->errno . ": " . $conn->error);
-			$error = $doc->createElement('error', "Internal error occurred, please try again later.");
-			$error = $doc->appendChild($error);
+			error_log("Did not find update time for game, some error has occurred.");
 		}
 	}
-	
-	$r = $doc->saveXML();
-	echo $r;
+
+	return "";
 }
+
 ?>

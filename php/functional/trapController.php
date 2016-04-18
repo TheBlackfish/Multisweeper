@@ -103,7 +103,7 @@ function resolveTraps($map, $visibility, $tanks, $enemyTanks, $traps, $wrecks) {
 
 			foreach ($tanks as $tankKey => $tankVal) {
 				if ($trapVal[2] === $tankVal[1]) {
-					if (($tankVal[0] >= $trapVal[1]) && (($tankVal[0] - $trapVal[1]) <= $ballistaSpotRange)) {
+					if ($trapVal[1] <= $tankVal[0]) {
 						$activated = true;
 					}
 				}
@@ -112,7 +112,7 @@ function resolveTraps($map, $visibility, $tanks, $enemyTanks, $traps, $wrecks) {
 			if (!$activated) {
 				foreach ($enemyTanks as $tankKey => $tankVal) {
 					if ($trapVal[2] === $tankVal[1]) {
-						if (($tankVal[0] >= $trapVal[1]) && (($tankVal[0] - $trapVal[1]) <= $ballistaSpotRange)) {
+						if ($trapVal[1] <= $tankVal[0]) {
 							$activated = true;
 						}
 					}

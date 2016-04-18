@@ -56,39 +56,12 @@ function getMinefieldWithVisibility($gameID, $minefield, $visibility, $wrecks) {
 	return $result;
 }
 
-#getPlayerActionsForGame($gameID, $playerID)
-#Returns the coordinates and action type of all actions that the player specified are performing in the current game.
-#@param $gameID (Interger) The ID of the game to pull for.
-#@param $playerID (Integer) The ID of the player to pull actions for.
-#@return The properly formatted double array with coordinates for all other players listed.
-function getPlayerActionsForGame($gameID, $playerID) {
-	global $sqlhost, $sqlusername, $sqlpassword;
-	$conn = new mysqli($sqlhost, $sqlusername, $sqlpassword);
-	if ($conn->connect_error) {
-		die("Connection failed: " . $conn->connect_error);
-	}
-
-	$result = array();
-
-	if ($query = $conn->prepare("SELECT xCoord, yCoord, actionType FROM multisweeper.actionqueue WHERE gameID=? AND playerID=?")) {
-		$query->bind_param("ii", $gameID, $excludePlayerID);
-		$query->execute();
-		$query->bind_result($xCoord, $yCoord, $actionType);
-		while ($query->fetch()) {
-			$result = array($xCoord, $yCoord, $actionType);
-		}
-	} else {
-		error_log("minefieldController.php - Unable to get self player actions, returning with none.");
-	}
-	return $result;
-}
-
 #getOtherPlayerActionsForGame($excludePlayerID)
 #Returns an array of all other player action coordinates, excluding the one provided.
 #@param $gameID (Interger) The ID of the game to pull for.
 #@param $excludePlayerID (Integer) The ID of the player to not pull actions for.
 #@return The properly formatted double array with coordinates for all other players listed.
-function getOtherPlayerActionsForGame($gameID, $excludePlayerID) {
+function getPlayerActionsForGame($gameID) {
 	global $sqlhost, $sqlusername, $sqlpassword;
 	$conn = new mysqli($sqlhost, $sqlusername, $sqlpassword);
 	if ($conn->connect_error) {
@@ -97,8 +70,8 @@ function getOtherPlayerActionsForGame($gameID, $excludePlayerID) {
 
 	$result = array();
 
-	if ($query = $conn->prepare("SELECT xCoord, yCoord FROM multisweeper.actionqueue WHERE gameID=? AND playerID!=?")) {
-		$query->bind_param("ii", $gameID, $excludePlayerID);
+	if ($query = $conn->prepare("SELECT xCoord, yCoord FROM multisweeper.actionqueue WHERE gameID=?")) {
+		$query->bind_param("i", $gameID);
 		$query->execute();
 		$query->bind_result($xCoord, $yCoord);
 		while ($query->fetch()) {

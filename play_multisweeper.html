@@ -5,14 +5,14 @@
 <title>Multisweeper</title>
 <link rel="stylesheet" type="text/css" href="style/multisweeper.css" />
 <script src="scripts/actionController.js"></script>
-<script src="scripts/autoController.js"></script>
-<script src="scripts/dataController.js"></script>
 <script src="scripts/interactionController.js"></script>
 <script src="scripts/minefield/minefieldController.js"></script>
 <script src="scripts/minefield/minefieldGraphics.js"></script>
 <script src="scripts/minefield/minefieldInteraction.js"></script>
+<script src="scripts/minefield/minefieldProcessor.js"></script>
 <script src="scripts/playerController.js"></script>
 <script src="scripts/socialController.js"></script>
+<script src="scripts/socketController.js"></script>
 </head>
 
 <body onLoad="debug();">
@@ -24,25 +24,14 @@
       <input id="loginUsername" type='text' name='username'><br>
       Password:
       <input id="loginPassword" type='password' name='password'><br>
-      <div onclick="attemptLogIn();"><p>Log In</p></div>
-      <div onclick="attemptRegister();"><p>Register</p></div>
+      <div onclick="attemptLogin();"><p>Log In</p></div>
+      <div onclick="attemptRegistration();"><p>Register</p></div>
       <p id="logInError"></p>
     </div>
 
     <!-- User Information -->
     <div id="userInfo" class="topBarBox">
       Please sign in using the log-in prompt.
-    </div>
-
-    <!-- Sign Up for next game prompt -->
-    <div id="nextGamePrompt" class="topBarBox">
-      <p id="nextGameText">You need to be logged in in order to sign up for the next game.</p>
-      <div id="nextGameButton" onclick="attemptNextGameSignUp();"><p>Sign Up For The Next Game</p></div>
-    </div>
-
-    <!-- Timer update -->
-    <div id="timerBox" class="topBarBox">
-      <p id="timerText"></p>
     </div>
   </div>
 
@@ -80,8 +69,8 @@
   <script type="text/javascript">
 		function debug() {
       initInteractions();
+      initSocket();
 			checkCookie();
-      getMinefieldData();
 		}
 	</script>
 </body>

@@ -19,7 +19,6 @@ function expandMinefield($minefield, $visibility, $widthToAdd, $minesToAdd) {
 		$minesToAdd += rand(-10, 10);
 	}
 
-	error_log("Adding to minefield an area of size (" . $widthToAdd . "," . $height . ") with " . $minesToAdd . " mines.");
 	$areaToAdd = createMinefieldArea($widthToAdd, $height, $minesToAdd);
 
 	foreach ($areaToAdd as $key => $value) {

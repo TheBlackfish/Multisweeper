@@ -63,66 +63,31 @@ var selectedCoordinates = null;
 //The array containing which actions are currently allowed due to various factors.
 var allowedActions = [0, 1, 2];
 
-//initMinefield(input, h, w, ft, et, tr, o)
-//Initializes the minefield entirely.
-//@param input [Array] The minefield in array form.
-//@param h [int] The height of the minefield.
-//@param w [int] The width of the minefield.
-//@param ft [Array] All friendly tanks in array form.
-//@param et [Array] All enemy tanks in array form.
-//@param tr [Array] All traps in array form.
-//@param o [Array] All other players' actions in array form.
-function initMinefield(input, h, w, ft, et, tr, o) {
-	initMinefieldGraphics();
-	initMinefieldInterface();
-	updateMinefield(input, h, w, ft, et, tr, o);
-	minefieldInitialized = true;
-}
-
-//updateMinefield(input, h, w, ft, et, tr, o)
-//Updates the minefield on-screen to match the data provided.
-//@param input [Array] The minefield in array form.
-//@param h [int] The height of the minefield.
-//@param w [int] The width of the minefield.
-//@param ft [Array] All friendly tanks in array form.
-//@param et [Array] All enemy tanks in array form.
-//@param tr [Array] All traps in array form.
-//@param o [Array] All other players' actions in array form.
-function updateMinefield(input, h, w, ft, et, tr, o) {
-	minefield = importMinefieldFromArray(input, w, h);
-	minefieldWidth = w;
-	minefieldHeight = h;
-	friendlyTanks = ft;
-	enemyTanks = et;
-	traps = tr;
-	otherPlayers = o;
-	drawMinefield();
-}
-
-//importMinefieldFromArray(input, width, height)
-//Takes the single array given and outputs a double array.
-//@param input [Array] - The minefield in single array form.
-//@param h [int] - The height of the minefield to translate.
-//@param w [int] - The width of the minefield to translate.
-//@return The minefield in double array form, or null if there is some error in translation.
-function importMinefieldFromArray(input, width, height) {
-	if (input.length !== (width*height)) {
-		console.log("Input is not of the correct size, aborting importMinefieldFromArray");
-	} else {
-		var result = new Array();
-		while (input.length > 0) {
-			var temp = input.splice(0, height);
-			if (temp.length !== height) {
-				console.log("Chunking input does not have correct height!");
-			}
-			result.push(temp);
-		}
-		if (result.length !== width) {
-			console.log("Chunking did not lead to correct width of field!");
-		}
-		return result;
+function handleMinefieldUpdate(xml) {
+	if (!minefieldInitialized) {
+		initMinefieldGraphics();
+		initMinefieldInterface();
 	}
-	return null;
+
+	var data = processMinefieldXML(xml);
+
+	if ("map" in data && data["map"] !== null) {
+		//Full update
+		minefield = data["map"];
+		minefieldWidth = data["width"];
+		minefieldHeight = data["height"];
+		friendlyTanks = data["friendlyTanks"];
+		enemyTanks = data["enemyTanks"];
+		traps = data["traps"];
+		populatePlayerListTable(data["players"]);
+		setSelectionCoordinates(-1, -1, 0);
+	}
+	if ("otherPlayers" in data && data["otherPlayers"] !== null) {
+		otherPlayers = data["otherPlayers"];
+	}
+
+	drawMinefield();
+	minefieldInitialized = true;
 }
 
 //setSelectionCoordinates(x, y, action)

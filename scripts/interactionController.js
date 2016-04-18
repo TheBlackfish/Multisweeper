@@ -19,11 +19,9 @@ function initInteractions() {
 //@param e - The 'onkeypress' event to process.
 function handleInteractions(e) {
 	if (e.key == "Enter") {
-		console.log("testing");
-		if (getPlayerID === null) {
+		if (getPlayerName() === null) {
 			attemptLogIn();
 		} else if (document.getElementById("chatEntry").value.length > 0) {
-			console.log("attempting chat");
 			attemptChatSubmit(e);
 		} else {
 			submitAction();

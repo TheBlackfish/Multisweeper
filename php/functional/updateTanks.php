@@ -182,7 +182,6 @@ function updateTanks($map, $visibility, $friendlyTankPositions, $enemyTankPositi
 						unset($enemyTankPositions[$enemyKey]);
 						$wrecks = addWreck($map, $wrecks, $enemyVal);
 						$removed = true;
-						error_log("Removed tanks!");
 					}
 				}
 			}

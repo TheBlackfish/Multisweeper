@@ -6,142 +6,106 @@
 #If all players in the game who are alive have then submitted actions, the game is updated via the action queue.
 
 require_once($_SERVER['DOCUMENT_ROOT'] . '/multisweeper/php/constants/databaseConstants.php');
-require_once($_SERVER['DOCUMENT_ROOT'] . '/multisweeper/php/functional/resolveActions.php');
-require_once($_SERVER['DOCUMENT_ROOT'] . '/multisweeper/php/functional/taskScheduler.php');
 
-if ($_SERVER["REQUEST_METHOD"] == "POST") {
-	header('Content-Type: text/xml');
+function submitAction($playerID, $gameID, $xml) {
+	global $sqlhost, $sqlusername, $sqlpassword;
 
-	$xml = simplexml_load_file('php://input');
-	$shouldResolve = false;
+	$result = new SimpleXMLElement("<action/>");
 
-	$result = new DOMDocument('1.0');
-	$result->formatOutput = true;
-	$resultBase = $result->createElement('submission');
-	$resultBase = $result->appendChild($resultBase);
-
-	if (($xml->playerID == null) or ($xml->gameID == null) or ($xml->xCoord == null) or ($xml->yCoord == null) or ($xml->actionType == null)) {
-		error_log("submitAction.php - Action rejected");
-		$error = $result->createElement('error', "Incomplete data in submission. Please try again.");
-		$error = $resultBase->appendChild($error);
-	} else {
-		#Delete any previously scheduled resolution tasks.
-		deleteResolveActionsTask($xml->gameID);
-
-		$conn = new mysqli($sqlhost, $sqlusername, $sqlpassword);
-		if ($conn->connect_error) {
-			die("submitAction.php - Connection failed: " . $conn->connect_error);
-		}
-
-		#Delete any previous actions from this player
-		if ($deleteStmt = $conn->prepare("DELETE FROM multisweeper.actionqueue WHERE playerID=? AND gameID=?")) {
-			$deleteStmt->bind_param("ii", $xml->playerID, $xml->gameID);
-			$deleteStmt->execute();
-			$deleteStmt->close();
+	if ($playerID > -1) {
+		if (($xml->xCoord == null) or ($xml->yCoord == null) or ($xml->actionType == null)) {
+			$error = $result->createElement('actionError', "Incomplete data in submission. Please try again.");
+			$error = $resultBase->appendChild($error);
 		} else {
-			error_log("submitAction.php - Unable to prepare delete statement, forging ahead anyways. " . $conn->errno . ": " . $conn->error);
-		}
+			$conn = new mysqli($sqlhost, $sqlusername, $sqlpassword);
+			if ($conn->connect_error) {
+				error_log("submitAction.php - Connection failed: " . $conn->connect_error);
+				$error = $result->addChild('actionError', "Internal error occurred, please try again later.");
+			}
 
-		#Check if player can actually submit actions or not
-		if ($openGameStmt = $conn->prepare("SELECT status FROM multisweeper.games WHERE gameID=?")) {
-			$openGameStmt->bind_param("i", $xml->gameID);
-			$openGameStmt->execute();
-			$openGameStmt->bind_result($gameStatus);
-			$openGameStmt->fetch();
-			$openGameStmt->close();
+			#Delete any previous actions from this player
+			if ($deleteStmt = $conn->prepare("DELETE FROM multisweeper.actionqueue WHERE playerID=? AND gameID=?")) {
+				$deleteStmt->bind_param("ii", $xml->playerID, $gameID);
+				$deleteStmt->execute();
+				$deleteStmt->close();
+			} else {
+				error_log("submitAction.php - Unable to prepare delete statement, forging ahead anyways. " . $conn->errno . ": " . $conn->error);
+			}
 
-			if ($gameStatus === "OPEN") {
-				if ($aliveStmt = $conn->prepare("SELECT COUNT(*) FROM multisweeper.playerstatus WHERE gameID=? AND playerID=? AND status!=0")) {
-					$aliveStmt->bind_param("ii", $xml->gameID, $xml->playerID);
-					$aliveStmt->execute();
-					$aliveStmt->bind_result($count);
-					$aliveStmt->fetch();
-					$aliveStmt->close();
+			#Check if player can actually submit actions or not
+			if ($openGameStmt = $conn->prepare("SELECT status FROM multisweeper.games WHERE gameID=?")) {
+				$openGameStmt->bind_param("i", $gameID);
+				$openGameStmt->execute();
+				$openGameStmt->bind_result($gameStatus);
+				$openGameStmt->fetch();
+				$openGameStmt->close();
 
-					if ($count > 0) {
-						#Add the current action they have queued up instead.
-						if ($insertStmt = $conn->prepare("INSERT INTO multisweeper.actionqueue (playerID, gameID, xCoord, yCoord, actionType) VALUES (?, ?, ?, ?, ?)")) {
-							$insertStmt->bind_param("iiiii", $xml->playerID, $xml->gameID, $xml->xCoord, $xml->yCoord, $xml->actionType);
-							$updated = $insertStmt->execute();
-							if (!$updated) {
-								error_log("submitAction.php - Error occurred inserting player action into queue. " . $insertStmt->errno . ": " . $insertStmt->error);
-								$error = $result->createElement('error', "Internal error occurred, please try again later.");
-								$error = $resultBase->appendChild($error);
-								$insertStmt->close();
-							} else {
-								$insertStmt->close();
-								$error = $result->createElement('action', "Action submitted!");
-								$error = $resultBase->appendChild($error);
-								
-								#Update current player status to set current player's action awaiting status to false
-								if ($updateStmt = $conn->prepare("UPDATE multisweeper.playerstatus SET awaitingAction=0 WHERE playerID=? AND gameID=?")) {
-									$updateStmt->bind_param("ii", $xml->playerID, $xml->gameID);
-									$updateStmt->execute();
-									$updateStmt->close();
+				if ($gameStatus === "OPEN") {
+					if ($aliveStmt = $conn->prepare("SELECT COUNT(*) FROM multisweeper.playerstatus WHERE gameID=? AND playerID=? AND status!=0")) {
+						$aliveStmt->bind_param("ii", $gameID, $playerID);
+						$aliveStmt->execute();
+						$aliveStmt->bind_result($count);
+						$aliveStmt->fetch();
+						$aliveStmt->close();
+
+						if ($count > 0) {
+							#Add the current action they have queued up instead.
+							if ($insertStmt = $conn->prepare("INSERT INTO multisweeper.actionqueue (playerID, gameID, xCoord, yCoord, actionType) VALUES (?, ?, ?, ?, ?)")) {
+								$insertStmt->bind_param("iiiii", $playerID, $gameID, $xml->xCoord, $xml->yCoord, $xml->actionType);
+								$updated = $insertStmt->execute();
+								if (!$updated) {
+									error_log("submitAction.php - Error occurred inserting player action into queue. " . $insertStmt->errno . ": " . $insertStmt->error);
+									$error = $result->addChild('error', "Internal error occurred, please try again later.");
+									$insertStmt->close();
 								} else {
-									error_log("submitAction.php - Error occurred updating the fact that a player has submitted an action. Can manually run the action resolution later.");
-								}
-
-								#Check if all players have submitted actions. If so, resolve the action queue.
-								if ($checkStmt = $conn->prepare("SELECT COUNT(*) FROM multisweeper.playerstatus WHERE gameID=? AND awaitingAction=1 AND status=1")) {
-									$checkStmt->bind_param("i", $xml->gameID);
-									$checkStmt->execute();
-									$checkStmt->bind_result($count);
-									$checkStmt->fetch();
-									$checkStmt->close();
-									if ($count === 0) {
-										$shouldResolve = true;
+									$insertStmt->close();
+									$error = $result->addChild('action', "Action submitted!");
+									
+									#Update current player status to set current player's action awaiting status to false
+									if ($updateStmt = $conn->prepare("UPDATE multisweeper.playerstatus SET awaitingAction=0 WHERE playerID=? AND gameID=?")) {
+										$updateStmt->bind_param("ii", $playerID, $gameID);
+										$updateStmt->execute();
+										$updateStmt->close();
 									} else {
-										#Schedule timeout for next automatic resolution.
-										createResolveActionsTask($xml->gameID);
+										error_log("submitAction.php - Error occurred updating the fact that a player has submitted an action.");
 									}
-								} else {
-									error_log("submitAction.php - Unable to prepare check status statement. " . $conn->errno . ": " . $conn->error);
 								}
-							}
-						} else {
-							error_log("submitAction.php - Unable to prepare insert statement, need to fail. " . $conn->errno . ": " . $conn->error);
-							$error = $result->createElement('error', "Internal error occurred, please try again later.");
-							$error = $resultBase->appendChild($error);
-						}
-					} else {
-						error_log("submitAction.php - Player not allowed to submit actions.");
-
-						#Find out why player is not allowed to submit actions.
-						if ($deadStmt = $conn->prepare("SELECT COUNT(*) FROM multisweeper.playerstatus WHERE gameID=? AND playerID=? AND status=0")) {
-							$deadStmt->bind_param("ii", $xml->playerID, $xml->gameID);
-							$deadStmt->execute();
-							$deadStmt->bind_result($count);
-							$deadStmt->fetch();
-							$deadStmt->close();
-
-							if ($count > 0) {
-								$error = $result->createElement('error', "You are dead.");
-								$error = $resultBase->appendChild($error);
 							} else {
-								$error = $result->createElement('error', "You are not a participant in this game.");
-								$error = $resultBase->appendChild($error);
+								error_log("submitAction.php - Unable to prepare insert statement, need to fail. " . $conn->errno . ": " . $conn->error);
+								$error = $result->addChild('actionError', "Internal error occurred, please try again later.");
 							}
 						} else {
-							error_log("submitAction.php - Unable to prepare dead check statement. " . $conn->errno . ": " . $conn->error);
-							$error = $result->createElement('error', "You are not allowed to participate in this game at this time.");
-							$error = $resultBase->appendChild($error);
+							error_log("submitAction.php - Player not allowed to submit actions.");
+
+							#Find out why player is not allowed to submit actions.
+							if ($deadStmt = $conn->prepare("SELECT COUNT(*) FROM multisweeper.playerstatus WHERE gameID=? AND playerID=? AND status=0")) {
+								$deadStmt->bind_param("ii", $xml->playerID, $gameID);
+								$deadStmt->execute();
+								$deadStmt->bind_result($count);
+								$deadStmt->fetch();
+								$deadStmt->close();
+
+								if ($count > 0) {
+									$error = $result->addChild('actionError', "You are dead.");
+								} else {
+									$error = $result->addChild('actionError', "You are not a participant in this game.");
+								}
+							} else {
+								error_log("submitAction.php - Unable to prepare dead check statement. " . $conn->errno . ": " . $conn->error);
+								$error = $result->addChild('actionError', "You are not allowed to participate in this game at this time.");
+							}
 						}
 					}
+				} else {
+					$error = $result->addChild('actionError', "This game is over. Please wait for the next game to be deployed.");
 				}
-			} else {
-				$error = $result->createElement('error', "This game is over. Please wait for the next game to be deployed.");
-				$error = $resultBase->appendChild($error); 
 			}
 		}
+	} else {
+		$error = $result->addChild('actionError', "You must be logged in to submit actions.");
 	}
 
-	$r = $result->saveXML();
-	echo $r;
-
-	if ($shouldResolve) {
-		resolveAllActions($xml->gameID);
-	}
+	return str_replace('<?xml version="1.0"?>', "", $result->asXML());
 }
 
 ?>

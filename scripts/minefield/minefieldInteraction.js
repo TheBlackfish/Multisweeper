@@ -37,7 +37,7 @@ function setInteractionPolicy(playerIsAlive, canLayTraps) {
 //Performs the correct action with a mouse click depending on the tile clicked on.
 //@param e - The mouse event for the mouse click.
 function processSelection(e) {
-	if (getPlayerID() !== "") {
+	if (getPlayerName() !== null) {
 		if (minefieldInitialized && minefieldGraphicsInitialized) {
 			var canSelect = false;
 			var altSelect = false;

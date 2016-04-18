@@ -49,7 +49,7 @@ function initMySQL() {
 		KEY `playerID_idx` (`playerID`), CONSTRAINT `chatPlayerID` FOREIGN KEY (`playerID`) REFERENCES `players` (`playerID`) ON DELETE NO ACTION ON UPDATE NO 
 	)";
 
-	$gameTableStatement = "CREATE TABLE `games` (
+	$gameTableStatement = "CREATE TABLE multisweeper.games (
 	  	`gameID` int(11) NOT NULL AUTO_INCREMENT,
 	  	`map` varchar(20000) NOT NULL,
 	  	`visibility` varchar(20000) NOT NULL,
@@ -86,7 +86,7 @@ function initMySQL() {
 		CONSTRAINT `playerIDy` FOREIGN KEY (`playerID`) REFERENCES `players` (`playerID`) ON DELETE NO ACTION ON UPDATE NO ACTION
 	)";
 
-	$statusTableStatement = "CREATE TABLE `playerstatus` (
+	$statusTableStatement = "CREATE TABLE multisweeper.playerstatus (
 		`status` int(2) NOT NULL DEFAULT '1',
 		`awaitingAction` bit(1) NOT NULL,
 		`gameID` int(11) NOT NULL,

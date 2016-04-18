@@ -4,13 +4,11 @@
 	This file contains all functionality relating to player information, including logging in and tracking cookies.
 */
 
-//currentPlayerID [Integer]
-//The internal ID of the player currently logged in.
-var currentPlayerID = null;
-
 //currentUserName [String]
 //The name of the currently logged-in player.
 var currentUserName = null;
+
+var currentPassword = null;
 
 //checkCookie()
 //Attempts to find any cookies for this page. If they exist and they contain user information, this function will attempt to log that player in on this computer.
@@ -33,116 +31,7 @@ function checkCookie() {
 	if ((foundUsername !== null) && (foundPassword !== null)) {
 		document.getElementById("loginUsername").value = foundUsername;
 		document.getElementById("loginPassword").value = foundPassword;
-		attemptLogIn();
-	}
-}
-
-
-
-//attemptLogIn()
-//Gets the entered username and password, then makes a POST request to the server for authentication.
-function attemptLogIn() {
-	var inputUserName = document.getElementById("loginUsername").value;
-	var inputPassword = document.getElementById("loginPassword").value;
-
-	var loginXML = "<login><username>" + inputUserName + "</username><password>" + inputPassword + "</password></login>";
-
-	handleDataWithPHP(loginXML, 'logInPlayer', handleLogIn);
-}
-
-//handleLogIn(response)
-//Handles player information after logging in.
-//@param response - The XML information from the server after attempting to authenticate with the server.
-function handleLogIn(response) {
-	var playerInfo = response.getElementsByTagName("login")[0];
-
-	if (playerInfo.getElementsByTagName("error").length > 0) {
-		var errors = playerInfo.getElementsByTagName("error");
-		for (var i = 0; i < errors.length; i++) {
-			document.getElementById("logInError").innerHTML += "<br>" + errors[i].childNodes[0].nodeValue;
-		}
-	} else {
-		currentPlayerID = playerInfo.getElementsByTagName("id")[0].childNodes[0].nodeValue;
-		currentUserName = playerInfo.getElementsByTagName("username")[0].childNodes[0].nodeValue;
-
-		//Set up login cookie
-		var d = new Date();
-		d.setTime(d.getTime() + (3*24*60*60*1000));
-		var expires = "expires="+d.toUTCString();
-		document.cookie = "username=" + currentUserName;
-		document.cookie = "password=" + document.getElementById("loginPassword").value;
-		document.cookie = expires;
-
-		updatePlayerInfo();
-		getMinefieldData();
-		initQueryTimer();
-		attemptNextGameSignUp();
-	}
-}
-
-//attemptLogOut()
-//Logs the current player out of the game.
-function attemptLogOut() {
-	currentPlayerID = null;
-	currentUserName = null;
-
-	document.getElementById("userInfo").innerHTML = "Please sign in using the log-in prompt.";
-	document.getElementById("loginPrompt").className = document.getElementById("loginPrompt").className.replace(/hidden/g, "");
-}
-
-//attemptRegister()
-//Gets the entered username and password, then makes a POST request to the server to register that information as a new player.
-function attemptRegister() {
-	var inputUserName = document.getElementById("loginUsername").value;
-	var inputPassword = document.getElementById("loginPassword").value;
-
-	var loginXML = "<login><username>" + inputUserName + "</username><password>" + inputPassword + "</password></login>";
-
-	handleDataWithPHP(loginXML, 'registerPlayer', handleRegister);
-}
-
-//handleRegister(response)
-//Handles player information after registering that player.
-//@param response - The XML information from the server after attempting to register with the server.
-function handleRegister(response) {
-	var playerInfo = response.getElementsByTagName("login")[0];
-
-	if (playerInfo.getElementsByTagName("error").length > 0) {
-		var errors = playerInfo.getElementsByTagName("error");
-		for (var i = 0; i < errors.length; i++) {
-			document.getElementById("logInError").innerHTML += "<br>" + errors[i].childNodes[0].nodeValue;
-		}
-	} else {
-		attemptLogIn();
-	}
-}
-
-//attemptNextGameSignUp()
-//Gets the entered username and password, then makes a POST request to the server to register that player for the next game.
-function attemptNextGameSignUp() {
-	var inputUserName = document.getElementById("loginUsername").value;
-	var inputPassword = document.getElementById("loginPassword").value;
-
-	var loginXML = "<login><username>" + inputUserName + "</username><password>" + inputPassword + "</password></login>";
-
-	handleDataWithPHP(loginXML, 'signUpForNextGame', handleSignUp);
-}
-
-//handleSignUp(response)
-//Handles UI information after registering the current player for the next game.
-//@param response - The XML information from the server after attempting to sign up for the next game with the server.
-function handleSignUp(response) {
-	var playerInfo = response.getElementsByTagName("register")[0];
-
-	if (playerInfo.getElementsByTagName("error").length > 0) {
-		var errors = playerInfo.getElementsByTagName("error");
-		for (var i = 0; i < errors.length; i++) {
-			document.getElementById("logInError").innerHTML += "<br>" + errors[i].childNodes[0].nodeValue;
-		}
-	} else {
-		var success = playerInfo.getElementsByTagName("success");
-		document.getElementById("nextGameText").innerHTML = success[0].childNodes[0].nodeValue;
-		document.getElementById("nextGameButton").className += " hidden";
+		attemptLogin();
 	}
 }
 
@@ -155,16 +44,69 @@ function updatePlayerInfo() {
 
 	document.getElementById("userInfo").innerHTML = "<p>" + inner + "</p><div onclick='attemptLogOut();'><p>Log Out</p></div>";
 	document.getElementById("loginPrompt").className += " hidden";
+
+	updatePlayerListForCurrentPlayer();
 }
 
-//getPlayerID()
-//Retrieves the ID of the current player.
-//@return The ID of the player, or an empty string if no player is logged in.
-function getPlayerID() {
-	if (currentPlayerID === null) {
-		return "";
+function attemptLogin() {
+	sendSocketRequest("");
+}
+
+function handleLoginResponse(success, error) {
+	error = error || 0;
+
+	if (success) {
+		if (currentUserName === null) {
+			currentUserName = document.getElementById("loginUsername").value;
+			currentPassword = document.getElementById("loginPassword").value;
+		}
+
+		//Set up login cookie
+		var d = new Date();
+		d.setTime(d.getTime() + (3*24*60*60*1000));
+		var expires = "expires="+d.toUTCString();
+		document.cookie = "username=" + currentUserName;
+		document.cookie = "password=" + currentPassword;
+		document.cookie = expires;
+
+		updatePlayerInfo();
 	} else {
-		return currentPlayerID;
+		if (error !== 0) {
+			document.getElementById("logInError") = "<br>" + error;
+		}
+	}
+}
+
+//attemptRegister()
+//Gets the entered username and password, then makes a POST request to the server to register that information as a new player.
+function attemptRegistration() {
+	var inputUserName = document.getElementById("loginUsername").value;
+	var inputPassword = document.getElementById("loginPassword").value;
+
+	var registrationXML = "<registration><username>" + inputUserName + "</username><password>" + inputPassword + "</password></registration>";
+
+	sendSocketRequest(registrationXML);
+}
+
+function getLoginDetails() {
+	var loginName = null, loginPassword = null;
+	if (currentUserName === null) {
+		loginName = document.getElementById("loginUsername").value;
+		loginPassword = document.getElementById("loginPassword").value;
+	} else {
+		loginName = currentUserName;
+		loginPassword = currentPassword;
+	}
+	loginPassword = document.getElementById("loginPassword").value;
+
+	if (loginName === null || loginPassword === null) {
+		return null;
+	} else {
+		var ret = "<login>";
+		ret += "<username>" + loginName + "</username>";
+		ret += "<password>" + loginPassword + "</password>";
+		ret += "</login>";
+		return ret;
 	}
 }
 
@@ -173,7 +115,7 @@ function getPlayerID() {
 //@return The name of the player, or an empty string if no player is logged in.
 function getPlayerName() {
 	if (currentUserName === null) {
-		return "";
+		return null;
 	} else {
 		return currentUserName;
 	}

@@ -7,7 +7,6 @@ require_once($_SERVER['DOCUMENT_ROOT'] . '/multisweeper/php/constants/mineGameCo
 require_once($_SERVER['DOCUMENT_ROOT'] . '/multisweeper/php/functional/minefieldExpander.php');
 require_once($_SERVER['DOCUMENT_ROOT'] . '/multisweeper/php/functional/minefieldPopulater.php');
 require_once($_SERVER['DOCUMENT_ROOT'] . '/multisweeper/php/functional/playerController.php');
-require_once($_SERVER['DOCUMENT_ROOT'] . '/multisweeper/php/functional/taskScheduler.php');
 require_once($_SERVER['DOCUMENT_ROOT'] . '/multisweeper/php/functional/translateData.php');
 require_once($_SERVER['DOCUMENT_ROOT'] . '/multisweeper/php/functional/trapController.php');
 require_once($_SERVER['DOCUMENT_ROOT'] . '/multisweeper/php/functional/updateTanks.php');
@@ -35,7 +34,6 @@ function resolveAllActions($gameID) {
 			#Determine if this is the first ever move in the game. If so, different actions call for different outcomes.
 			$firstMove = false;
 			if ((strpos($v, "1") === false) && (strpos($v, "2") === false)) {
-				error_log("This is the first move of the current game.");
 				$firstMove = true;
 			}
 
@@ -63,7 +61,6 @@ function resolveAllActions($gameID) {
 			}
 
 			if ($expand) {
-				error_log("Expanding field...");
 				$newVals = expandMinefield($minefield, $visibility, 10, 0);
 				$minefield = $newVals["minefield"];
 				$visibility = $newVals["visibility"];
@@ -347,7 +344,7 @@ function resolveAllActions($gameID) {
 								}
 
 								#Update map and visibility values for the game by saving to database.
-								if ($updateStmt = $conn->prepare("UPDATE multisweeper.games SET map=?, visibility=?, friendlyTankCountdown=?, friendlyTanks=?, enemyTankCountdown=?, enemyTanks=?, enemyTankCountdownReset=?, wrecks=?, traps=?, status=?, width=?, height=? WHERE gameID=?")) {
+								if ($updateStmt = $conn->prepare("UPDATE multisweeper.games SET map=?, visibility=?, friendlyTankCountdown=?, friendlyTanks=?, enemyTankCountdown=?, enemyTanks=?, enemyTankCountdownReset=?, wrecks=?, traps=?, status=?, width=?, height=?, lastUpdated=NOW(), fullUpdate=1 WHERE gameID=?")) {
 									$statusStr = "OPEN";
 									if ($gameCompleted) {
 										$statusStr = "GAME OVER";
@@ -358,12 +355,6 @@ function resolveAllActions($gameID) {
 										error_log("resolveActions.php - Error occurred during map update. " . $updateStmt->errno . ": " . $updateStmt->error);
 									} 
 									$updateStmt->close();
-
-									if ($gameCompleted) {
-										createGameCreationTask();
-									} else {
-										createResolveActionsTask($gameID);
-									}
 								} else {
 									error_log("resolveActions.php - Unable to prepare map update after resolving action queue. " . $conn->errno . ": " . $conn->error);
 								}
