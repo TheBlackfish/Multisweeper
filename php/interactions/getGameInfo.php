@@ -13,8 +13,6 @@ function getGameInfo($gameID, $lastUpdated = 0, $ignoreUpdateTime = false) {
 	if ($ignoreUpdateTime) {
 		$lastUpdated = 0;
 	}
-	$compDate = new DateTime();
-	$compDate->setTimestamp($lastUpdated);
 
 	$conn = new mysqli($sqlhost, $sqlusername, $sqlpassword);
 	if ($conn->connect_error) {
@@ -22,7 +20,7 @@ function getGameInfo($gameID, $lastUpdated = 0, $ignoreUpdateTime = false) {
 		return "";
 	}
 
-	if ($timeStmt = $conn->prepare("SELECT lastUpdated, fullUpdate FROM multisweeper.games WHERE gameID = ?")) {
+	if ($timeStmt = $conn->prepare("SELECT UNIX_TIMESTAMP(lastUpdated), fullUpdate FROM multisweeper.games WHERE gameID = ?")) {
 		$updatedTime = null;
 		$timeStmt->bind_param("i", $gameID);
 		$timeStmt->execute();
@@ -143,7 +141,9 @@ function getGameInfo($gameID, $lastUpdated = 0, $ignoreUpdateTime = false) {
 
 				$finalRet = str_replace('<?xml version="1.0"?>', "", $ret->asXML());
 				return $finalRet;
-			} 
+			} else {
+				error_log("We think the game has not been updated since the last update, exiting.");
+			}
 		} else {
 			error_log("Did not find update time for game, some error has occurred.");
 		}

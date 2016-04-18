@@ -3,6 +3,7 @@
 
 $_SERVER['DOCUMENT_ROOT'] = dirname(dirname(dirname(dirname(__FILE__))));
 
+require_once($_SERVER['DOCUMENT_ROOT'] . '/multisweeper/php/functional/createNewGame.php');
 require_once($_SERVER['DOCUMENT_ROOT'] . '/multisweeper/php/functional/resolveActions.php');
 require_once($_SERVER['DOCUMENT_ROOT'] . '/multisweeper/php/interactions/getChatUpdateTime.php');
 require_once($_SERVER['DOCUMENT_ROOT'] . '/multisweeper/php/interactions/getGameChat.php');
@@ -15,7 +16,6 @@ require_once($_SERVER['DOCUMENT_ROOT'] . '/multisweeper/php/interactions/registe
 require_once($_SERVER['DOCUMENT_ROOT'] . '/multisweeper/php/interactions/submitAction.php');
 require_once($_SERVER['DOCUMENT_ROOT'] . '/multisweeper/php/interactions/submitGameChat.php');
 require_once($_SERVER['DOCUMENT_ROOT'] . '/multisweeper/php/phpwebsocket/websockets.php');
-require_once($_SERVER['DOCUMENT_ROOT'] . '/multisweeper/php/scripts/gameCreationScript.php');
 require_once($_SERVER['DOCUMENT_ROOT'] . '/multisweeper/php/sockets/multisweeperUser.php');
 
 class multisweeperServer extends WebSocketServer {
@@ -37,8 +37,6 @@ class multisweeperServer extends WebSocketServer {
   protected $postActionResolutionInterval = 10;
   
   protected function process ($user, $message) {
-    error_log("Processing message...");
-    error_log($message);
     #Turn the message into XML to parse.
     $parsedMsg = simplexml_load_string($message);
     if ($parsedMsg !== false) {
@@ -91,12 +89,7 @@ class multisweeperServer extends WebSocketServer {
       #Return the compilation of successes/errors to user.
       $response .= "</response>";
 
-      error_log("Responding...");
-      error_log($response);
-
       $this->send($user, $response);
-    } else {
-      error_log("Not responding...");
     }
   }
   
@@ -107,8 +100,6 @@ class multisweeperServer extends WebSocketServer {
       $update .= getGameInfo($this->gameID, 0, true);
       $update .= getGameChat(null, true);
       $update .= "</update>";
-
-      error_log($update);
 
       $this->send($user, $update);
     } else {
@@ -130,7 +121,7 @@ class multisweeperServer extends WebSocketServer {
       $diff = $currentTime - $this->broadcastTimestamp;
 
       if ($diff > $this->broadcastInterval) {
-        if ($currentTime > $this->resolveActionsTimestamp) {
+        if (($currentTime > $this->resolveActionsTimestamp) && ($this->gameID !== null)) {
           #Resolve actions instead of broadcasting.
           resolveAllActions($this->gameID);
           $this->resolveActionsTimestamp = time() + $this->autoresolutionInterval;
@@ -156,7 +147,7 @@ class multisweeperServer extends WebSocketServer {
             #If gameID is null
             if ($this->gameID === null) {
               #Create a new game since we do not have one currently, then add all players to the full update backlog.
-              $newID = runGameCreationScript();
+              $newID = createNewDefaultGame();
               if ($newID !== false) {
                 $this->gameID = $newID;
                 $this->gameUpdateTimestamp = getGameUpdateTime($newID);
@@ -195,6 +186,7 @@ class multisweeperServer extends WebSocketServer {
 
               #If there have been updates
               if ($shouldUpdate && (count($this->users) > 0)) {
+                error_log($update);
                 #For each user
                 foreach ($this->users as $user) {
                   $this->send($user, $update);
