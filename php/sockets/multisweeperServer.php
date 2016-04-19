@@ -95,17 +95,8 @@ class multisweeperServer extends WebSocketServer {
   
   protected function connected ($user) {
     //Send a full update to the user.
-    if ($this->gameID !== null) {
-      $update = "<update>";
-      $update .= getGameInfo($this->gameID, 0, true);
-      $update .= getGameChat(null, true);
-      $update .= "</update>";
-
-      $this->send($user, $update);
-    } else {
-      array_push($this->fullUpdateBacklog, $user);
-      $this->shouldBroadcastFullUpdate = true;
-    }
+    array_push($this->fullUpdateBacklog, $user);
+    $this->shouldBroadcastFullUpdate = true;
   }
 
   protected function closed ($user) {
