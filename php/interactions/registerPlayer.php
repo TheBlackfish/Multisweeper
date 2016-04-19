@@ -47,9 +47,6 @@ function registerPlayer($xml) {
 						$salt = sec_getNewSalt();
 						$saltedPW = sec_getHashedValue($xml->password, $salt);
 
-						error_log("Generated salt = " . $salt);
-						error_log("Generated hash = " . $saltedPW);
-
 						$registerStmt->bind_param("sss", $xml->username, $saltedPW, $salt);
 						$registerStmt->execute();
 

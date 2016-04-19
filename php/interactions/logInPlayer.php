@@ -33,9 +33,6 @@ function logInPlayer($xml) {
 
 			#Check that the password is correct.
 			$clientPW = sec_getHashedValue($xml->password, $salt);
-			error_log("Retrieved salt = " . $salt);
-			error_log("Client PW = " . $clientPW);
-			error_log("Server PW = " . $controlPW);
 			if ($clientPW !== $controlPW) {
 				error_log("logInPlayer.php - Password failed the potato test.");
 				return -1;
