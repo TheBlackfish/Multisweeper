@@ -3,7 +3,7 @@
 #This file checks the log-in information of a player and returns an XML form explaining if it was successful or not.
 
 require_once($_SERVER['DOCUMENT_ROOT'] . '/multisweeper/php/constants/databaseConstants.php');
-require_once($_SERVER['DOCUMENT_ROOT'] . '/multisweeper/php/constants/mineGameConstants.php');
+require_once($_SERVER['DOCUMENT_ROOT'] . '/multisweeper/php/functional/security.php');
 
 function logInPlayer($xml) {
 	global $sqlhost, $sqlusername, $sqlpassword;
@@ -11,25 +11,35 @@ function logInPlayer($xml) {
 
 	if (($xml->username == null) || ($xml->password == null)) {
 		error_log("logInPlayer.php - Login rejected.");
-		return false;
+		return -1;
 	} else {
 		$conn = new mysqli($sqlhost, $sqlusername, $sqlpassword);
 		if ($conn->connect_error) {
 			error_log("logInPlayer.php - Connection failed: " . $conn->connect_error);
-			return false;
+			return -1;
 		}
 
 		#Check if user exists.
-		if ($stmt = $conn->prepare("SELECT playerID FROM multisweeper.players WHERE username=? AND password=?")) {
+		if ($stmt = $conn->prepare("SELECT playerID, password, salt FROM multisweeper.players WHERE username=?")) {
 			$playerID = null;
 
-			$stmt->bind_param("ss", $xml->username, $xml->password);
+			$stmt->bind_param("s", $xml->username);
 			$stmt->execute();
-			$stmt->bind_result($id);
+			$stmt->bind_result($id, $controlPW, $salt);
 			while ($stmt->fetch()) {
 				$playerID = $id;
 			}
 			$stmt->close();
+
+			#Check that the password is correct.
+			$clientPW = sec_getHashedValue($xml->password, $salt);
+			error_log("Retrieved salt = " . $salt);
+			error_log("Client PW = " . $clientPW);
+			error_log("Server PW = " . $controlPW);
+			if ($clientPW !== $controlPW) {
+				error_log("logInPlayer.php - Password failed the potato test.");
+				return -1;
+			}
 
 			if ($playerID != null) {
 				#Check if player is currently a part of the most recent game.

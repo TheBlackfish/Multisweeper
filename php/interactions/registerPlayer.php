@@ -3,6 +3,7 @@
 #This file takes the registration information for a new player passed to it and attempts to create that player in the MySQL database.
 
 require_once($_SERVER['DOCUMENT_ROOT'] . '/multisweeper/php/constants/databaseConstants.php');
+require_once($_SERVER['DOCUMENT_ROOT'] . '/multisweeper/php/functional/security.php');
 
 function registerPlayer($xml) {
 	global $sqlhost, $sqlusername, $sqlpassword;
@@ -41,8 +42,15 @@ function registerPlayer($xml) {
 
 				if ($count == 0) {
 					#Register the player in the MySQL database.
-					if ($registerStmt = $conn->prepare("INSERT INTO multisweeper.players (username, password) VALUES (?,?)")) {
-						$registerStmt->bind_param("ss", $xml->username, $xml->password);
+					if ($registerStmt = $conn->prepare("INSERT INTO multisweeper.players (username, password, salt) VALUES (?,?,?)")) {
+
+						$salt = sec_getNewSalt();
+						$saltedPW = sec_getHashedValue($xml->password, $salt);
+
+						error_log("Generated salt = " . $salt);
+						error_log("Generated hash = " . $saltedPW);
+
+						$registerStmt->bind_param("sss", $xml->username, $saltedPW, $salt);
 						$registerStmt->execute();
 
 						if ($registerStmt->affected_rows > 0) {

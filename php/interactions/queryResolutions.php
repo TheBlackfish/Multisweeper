@@ -29,8 +29,7 @@ function queryResolutions($gameID) {
 		}
 
 		if ($allActed) {
-			error_log("queryResolutions.php - We think all players have submitted their actions, reducing to 15 seconds.");
-			return 15;
+			return 5;
 		}
 	}
 

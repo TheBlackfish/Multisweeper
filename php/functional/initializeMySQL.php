@@ -38,7 +38,7 @@ function initMySQL() {
 		KEY `gameID_idx` (`gameID`), 
 		KEY `playerID_idx` (`playerID`), 
 		CONSTRAINT `gameIDx` FOREIGN KEY (`gameID`) REFERENCES `games` (`gameID`) ON DELETE NO ACTION ON UPDATE NO ACTION, 
-		CONSTRAINT `playerIDx` FOREIGN KEY (`playerID`) REFERENCES `players` (`playerID`) ON DELETE NO ACTION ON UPDATE NO ACTION
+		CONSTRAINT `playerIDx` FOREIGN KEY (`playerID`) REFERENCES `players` (`playerID`) ON DELETE CASCADE ON UPDATE CASCADE
 	)";
 
 	$chatTableStatement = "CREATE TABLE IF NOT EXISTS multisweeper.chatmessages (
@@ -46,7 +46,7 @@ function initMySQL() {
 		`message` varchar(500) NOT NULL DEFAULT 'ERROR', 
 		`time` datetime NOT NULL, 
 		`forCurrentGame` tinyint(1) NOT NULL DEFAULT '1', 
-		KEY `playerID_idx` (`playerID`), CONSTRAINT `chatPlayerID` FOREIGN KEY (`playerID`) REFERENCES `players` (`playerID`) ON DELETE NO ACTION ON UPDATE NO 
+		KEY `playerID_idx` (`playerID`), CONSTRAINT `chatPlayerID` FOREIGN KEY (`playerID`) REFERENCES `players` (`playerID`) ON DELETE CASCADE ON UPDATE CASCADE
 	)";
 
 	$gameTableStatement = "CREATE TABLE multisweeper.games (
@@ -75,7 +75,8 @@ function initMySQL() {
 	$playerTableStatement = "CREATE TABLE IF NOT EXISTS multisweeper.players (
 		`playerID` INT NOT NULL AUTO_INCREMENT, 
 		`username` VARCHAR(45) NOT NULL, 
-		`password` VARCHAR(45) NOT NULL, 
+		`password` varchar(128) NOT NULL,
+		`salt` varchar(32) NOT NULL, 
 		PRIMARY KEY (`playerID`), 
 		UNIQUE INDEX `username_UNIQUE` (`username` ASC)
 	)";
@@ -83,7 +84,7 @@ function initMySQL() {
 	$signupTableStatement = "CREATE TABLE IF NOT EXISTS multisweeper.upcomingsignup (
 		`playerID` int(11) NOT NULL, 
 		KEY `playerIDy_idx` (`playerID`),
-		CONSTRAINT `playerIDy` FOREIGN KEY (`playerID`) REFERENCES `players` (`playerID`) ON DELETE NO ACTION ON UPDATE NO ACTION
+		CONSTRAINT `playerIDy` FOREIGN KEY (`playerID`) REFERENCES `players` (`playerID`) ON DELETE CASCADE ON UPDATE CASCADE
 	)";
 
 	$statusTableStatement = "CREATE TABLE multisweeper.playerstatus (
@@ -97,7 +98,7 @@ function initMySQL() {
 		KEY `gameID_idx` (`gameID`),
 		KEY `playerID_idx` (`playerID`),
 		CONSTRAINT `gameID` FOREIGN KEY (`gameID`) REFERENCES `games` (`gameID`) ON DELETE NO ACTION ON UPDATE NO ACTION,
-		CONSTRAINT `playerID` FOREIGN KEY (`playerID`) REFERENCES `players` (`playerID`) ON DELETE NO ACTION ON UPDATE NO ACTION
+		CONSTRAINT `playerID` FOREIGN KEY (`playerID`) REFERENCES `players` (`playerID`) ON DELETE CASCADE ON UPDATE CASCADE
 	)";
 
 	$gameTableCreated = false;

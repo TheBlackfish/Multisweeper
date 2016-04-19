@@ -32,9 +32,8 @@ class multisweeperServer extends WebSocketServer {
   protected $broadcastTimestamp = -1;
   protected $resolveActionsTimestamp = -1;
 
-  protected $broadcastInterval = 3;
+  protected $broadcastInterval = 2;
   protected $autoresolutionInterval = 120;
-  protected $postActionResolutionInterval = 10;
   
   protected function process ($user, $message) {
     #Turn the message into XML to parse.
