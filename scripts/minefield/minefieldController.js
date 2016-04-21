@@ -63,6 +63,9 @@ var selectedCoordinates = null;
 //The array containing which actions are currently allowed due to various factors.
 var allowedActions = [0, 1, 2];
 
+//handleMinefieldUpdate(xml)
+//Updates all of the appropriate variables and what not using the XML provided.
+//@param xml [XML] The update XML.
 function handleMinefieldUpdate(xml) {
 	if (!minefieldInitialized) {
 		initMinefieldGraphics();

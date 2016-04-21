@@ -7,16 +7,20 @@ require_once($_SERVER['DOCUMENT_ROOT'] . '/multisweeper/php/constants/mineGameCo
 require_once($_SERVER['DOCUMENT_ROOT'] . '/multisweeper/php/functional/minefieldPopulater.php');
 require_once($_SERVER['DOCUMENT_ROOT'] . '/multisweeper/php/functional/translateData.php');
 
+#createNewDefaultGame()
+#Returns a newly created game with the generic starting stats.
+#@return The ID of the newly created game.
 function createNewDefaultGame() {
 	global $minefieldWidth,	$minefieldHeight, $startingMines;
 	return createNewGame($minefieldWidth, $minefieldHeight, $startingMines);
 }
 
 #createNewGame($width, $height, $numMines)
-#Takes the various parameters of the minefield width, height, and number of mines and creates a new game while adding it to the database and adding any players in the current sign-up queue to the status table.
+#Takes the various parameters of the minefield width, height, and number of mines and creates a new game while adding it to the database and adding any players in the current sign-up queue to the status table. Then returns the ID of that game.
 #@param $width (Integer) The width of the minefield.
 #@param $height (Integer) The height of the minefield.
 #@param $numMines (Integer) The number of mines to place on the minefield.
+#@return The ID of the newly created game.
 function createNewGame($width, $height, $numMines) {
 	global $sqlhost, $sqlusername, $sqlpassword;
 	global $numTraps;

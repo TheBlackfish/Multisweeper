@@ -5,6 +5,10 @@
 require_once($_SERVER['DOCUMENT_ROOT'] . '/multisweeper/php/constants/databaseConstants.php');
 require_once($_SERVER['DOCUMENT_ROOT'] . '/multisweeper/php/functional/security.php');
 
+#registerPlayer($xml)
+#Takes a login credentials for a new player and registers them in the player database.
+#@param $xml (XML) The xml containing the login credentials for a new player.
+#@return The boolean of if the registration was successful or not.
 function registerPlayer($xml) {
 	global $sqlhost, $sqlusername, $sqlpassword;
 

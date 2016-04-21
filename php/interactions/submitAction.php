@@ -7,6 +7,12 @@
 
 require_once($_SERVER['DOCUMENT_ROOT'] . '/multisweeper/php/constants/databaseConstants.php');
 
+#submitAction($playerID, $gameID, $xml)
+#Takes in an XML describing an action from the player specified for the game specified. This action is then parsed and inserted into the action queue.
+#@param playerID (int) The ID of the player submitting the action.
+#@param gameID (int) The ID of the game taking the action.
+#@param xml (XML) The xml describing the action being submitted.
+#return The XML describing any errors encountered and the success or failure of action submission.
 function submitAction($playerID, $gameID, $xml) {
 	global $sqlhost, $sqlusername, $sqlpassword;
 

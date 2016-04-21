@@ -48,10 +48,16 @@ function updatePlayerInfo() {
 	updatePlayerListForCurrentPlayer();
 }
 
+//attemptLogin()
+//Sends a blank packet to the websocket server to associate our connection with our login.
 function attemptLogin() {
 	sendSocketRequest("");
 }
 
+//handleLoginResponse(success, error)
+//Handles client logic after the server sends back a response after the client sends login information.
+//@param success (bool) Whether or not the submission was successful.
+//@param error (String) The description of an error, if any, that occurred during login.
 function handleLoginResponse(success, error) {
 	error = error || 0;
 
@@ -88,6 +94,9 @@ function attemptRegistration() {
 	sendSocketRequest(registrationXML);
 }
 
+//getLoginDetails
+//Compiles all known login information into XML to be attached to messages sent to the websocket server.
+//@return The XML containing the current player's login information.
 function getLoginDetails() {
 	var loginName = null, loginPassword = null;
 	if (currentUserName === null) {

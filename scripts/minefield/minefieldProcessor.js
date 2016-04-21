@@ -1,3 +1,12 @@
+/*
+	minefieldProcessor.js
+	This file contains functionality relating to processing XML into forms that other methods/files can understand.
+*/
+
+//processMinefieldXML(xml)
+//Takes an XML file representing an update from the websocket server about the game and returns an array with all the correct values parsed out from the XML.
+//@param xml [XML] The XML representing a game update.
+//@return The associative array containing all of the parsed values for the update.
 function processMinefieldXML(xml) {
 	var ret = [];
 	ret["map"] = null;
@@ -66,6 +75,12 @@ function processMinefieldXML(xml) {
 	return ret;
 }
 
+//processMinefieldMap(mapNode, height, width)
+//Takes the contents of the map string given and translates it to the appropriate array form for minefields.
+//@param mapNode [DOMDocumentNode] The node containing the string representing the minefield.
+//@param height [int] The height of the minefield.
+//@param width [int] The width of the minefield.
+//@return The formatted double array representing a minefield.
 function processMinefieldMap(mapNode, height, width) {
 	var input = mapNode.childNodes[0].nodeValue;
 	if (input.length !== (width*height)) {
@@ -105,6 +120,10 @@ function processMinefieldMap(mapNode, height, width) {
 	return null;
 }
 
+//processOtherPlayerActions(otherPlayerNodes)
+//Takes the nodes provided and parses action coordinates from them.
+//@param otherPlayerNodes [Array] The array of DOMDocumentNodes containing coordinates for player actions.
+//@return The array containing parsed coordinates.
 function processOtherPlayerActions(otherPlayerNodes) {
 	var result = new Array();
 
@@ -121,10 +140,18 @@ function processOtherPlayerActions(otherPlayerNodes) {
 	return result;
 }
 
+//processPlayers(playerXML)
+//Placeholder function. Just returns the parameter for now.
+//@param playerXML [XML] The XML containing player information.
+//@return playerXML
 function processPlayers(playerXML) {
 	return playerXML;
 }
 
+//processTanks(tankNodes)
+//Takes the nodes provided and parses the tank coordinates from them.
+//@param tankNodes [Array] The array of DOMDocumentNodes containing coordinates for tanks.
+//@return The array containing parsed coordinates.
 function processTanks(tankNodes) {
 	var result = new Array();
 
@@ -141,6 +168,10 @@ function processTanks(tankNodes) {
 	return result;
 }
 
+//processTraps(trapNodes)
+//Takes the nodes provided and parses the trap coordinates from them.
+//@param tankNodes [Array] The array of DOMDocumentNodes containing coordinates for traps.
+//@return The array containing parsed coordinates.
 function processTraps(trapNodes) {
 	var result = new Array();
 

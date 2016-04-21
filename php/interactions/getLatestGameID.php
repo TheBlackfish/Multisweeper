@@ -1,7 +1,12 @@
 <?php
 
+#This file contains functionality relating to retrieving game ID's.
+
 require_once($_SERVER['DOCUMENT_ROOT'] . '/multisweeper/php/constants/databaseConstants.php');
 
+#getLatestGameID()
+#Retrieves the most recent game ID from the MySQL database.
+#@return The most recent game ID.
 function getLatestGameID() {
 	global $sqlhost, $sqlusername, $sqlpassword;
 

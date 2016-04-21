@@ -4,6 +4,11 @@
 
 require_once($_SERVER['DOCUMENT_ROOT'] . '/multisweeper/php/constants/databaseConstants.php');
 
+#getGameChat($lastUpdateTime, $ignoreUpdateTime)
+#Returns the XML containing all of the chat messages entered since the last update time parameter.
+#@param $lastUpdateTime (int) The Unix timestamp of the last time we updated the chat.
+#@param $ignoreUpdateTime (bool) If true, the Unix timestamp provided will be set to 0 to get all messages ever.
+#@return The formatted XML containing all of the chat messages since the provided timestamp.
 function getGameChat($lastUpdateTime = 0, $ignoreUpdateTime = false) {
 	global $sqlhost, $sqlusername, $sqlpassword;
 

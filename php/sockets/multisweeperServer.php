@@ -1,6 +1,8 @@
 #!/usr/bin/env php
 <?php
 
+#This file contains the functionality for the multisweeperServer and should be called from the command line in order to start an instance of the server.
+
 $_SERVER['DOCUMENT_ROOT'] = dirname(dirname(dirname(dirname(__FILE__))));
 
 require_once($_SERVER['DOCUMENT_ROOT'] . '/multisweeper/php/functional/createNewGame.php');
@@ -18,23 +20,63 @@ require_once($_SERVER['DOCUMENT_ROOT'] . '/multisweeper/php/interactions/submitG
 require_once($_SERVER['DOCUMENT_ROOT'] . '/multisweeper/php/phpwebsocket/websockets.php');
 require_once($_SERVER['DOCUMENT_ROOT'] . '/multisweeper/php/sockets/multisweeperUser.php');
 
+#multisweeperServer
+#This class handles all Multisweeper logic, including handling incoming connections (implemented by WebSocketServer) and game logic.
 class multisweeperServer extends WebSocketServer {
   //protected $maxBufferSize = 1048576; //1MB... overkill for an echo server, but potentially plausible for other applications.
 
+  #userClass (String)
+  #The string denoting what class the user object should be.
   protected $userClass = 'MultisweeperUser';
+
+  #gameID (int)
+  #The int denoting the ID of the current game being played.
   protected $gameID = null;
   
+  #shouldBroadcastFullUpdate (bool)
+  #The control variable denoting if the server should ignore timestamps when updating.
   protected $shouldBroadcastFullUpdate = true;
+
+  #fullUpdateBacklog (array)
+  #The array containing all users who need full updates.
   protected $fullUpdateBacklog = array();
 
+  #gameUpdateTimestamp (int)
+  #The Unix timestamp of when the last known updates to games happen. This is used to compare against what the games think their most recent update was so as to know when to broadcast changes to all players.  
   protected $gameUpdateTimestamp = -1;
+
+  #chatUpdateTimestamp (int)
+  #The Unix timestamp of when the last known updates to the chat happened. This is used to compare against what the chat thinks their most recent update was so as to know when to broadcast changes to all players. 
   protected $chatUpdateTimestamp = -1;
+
+  #broadcastTimestamp (int)
+  #The Unix timestamp of when the last broadcast occurred.   
   protected $broadcastTimestamp = -1;
+
+  #resolveActionsTimestamp (int)
+  #The Unix timestamp of when the next action resolution should occur.
   protected $resolveActionsTimestamp = -1;
 
+  #broadcastInterval (int)
+  #The amount of seconds between broadcasts.
   protected $broadcastInterval = 2;
+
+  #autoresolutionInterval (int)
+  #The default amount of time between action resolutions.
   protected $autoresolutionInterval = 120;
   
+  #process($user, $message)
+  #Takes an XML from the parameters and parses out what to do with that XML. There are certain required nodes that lead to different functionalities:
+    #login
+      #If the user the message came from does not have a player ID associated with it, this will attempt to log in that player and set the player ID appropriately.
+    #registration
+      #If present, the server will attempt to create a new player based on the credentials provided before logging them in.
+    #action
+      #If present and the user is logged in, the server will attempt to submit the actions described from the XML.
+    #chat
+      #If present and the user is logged in, the server will add the chat message described to the database.
+  #@param user (MultisweeperUser) The user submitting the message to the server.
+  #@param message (XML) The XML describing the 
   protected function process ($user, $message) {
     #Turn the message into XML to parse.
     $parsedMsg = simplexml_load_string($message);
@@ -42,7 +84,7 @@ class multisweeperServer extends WebSocketServer {
 
       $response = "<response>";
 
-      if (isset($user->playerID)) {
+      if (isset($user->playerID) && ($user->playerID === -1)) {
         #If there is a register node
         $registered = true;
         if (isset($parsedMsg->registration)) {
@@ -92,16 +134,28 @@ class multisweeperServer extends WebSocketServer {
     }
   }
   
+  #connected($user)
+  #Pushes the user into the full update backlog for later updates.
+  #@param user (MultisweeperUser) The user connecting to the server.
   protected function connected ($user) {
     //Send a full update to the user.
     array_push($this->fullUpdateBacklog, $user);
     $this->shouldBroadcastFullUpdate = true;
   }
 
+  #closed($user)
+  #An empty function. Only necessary due to abstract functionality.
+  #@param user (MultisweeperUser) The user disconnecting from the server.
   protected function closed ($user) {
     // Do nothing. No additional clean-up necessary, but this function must be inherited.
   }
 
+  #tick()
+  #Handles all game logic related to maintaining the multisweeper game and broadcasting to all users. Every tick it compares the current time to the last broadcast timestamp and if the difference is greater than the set threshold, the server will then do one of the following actions based on the current situation:
+    #If the game should resolve its actions based on time going past the resolution threshold, the server will resolve all actions for its current game.
+    #Or else if there are players in the backlog who require a full update on the current game, the server will compile that information and broadcast it to the appropriate players.
+    #Or else if the previous game is null or complete and after the alotted time, we create a new game and push all users to the full update backlog.
+    #Or else if there have been updates to the current game or chat since the last update to either, we broadcast a partial update to all users.
   protected function tick() {
     // Override this for any process that should happen periodically.  Will happen at least once
     // per second, but possibly more often.
@@ -190,6 +244,8 @@ class multisweeperServer extends WebSocketServer {
     }
   }
 }
+
+#This code here runs the server.
 
 $echo = new multisweeperServer("0.0.0.0","13002");
 

@@ -4,10 +4,17 @@
 	This script file holds all functionality relating to social interactions between players, including the player list and chat area.
 */
 
+//chatLog [Array]
+//The array of DOMDocumentNodes for the chat area of the page.
 var chatLog = [];
 
+//chatID [int]
+//Control variable for creating unique identifiers for chat nodes.
 var chatID = 0;
 
+//attemptChatSubmit(evt)
+//Attempts to send the contents of the chat box to the websocket server.
+//@param evt [KeyboardEvent] The keyboard event that triggers this function.
 function attemptChatSubmit(evt) {
 	if (evt.key == "Enter") {
 		if (!evt.shiftKey) {
@@ -21,10 +28,16 @@ function attemptChatSubmit(evt) {
 	}
 }
 
+//handleChatResponse(success)
+//Clears the chat box after receiving a response from the websocket server.
+//@param success [bool] Whether or not the submission was successful.
 function handleChatResponse(success) {
 	document.getElementById("chatEntry").value = null;
 }
 
+//handleChatUpdate(chatLog)
+//Updates the current chat nodes stored as well as on screen.
+//@param chatLog [DOMDocumentNode] The XML storing the chat updates to put on screen.
 function handleChatUpdate(chatlog) {
 	nodesToAdd = [];
 	chatNodes = chatLog.getElementsByTagName("chat");
@@ -118,6 +131,8 @@ function populatePlayerListTable(playerXML) {
 	document.getElementById("playerListTable").innerHTML = htmlStr + clientPlayerText + livingPlayersText + deadPlayersText;
 }
 
+//updatePlayerListForCurrentPlayer()
+//Adds the first player bit to the current player on the list of all players.
 function updatePlayerListForCurrentPlayer() {
 	var currentPlayer = getPlayerName();
 	if (currentPlayer !== null) {

@@ -1,5 +1,15 @@
+/*
+	SocketController.js
+	This file handles all functionality related to sockets, including the sending and receiving of messages from the websocket server.
+	This also includes handling game logic due to the odd way that we do not query for broadcasts but instead just receive them whenever.
+*/
+
+//socket [WebSocket]
+//This is the socket used to send and receive messages from the server.
 var socket;
 
+//initSocket()
+//Initializes the web socket connection and everything else needed to communicate with the server.
 function initSocket() {
 	var host = "ws://192.168.63.55:13002";
 	try {
@@ -13,6 +23,9 @@ function initSocket() {
 	}
 }
 
+//sendSocketRequest(request)
+//Sends a message to the websocket server.
+//@param request [String] The string representing XML to send to the server.
 function sendSocketRequest(request) {
 	if (socket.readyState === 1) {
 		var xml = "<request>";
@@ -27,6 +40,9 @@ function sendSocketRequest(request) {
 	}
 }
 
+//handleSocketMessage(message)
+//Takes an XML from the socket and parses it out into the game logic.
+//@param message [String] The XML from the websocket server.
 function handleSocketMessage(message) {
 	var data = null;
 	if (window.DOMParser) {

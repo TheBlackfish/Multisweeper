@@ -24,6 +24,10 @@ function submitAction() {
 	}
 }
 
+//handleActionResponse(success, xmlNodes)
+//Handles client logic after the server sends back a response after the client sends action information.
+//@param success (bool) Whether or not the submission was successful.
+//@param xmlNode (Array) The array of DOMDocumentNodes containing any status messages from the server.
 function handleActionResponse(success, xmlNodes) {
 	xmlNodes = xmlNodes || 0;
 

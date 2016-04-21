@@ -7,6 +7,12 @@ require_once($_SERVER['DOCUMENT_ROOT'] . '/multisweeper/php/functional/initializ
 require_once($_SERVER['DOCUMENT_ROOT'] . '/multisweeper/php/functional/minefieldController.php');
 require_once($_SERVER['DOCUMENT_ROOT'] . '/multisweeper/php/functional/translateData.php');
 
+#getGameInfo($gameID, $lastUpdated, $ignoreUpdateTime)
+#Retrieves relevant information about the game specified by $gameID since the Unix timestamp provided. This information comes back as a formatted XML.
+#@param $gameID (int) The ID of the game to retrieve information for.
+#@param $lastUpdated (int) The Unix timestamp to compare against.
+#@param $ignoreUpdateTime (bool) If true, the Unix timestamp will be set to 0.
+#@return The formatted XML containing all relevant data for the requested game.
 function getGameInfo($gameID, $lastUpdated = 0, $ignoreUpdateTime = false) {
 	global $sqlhost, $sqlusername, $sqlpassword;
 

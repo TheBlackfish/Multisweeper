@@ -1,12 +1,13 @@
 <?php
 
-#Takes in an XML formatted for action submission with the following items:
-#playerID, gameID, xCoord, yCoord, actionType
-#These get inserted into the action queue, then the player status for that game is updated so that we are no longer waiting for an action from the player specified.
-#If all players in the game who are alive have then submitted actions, the game is updated via the action queue.
+#This file handles querying for automatic action resolutions.
 
 require_once($_SERVER['DOCUMENT_ROOT'] . '/multisweeper/php/constants/databaseConstants.php');
 
+#queryResolutions($gameID)
+#Checks if any more players need to submit actions for the game ID provided.
+#@param gameID (int) The ID of the game to check for.
+#@return The number of seconds until the next action resolution if all players are accounted for, or -1 if we are still waiting on action submissions.
 function queryResolutions($gameID) {
 	global $sqlhost, $sqlusername, $sqlpassword;
 

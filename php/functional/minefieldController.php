@@ -56,11 +56,10 @@ function getMinefieldWithVisibility($gameID, $minefield, $visibility, $wrecks) {
 	return $result;
 }
 
-#getOtherPlayerActionsForGame($excludePlayerID)
-#Returns an array of all other player action coordinates, excluding the one provided.
+#getPlayerActionsForGame($gameID)
+#Returns an array of all player action coordinates.
 #@param $gameID (Interger) The ID of the game to pull for.
-#@param $excludePlayerID (Integer) The ID of the player to not pull actions for.
-#@return The properly formatted double array with coordinates for all other players listed.
+#@return The properly formatted double array with coordinates for all players listed.
 function getPlayerActionsForGame($gameID) {
 	global $sqlhost, $sqlusername, $sqlpassword;
 	$conn = new mysqli($sqlhost, $sqlusername, $sqlpassword);
@@ -78,7 +77,7 @@ function getPlayerActionsForGame($gameID) {
 			array_push($result, array($xCoord, $yCoord));
 		}
 	} else {
-		error_log("minefieldController.php - Unable to get other player actions, returning with none.");
+		error_log("minefieldController.php - Unable to get player actions, returning with none.");
 	}
 	return $result;
 }
