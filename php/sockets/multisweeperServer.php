@@ -217,17 +217,7 @@ class multisweeperServer extends WebSocketServer {
             #If gameID is null
             if ($this->gameID === null) {
               #Create a new game since we do not have one currently, then add all players to the full update backlog.
-              $newID = createNewDefaultGame();
-              if ($newID !== false) {
-                $this->gameID = $newID;
-                $this->gameUpdateTimestamp = getGameUpdateTime($newID);
-                $this->shouldBroadcastFullUpdate = true;
-                $this->resolveActionsTimestamp = time() + $this->autoresolutionInterval;
-                $this->gameCreationTimestamp = -1;
-                foreach($this->users as $user) {
-                  array_push($this->fullUpdateBacklog, $user);
-                }
-              }
+              $this->createGame();
             } else {
               #Set our ID to the latest game
               $this->gameID = getLatestGameID();
@@ -270,6 +260,22 @@ class multisweeperServer extends WebSocketServer {
       }
     }
   }
+
+  public function createGame() {
+    if ($this->gameID === null) {
+      $newID = createNewDefaultGame();
+      if ($newID !== false) {
+        $this->gameID = $newID;
+        $this->gameUpdateTimestamp = getGameUpdateTime($newID);
+        $this->shouldBroadcastFullUpdate = true;
+        $this->resolveActionsTimestamp = time() + $this->autoresolutionInterval;
+        $this->gameCreationTimestamp = -1;
+        foreach($this->users as $user) {
+          array_push($this->fullUpdateBacklog, $user);
+        }
+      }
+    }
+  }
 }
 
 #This code here runs the server.
@@ -277,6 +283,7 @@ class multisweeperServer extends WebSocketServer {
 $server = new multisweeperServer("0.0.0.0","13002");
 
 try {
+  $server->createGame();
   $server->run();
 }
 catch (Exception $e) {
