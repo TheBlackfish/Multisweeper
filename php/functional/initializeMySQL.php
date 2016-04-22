@@ -82,9 +82,10 @@ function initMySQL() {
 	)";
 
 	$signupTableStatement = "CREATE TABLE IF NOT EXISTS multisweeper.upcomingsignup (
-		`playerID` int(11) NOT NULL, 
-		KEY `playerIDy_idx` (`playerID`),
-		CONSTRAINT `playerIDy` FOREIGN KEY (`playerID`) REFERENCES `players` (`playerID`) ON DELETE CASCADE ON UPDATE CASCADE
+		`playerID` int(11) NOT NULL,
+ 		UNIQUE KEY `playerID_UNIQUE` (`playerID`),
+  		KEY `playerIDy_idx` (`playerID`),
+  		CONSTRAINT `playerIDy` FOREIGN KEY (`playerID`) REFERENCES `players` (`playerID`) ON DELETE CASCADE ON UPDATE CASCADE
 	)";
 
 	$statusTableStatement = "CREATE TABLE multisweeper.playerstatus (

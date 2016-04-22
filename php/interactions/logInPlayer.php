@@ -4,6 +4,7 @@
 
 require_once($_SERVER['DOCUMENT_ROOT'] . '/multisweeper/php/constants/databaseConstants.php');
 require_once($_SERVER['DOCUMENT_ROOT'] . '/multisweeper/php/functional/security.php');
+require_once($_SERVER['DOCUMENT_ROOT'] . '/multisweeper/php/interactions/signUpForNextGame.php');
 
 #logInPlayer($xml)
 #Checks if the xml provided is the proper login credentials for a player. Returns their player ID if correct. Otherwise returns -1 for an invalid player.
@@ -54,7 +55,6 @@ function logInPlayer($xml) {
 					}
 					$statusStmt->close();
 					if ($gameID === null) {
-
 						#Sign player up for game.
 						if ($gameIDStmt = $conn->prepare("SELECT gameID FROM multisweeper.games ORDER BY gameID DESC LIMIT 1")) {
 							$gameIDStmt->execute();
@@ -82,6 +82,7 @@ function logInPlayer($xml) {
 				} else {
 					error_log("loginPlayer.php - Unable to prepare checking statement after logging in. " . $conn->errno . ": " . $conn->error);
 				}
+				signUpForNextGame($playerID);
 				return $playerID;
 			} else {
 				error_log("logInPlayer.php - Unable to log in.");
