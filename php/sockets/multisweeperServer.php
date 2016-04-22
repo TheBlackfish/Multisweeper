@@ -101,6 +101,19 @@ class multisweeperServer extends WebSocketServer {
           if (isset($parsedMsg->login)) {
             #Call logInPlayer.php to set player info for this user.
             $user->playerID = logInPlayer($parsedMsg->login);
+
+            #Count how many users are logged into this playerID.
+            $count = 0;
+            foreach ($this->users as $compUser) {
+              if ($compUser->playerID === $user->playerID) {
+                $count++;
+              }
+            }
+
+            if ($count > 1) {
+              $user->playerID = -1;
+              $response .= "<loginError>That player is already logged in.</loginError>";
+            }
           }
         }
       }
