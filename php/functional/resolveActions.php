@@ -355,6 +355,10 @@ function resolveAllActions($gameID) {
 										error_log("resolveActions.php - Error occurred during map update. " . $updateStmt->errno . ": " . $updateStmt->error);
 									} 
 									$updateStmt->close();
+
+									if (!$gameCompleted) {
+										return -1;
+									}
 								} else {
 									error_log("resolveActions.php - Unable to prepare map update after resolving action queue. " . $conn->errno . ": " . $conn->error);
 								}
@@ -377,6 +381,7 @@ function resolveAllActions($gameID) {
 	} else {
 		error_log("resolveActions.php - Unable to prepare map statement for resolving action queue. " . $conn->errno . ": " . $conn->error);
 	}
+	return 120;
 }
 
 ?>

@@ -45,6 +45,10 @@ class multisweeperServer extends WebSocketServer {
   #The Unix timestamp of when the last known updates to games happen. This is used to compare against what the games think their most recent update was so as to know when to broadcast changes to all players.  
   protected $gameUpdateTimestamp = -1;
 
+  #gameCreationTimestamp (int)
+  #The Unix timestamp of when to create a new game.
+  protected $gameCreationTimestamp = -1;
+
   #chatUpdateTimestamp (int)
   #The Unix timestamp of when the last known updates to the chat happened. This is used to compare against what the chat thinks their most recent update was so as to know when to broadcast changes to all players. 
   protected $chatUpdateTimestamp = -1;
@@ -105,7 +109,7 @@ class multisweeperServer extends WebSocketServer {
 
         $response .= "<login>1</login>";
 
-        if (isset($this->gameID)) {
+        if ((isset($this->gameID)) && ($this->gameCreationTimestamp !== -1)) {
           #If there is an action node
           if (isset($parsedMsg->action)) {
             #Call submitAction.php
@@ -167,8 +171,13 @@ class multisweeperServer extends WebSocketServer {
       if ($diff > $this->broadcastInterval) {
         if (($currentTime > $this->resolveActionsTimestamp) && ($this->gameID !== null)) {
           #Resolve actions instead of broadcasting.
-          resolveAllActions($this->gameID);
-          $this->resolveActionsTimestamp = time() + $this->autoresolutionInterval;
+          $creationAddition = resolveAllActions($this->gameID);
+          if ($creationAddition !== -1) {
+            $this->gameCreationTimestamp = time() + $creationAddition;
+            $this->resolveActionsTimestamp = -1;
+          } else {
+            $this->resolveActionsTimestamp = time() + $this->autoresolutionInterval;
+          }
         } else {
           if (($this->shouldBroadcastFullUpdate) && (count($this->fullUpdateBacklog) > 0)) {
             #Broadcast full updates to anyone who is in the backlog of updates.
@@ -188,6 +197,10 @@ class multisweeperServer extends WebSocketServer {
             $update = "<update>";
             $shouldUpdate = false;
 
+            if (($this->gameCreationTimestamp !== -1) && ($currentTime > $this->gameCreationTimestamp)) {
+              $this->gameID = null;
+            }
+
             #If gameID is null
             if ($this->gameID === null) {
               #Create a new game since we do not have one currently, then add all players to the full update backlog.
@@ -197,6 +210,7 @@ class multisweeperServer extends WebSocketServer {
                 $this->gameUpdateTimestamp = getGameUpdateTime($newID);
                 $this->shouldBroadcastFullUpdate = true;
                 $this->resolveActionsTimestamp = time() + $this->autoresolutionInterval;
+                $this->gameCreationTimestamp = -1;
                 foreach($this->users as $user) {
                   array_push($this->fullUpdateBacklog, $user);
                 }
@@ -247,12 +261,12 @@ class multisweeperServer extends WebSocketServer {
 
 #This code here runs the server.
 
-$echo = new multisweeperServer("0.0.0.0","13002");
+$server = new multisweeperServer("0.0.0.0","13002");
 
 try {
-  $echo->run();
+  $server->run();
 }
 catch (Exception $e) {
-  $echo->stdout($e->getMessage());
+  $server->stdout($e->getMessage());
   error_log($e->getMessage());
 }
