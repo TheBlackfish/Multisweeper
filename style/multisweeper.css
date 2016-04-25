@@ -1,6 +1,10 @@
 /*
 	Generic CSS rules to help with generic behaviors.
 */
+body, html {
+	margin: 0px;
+}
+
 canvas {
 	cursor: pointer;	
 }
@@ -49,4 +53,29 @@ canvas {
 */
 #submitArea {
 	clear: both;
+}
+
+/*
+	Loading Screen
+*/
+#loadingScreen {
+	position: absolute;
+	width: 100%;
+	height: 100%;
+	top: 0;
+	left: 0;
+	z-index: 100;
+	background-image: url("../images/loadingbg.png");
+	transition: top 1s;
+}
+
+#loadingScreen > img {
+	position: relative;
+	left: 50%;
+	top: 50%;
+	transform: translate(-50%, -50%);
+}
+
+#loadingScreen.doneLoading {
+	top: -100%;
 }

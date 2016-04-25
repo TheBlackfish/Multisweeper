@@ -63,7 +63,7 @@ class multisweeperServer extends WebSocketServer {
 
   #broadcastInterval (int)
   #The amount of seconds between broadcasts.
-  protected $broadcastInterval = 2;
+  protected $broadcastInterval = 1;
 
   #autoresolutionInterval (int)
   #The default amount of time between action resolutions.
@@ -198,12 +198,17 @@ class multisweeperServer extends WebSocketServer {
             $update .= getGameInfo($this->gameID, 0, true);
             $update .= getGameChat(0, true);
             $update .= "</update>";
+            $tempBackup = array();
 
             foreach ($this->fullUpdateBacklog as $user) {
-              $this->send($user, $update);
+              if ($user->handshake) {
+                $this->send($user, $update);
+              } else {
+                array_push($tempBackup, $user);
+              }
             }
 
-            $this->fullUpdateBacklog = array();
+            $this->fullUpdateBacklog = $tempBackup;
             $this->shouldBroadcastFullUpdate = false;
           } else {
             #Broadcast partial updates if necessary.
@@ -247,10 +252,11 @@ class multisweeperServer extends WebSocketServer {
 
               #If there have been updates
               if ($shouldUpdate && (count($this->users) > 0)) {
-                error_log($update);
                 #For each user
                 foreach ($this->users as $user) {
-                  $this->send($user, $update);
+                  if ($user->handshake) {
+                    $this->send($user, $update);
+                  }
                 } 
               }
             }

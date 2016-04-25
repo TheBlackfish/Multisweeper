@@ -115,4 +115,5 @@ function handleSocketMessage(message) {
 			}
 		}
 	}
+	hideLoading();
 }
