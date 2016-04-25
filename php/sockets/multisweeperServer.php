@@ -122,7 +122,7 @@ class multisweeperServer extends WebSocketServer {
 
         $response .= "<login>1</login>";
 
-        if ((isset($this->gameID)) && ($this->gameCreationTimestamp !== -1)) {
+        if ((isset($this->gameID)) && ($this->gameCreationTimestamp === -1)) {
           #If there is an action node
           if (isset($parsedMsg->action)) {
             #Call submitAction.php
