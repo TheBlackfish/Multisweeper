@@ -41,7 +41,7 @@ function getGameInfo($gameID, $lastUpdated = 0, $ignoreUpdateTime = false) {
 				$ret = new SimpleXMLElement("<update/>");
 				$ret->addAttribute("id", $gameID);
 
-				if ($fullUpdate) {
+				if ($fullUpdate || $ignoreUpdateTime) {
 					#Select all information about the game from the game's status columns in the MySQL database and parse it into XML form. 
 					if ($query = $conn->prepare("SELECT map, visibility, friendlyTanks, enemyTanks, wrecks, traps, height, width, status FROM multisweeper.games WHERE gameID = ?")) {
 						$query->bind_param("i", $gameID);

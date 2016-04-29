@@ -228,6 +228,7 @@ class multisweeperServer extends WebSocketServer {
             $update .= getGameInfo($this->gameID, 0, true);
             $update .= getGameChat(0, true);
             $update .= "</update>";
+            error_log($update);
             $tempBackup = array();
 
             foreach ($this->fullUpdateBacklog as $user) {
