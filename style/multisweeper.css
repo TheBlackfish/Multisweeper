@@ -1,8 +1,16 @@
+@import 'loginTab.css';
+
 /*
 	Generic CSS rules to help with generic behaviors.
 */
 body, html {
+	position: fixed;
+	top: 0px;
+	left: 0px;
+	bottom: 0px;
+	right: 0px;
 	margin: 0px;
+	overflow: hidden;
 }
 
 canvas {
@@ -13,46 +21,120 @@ canvas {
 	display: none;
 }
 
-/*
-	Top Bar
-*/
-#topBar {
-	width: 100%;
-}
-
-.topBarBox {
-	background: #E6F6DD;
-	width: 180px;
-	margin: 10px 20px;
-	float: left;
-}
-
-.topBarBox > p {
-	margin: 4px;
-}
-
-/*
-	Main Area
-*/
 #mainArea {
-	clear: both;
+	background: #FFBBA4;
+	position: relative;
+	top: 0px;
+	left: 0px;
 	width: 100%;
-	overflow-x: auto;
-}
-
-#gameArea {
-	float: left;
-}
-
-#playerList {
-	float: left;
+	height: calc(100% - 40px);
 }
 
 /*
-	Submit Area
+	Bottom Bar
 */
-#submitArea {
-	clear: both;
+#bottomBar {
+	position: absolute;
+	height: 200px;
+	width: 100%;
+	bottom: -200px;
+	left: 0px;
+	z-index: 50;
+}
+
+#bottomBar:before {
+	content: "";
+	position: absolute;
+	top: -40px;
+	bottom: 0px;
+	left: 0px;
+	right: 0px;
+	background-image: url("../images/ui/bar-bg.png");
+	background-repeat: repeat-x;
+}
+
+.barTab {
+	position: absolute;
+	top: 0px;
+	right: 0px;
+	width: 25%;
+	min-width: 200px;
+	height: 100%;
+	transition: top 1s ease-in-out, right 1s ease-in;
+	z-index: 50;
+	background-image:	url("../images/ui/tab-body-bar.png"),
+						url("../images/ui/tab-body-bar.png"),
+						url("../images/ui/tab-body-bar.png"),
+						url("../images/ui/tab-body-bar.png");
+	background-position:	0px 0px,
+							0px 0px,
+							0px bottom,
+							right 0px;
+	background-repeat:	repeat-x,
+						repeat-y,
+						repeat-x,
+						repeat-y;
+}
+
+.barTab.extended {
+	top: -100% !important;
+	z-index: 10 !important;
+}
+
+.barTab.inactive {
+	right: -200% !important;
+}
+
+/*
+	Tab Header
+*/
+
+.tabHeader {
+	position: absolute;
+	top: -42px;
+	height: 42px;
+	transition: right 1s linear;
+	background-image:	url("../images/ui/tab-header-left.png"),
+						url("../images/ui/tab-header-right.png");
+	background-position:	0px 0px,
+							right 0px;
+	background-repeat: 	no-repeat,
+						no-repeat;
+}
+
+.tabHeader::after {
+	content:"";
+	position: absolute;
+	top: 0px;
+	left: 42px;
+	right: 21px;
+	height: 6px;
+	background-image: url("../images/ui/tab-header-bar.png");
+	background-repeat: repeat-x;
+}
+
+.tabHeader::before {
+	content:"";
+	position: absolute;
+	top: 0px;
+	left: 42px;
+	right: 21px;
+	bottom: 0px;
+	background: #FFFFFF;
+}
+
+.tabHeader p {
+	position: relative;
+	margin: 8px 25px 2px 45px;
+}
+
+.tabBody {
+	position: absolute;
+	top: 6px;
+	height: calc(100% - 12px);
+	width: calc(100% - 12px);
+	left: 6px;
+	background: #FFFFFF;
 }
 
 /*

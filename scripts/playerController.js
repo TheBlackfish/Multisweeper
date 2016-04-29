@@ -35,19 +35,6 @@ function checkCookie() {
 	}
 }
 
-//updatePlayerInfo()
-//Updates the UI to reflect the current player information.
-function updatePlayerInfo() {
-	var inner = "";
-
-	inner = "Welcome, " + currentUserName;
-
-	document.getElementById("userInfo").innerHTML = "<p>" + inner + "</p><div onclick='attemptLogOut();'><p>Log Out</p></div>";
-	document.getElementById("loginPrompt").className += " hidden";
-
-	updatePlayerListForCurrentPlayer();
-}
-
 //attemptLogin()
 //Sends a blank packet to the websocket server to associate our connection with our login.
 function attemptLogin() {
@@ -75,7 +62,8 @@ function handleLoginResponse(success, error) {
 		document.cookie = "password=" + currentPassword;
 		document.cookie = expires;
 
-		updatePlayerInfo();
+		updatePlayerListForCurrentPlayer();
+		updateOptions();
 	} else {
 		if (error !== 0) {
 			document.getElementById("logInError") = "<br>" + error;

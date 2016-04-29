@@ -18,6 +18,8 @@ var underlayImages = [];
 //The main context for drawing onto the canvas.
 var minefieldContext = null;
 
+var ghostContext = null;
+
 //minefieldImagesLoaded [int]
 //The number of image files successfully loaded.
 var minefieldImagesLoaded = 0;
@@ -25,6 +27,12 @@ var minefieldImagesLoaded = 0;
 //minefieldTileSize [int]
 //A control variable for tile sizes.
 var minefieldTileSize = 30;
+
+var minefieldTileScale = 1;
+
+var interpolatedTileSize = -1;
+
+var finalTileSize = -1;
 
 //minefieldGraphicsInitialized [boolean]
 //Whether or not the graphics engine has been fully initialized.
@@ -34,6 +42,12 @@ var minefieldGraphicsInitialized = false;
 //Initializes the graphics appropriately.
 function initMinefieldGraphics() {
 	minefieldContext = document.getElementById("gameArea").getContext("2d");
+
+	var ghostCanvas = document.createElement('canvas');
+	ghostCanvas.width = document.getElementById("gameArea").width;
+	ghostCanvas.height = document.getElementById("gameArea").height;
+	ghostContext = ghostCanvas.getContext("2d");
+
 	if (minefieldImagesLoaded === 0) {
 		initMinefieldImages();
 	}
@@ -75,8 +89,15 @@ function initMinefieldImages() {
 function drawMinefield() {
 	if (minefieldGraphicsInitialized) {
 		var canvas = document.getElementById("gameArea");
-		canvas.width = minefieldWidth * minefieldTileSize;
-		canvas.height = minefieldHeight * minefieldTileSize;
+		canvas.height = canvas.parentElement.clientHeight;
+		minefieldTileScale = canvas.height / (minefieldHeight * minefieldTileSize);
+		minefieldTileScale = parseFloat(minefieldTileScale.toFixed(3));
+
+		var steppingScale = (1 + minefieldTileScale) / 2;
+		interpolatedTileSize = Math.floor(minefieldTileSize * steppingScale);
+		finalTileSize = Math.floor(minefieldTileSize * minefieldTileScale);
+
+		canvas.width = minefieldWidth * finalTileSize;
 
 		var field = getMinefield();
 		if (field !== null) {
@@ -85,6 +106,7 @@ function drawMinefield() {
 					drawTileAtCoordinates(i, j);	
 				}
 			}
+			hideLoading();
 			return;
 		}
 	}
@@ -100,17 +122,19 @@ function drawMinefield() {
 //@param y - The y-coordinate to draw the tile at.
 function drawTileAtCoordinates(x, y) {
 	if (minefieldGraphicsInitialized) {
-		var realX = x * minefieldTileSize;
-		var realY = y * minefieldTileSize;
+		var realX = x * finalTileSize;
+		var realY = y * finalTileSize;
 		
 		var underlay = selectUnderlayForTile(x, y);
 		if (underlay !== null) {
-			minefieldContext.drawImage(underlay, realX, realY);
+			ghostContext.drawImage(underlay, 0, 0, interpolatedTileSize, interpolatedTileSize);
+			minefieldContext.drawImage(underlay, 0, 0, interpolatedTileSize, interpolatedTileSize, realX, realY, finalTileSize, finalTileSize);
 		}
 
 		var overlay = selectOverlayForTile(x, y);
 		if (overlay !== null) {
-			minefieldContext.drawImage(overlay, realX, realY);
+			ghostContext.drawImage(overlay, 0, 0, interpolatedTileSize, interpolatedTileSize);
+			minefieldContext.drawImage(overlay, 0, 0, interpolatedTileSize, interpolatedTileSize, realX, realY, finalTileSize, finalTileSize);
 		}
 	}
 }
@@ -123,15 +147,17 @@ function drawTileAtCoordinates(x, y) {
 function drawTileAtCoordinatesOverrideOverlay(x, y, override) {
 	if (minefieldGraphicsInitialized) {
 		if (override in overlayImages) {
-			var realX = x * minefieldTileSize;
-			var realY = y * minefieldTileSize;
+			var realX = x * finalTileSize;
+			var realY = y * finalTileSize;
 		
 			var underlay = selectUnderlayForTile(x, y);
 			if (underlay !== null) {
-				minefieldContext.drawImage(underlay, realX, realY);
+				ghostContext.drawImage(underlay, 0, 0, interpolatedTileSize, interpolatedTileSize);
+				minefieldContext.drawImage(underlay, 0, 0, interpolatedTileSize, interpolatedTileSize, realX, realY, finalTileSize, finalTileSize);
 			}
 			
-			minefieldContext.drawImage(overlayImages[override], realX, realY);
+			ghostContext.drawImage(overlayImages[override], 0, 0, interpolatedTileSize, interpolatedTileSize);
+			minefieldContext.drawImage(overlayImages[override], 0, 0, interpolatedTileSize, interpolatedTileSize, realX, realY, finalTileSize, finalTileSize);
 		}
 	}
 }

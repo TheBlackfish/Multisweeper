@@ -1,0 +1,12 @@
+#loginTab input {
+	display: block;
+	width: 125px;
+	margin: 0px auto 4px;
+}
+
+#loginTab div:not(.tabBody) {
+	display: block;
+	width: 125px;
+	margin: 0px auto 4px;
+	text-align: center;
+}

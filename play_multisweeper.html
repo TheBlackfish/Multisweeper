@@ -1,69 +1,82 @@
 <!doctype html>
 <html>
 <head>
-<meta charset="utf-8">
-<title>Multisweeper</title>
-<link rel="stylesheet" type="text/css" href="style/multisweeper.css" />
-<script src="scripts/actionController.js"></script>
-<script src="scripts/graphicsController.js"></script>
-<script src="scripts/interactionController.js"></script>
-<script src="scripts/minefield/minefieldController.js"></script>
-<script src="scripts/minefield/minefieldGraphics.js"></script>
-<script src="scripts/minefield/minefieldInteraction.js"></script>
-<script src="scripts/minefield/minefieldProcessor.js"></script>
-<script src="scripts/playerController.js"></script>
-<script src="scripts/socialController.js"></script>
-<script src="scripts/socketController.js"></script>
+  <meta charset="utf-8">
+  <title>Multisweeper</title>
+  <link rel="stylesheet" type="text/css" href="style/multisweeper.css" />
+  <script src="scripts/actionController.js"></script>
+  <script src="scripts/barController.js"></script>
+  <script src="scripts/graphicsController.js"></script>
+  <script src="scripts/interactionController.js"></script>
+  <script src="scripts/minefield/minefieldController.js"></script>
+  <script src="scripts/minefield/minefieldGraphics.js"></script>
+  <script src="scripts/minefield/minefieldInteraction.js"></script>
+  <script src="scripts/minefield/minefieldProcessor.js"></script>
+  <script src="scripts/playerController.js"></script>
+  <script src="scripts/socialController.js"></script>
+  <script src="scripts/socketController.js"></script>
 </head>
 
-<body onLoad="debug();">
-	
-  <div id="topBar">
-    <!-- Sign In prompt -->
-    <div id="loginPrompt" class="topBarBox">
-      Username:
-      <input id="loginUsername" type='text' name='username'><br>
-      Password:
-      <input id="loginPassword" type='password' name='password'><br>
-      <div onclick="attemptLogin();"><p>Log In</p></div>
-      <div onclick="attemptRegistration();"><p>Register</p></div>
-      <p id="logInError"></p>
+<body onLoad="onFinishedLoading();">
+
+  <!-- The main screen area -->
+  <div id="mainArea">
+    <!-- Canvas for game -->
+    <canvas id="gameArea" height="900" width="1500">Your browser does not support the canvas element. Please use a HTML5 compatible browser.</canvas>
+  </div>
+
+  <!-- The bottom bar containing various tabs and what not -->
+  <div id="bottomBar">
+    <div id="loginTab" class="barTab"> <!-- Login Tab -->
+      <div class="tabHeader" onclick="toggleTab(this);">
+        <p>ENLIST</p>
+      </div>
+      <div class="tabBody">
+        <br>
+        <input id="loginUsername" type='text' name='username' placeholder="User Name...">
+        <input id="loginPassword" type='password' name='password' placeholder="Password...">
+        <div onclick="attemptLogin();"><p>Log In</p></div>
+        <div onclick="attemptRegistration();"><p>Register</p></div>
+        <p id="logInError"></p>
+      </div>
     </div>
 
-    <!-- User Information -->
-    <div id="userInfo" class="topBarBox">
-      Please sign in using the log-in prompt.
+    <div id="unitTab" class="barTab">
+      <div class="tabHeader" onclick="toggleTab(this);">
+        <p>UNIT</p>
+      </div>
+      <div class="tabBody">
+        <div id="playerList">
+          <table id="playerListTable">
+            <tr>
+              <td>Player Name</td>
+              <td>Status</td>
+              <td>Trap</td>
+            </tr>
+          </table>
+        </div>
+      </div>
     </div>
-  </div>
 
-	<div id="mainArea">
-    <div>
-      <!-- Canvas for game -->
-      <canvas id="gameArea" height="900" width="1500">Your browser does not support the canvas element. Please use a HTML5 compatible browser.</canvas>
+    <div id="chatTab" class="barTab"> <!-- Chat Tab -->
+      <div class="tabHeader" onclick="toggleTab(this);">
+        <p>COMMS</p>
+      </div>
+      <div class="tabBody">
+        <div id="chatLog">
+        </div>
+        <input id="chatEntry" type="text">
+      </div>
     </div>
-  </div>
 
-  <!-- Submit button -->
-  <div id="submitArea">
-    <div type="submit" onclick="submitAction();"><p>Submit Move</p></div>
-    <p id="submitMessage">Press the Submit button to submit your action.</p>
-  </div>
-
-  <!-- Current Players -->
-  <div id="playerList">
-    <table id="playerListTable">
-      <tr>
-        <td>Player Name</td>
-        <td>Status</td>
-        <td>Trap</td>
-      </tr>
-    </table>
-  </div>
-
-  <!-- Chat area -->
-  <div id="chatArea">
-    <input id="chatEntry" type="text">
-    <div id="chatLog">
+    <div id="ordersTab" class="barTab"> <!-- Submit Tab -->
+      <div class="tabHeader" onclick="toggleTab(this);">
+        <p>ORDERS</p>
+      </div>
+      <div class="tabBody">
+        <div type="submit" onclick="submitAction();"><p>Submit Move</p></div>
+        <p id="submitMessage">Press the Submit button to submit your action.</p>
+      </div>
     </div>
   </div>
 
@@ -71,10 +84,12 @@
   <div id="loadingScreen">
     <img src="images/loading.png">
   </div>
-    
+   
+  <!--Automatic scripts -->
   <script type="text/javascript">
-		function debug() {
+		function onFinishedLoading() {
       initInteractions();
+      initBar();
       initSocket();
 			checkCookie();
 		}

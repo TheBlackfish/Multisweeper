@@ -43,7 +43,7 @@ class multisweeperServer extends WebSocketServer {
 
   #gameUpdateTimestamp (int)
   #The Unix timestamp of when the last known updates to games happen. This is used to compare against what the games think their most recent update was so as to know when to broadcast changes to all players.  
-  protected $gameUpdateTimestamp = -1;
+  protected $gameUpdateTimestamp = 0;
 
   #gameCreationTimestamp (int)
   #The Unix timestamp of when to create a new game.
@@ -51,15 +51,15 @@ class multisweeperServer extends WebSocketServer {
 
   #chatUpdateTimestamp (int)
   #The Unix timestamp of when the last known updates to the chat happened. This is used to compare against what the chat thinks their most recent update was so as to know when to broadcast changes to all players. 
-  protected $chatUpdateTimestamp = -1;
+  protected $chatUpdateTimestamp = 0;
 
   #broadcastTimestamp (int)
   #The Unix timestamp of when the last broadcast occurred.   
-  protected $broadcastTimestamp = -1;
+  protected $broadcastTimestamp = 0;
 
   #resolveActionsTimestamp (int)
   #The Unix timestamp of when the next action resolution should occur.
-  protected $resolveActionsTimestamp = -1;
+  protected $resolveActionsTimestamp = 0;
 
   #broadcastInterval (int)
   #The amount of seconds between broadcasts.
@@ -68,6 +68,8 @@ class multisweeperServer extends WebSocketServer {
   #autoresolutionInterval (int)
   #The default amount of time between action resolutions.
   protected $autoresolutionInterval = 120;
+
+  protected $gameCreationInterval = 120;
   
   #process($user, $message)
   #Takes an XML from the parameters and parses out what to do with that XML. There are certain required nodes that lead to different functionalities:
@@ -83,12 +85,14 @@ class multisweeperServer extends WebSocketServer {
   #@param message (XML) The XML describing the 
   protected function process ($user, $message) {
     #Turn the message into XML to parse.
+    error_log("Server Process - Processing this: " . $message);
     $parsedMsg = simplexml_load_string($message);
     if ($parsedMsg !== false) {
 
       $response = "<response>";
 
       if (isset($user->playerID) && ($user->playerID === -1)) {
+        error_log("Server Process - Attempting to log player in");
         #If there is a register node
         $registered = true;
         if (isset($parsedMsg->registration)) {
@@ -99,6 +103,7 @@ class multisweeperServer extends WebSocketServer {
         if ($registered) {
           #If there is a login node
           if (isset($parsedMsg->login)) {
+            error_log("Server Process - Logging player in");
             #Call logInPlayer.php to set player info for this user.
             $user->playerID = logInPlayer($parsedMsg->login);
 
@@ -119,14 +124,23 @@ class multisweeperServer extends WebSocketServer {
       }
       
       if ($user->playerID !== -1) {
+        error_log("Server Process - Player is logged in");
+        error_log("Server Processing Diagnostics");
+        error_log("this->gameCreationTimestamp=".$this->gameCreationTimestamp);
+        error_log("this->gameID=".$this->gameID);
+        error_log("XML has action = ".isset($parsedMsg->action));
+        error_log("XML has chat = ".isset($parsedMsg->chat));
+
 
         $response .= "<login>1</login>";
 
         if ((isset($this->gameID)) && ($this->gameCreationTimestamp === -1)) {
           #If there is an action node
           if (isset($parsedMsg->action)) {
+            error_log("Server Process - Adding found action to queue");
             #Call submitAction.php
             $response .= submitAction($user->playerID, $this->gameID, $parsedMsg->action);
+            error_log("Server Process - Action addition response " . $response);
             #Check if we should set up an auto-resolution task or not.
             $timeToAdd = queryResolutions($this->gameID);
             if ($timeToAdd !== -1) {
@@ -137,6 +151,7 @@ class multisweeperServer extends WebSocketServer {
 
         #If there is a chat node
         if (isset($parsedMsg->chat)) {
+          error_log("Server Process - Adding found chat message to chat");
           #Call submitGameChat.php
           $response .= submitGameChat($user->playerID, $parsedMsg->chat);
         }
@@ -148,6 +163,8 @@ class multisweeperServer extends WebSocketServer {
       $response .= "</response>";
 
       $this->send($user, $response);
+    } else {
+      error_log("Server Process - Invalid XML sent to server");
     }
   }
   
@@ -158,6 +175,7 @@ class multisweeperServer extends WebSocketServer {
     //Send a full update to the user.
     array_push($this->fullUpdateBacklog, $user);
     $this->shouldBroadcastFullUpdate = true;
+    error_log("Adding user to full update backlog");
   }
 
   #closed($user)
@@ -182,17 +200,29 @@ class multisweeperServer extends WebSocketServer {
       $diff = $currentTime - $this->broadcastTimestamp;
 
       if ($diff > $this->broadcastInterval) {
-        if (($currentTime > $this->resolveActionsTimestamp) && ($this->gameID !== null)) {
+        #Diagnostics
+        error_log("Diagnosing tick");
+        error_log("currentTime=".$currentTime);
+        error_log("this->chatUpdateTimestamp=".$this->chatUpdateTimestamp);
+        error_log("this->fullUpdateBacklog=".count($this->fullUpdateBacklog)." users");
+        error_log("this->gameCreationTimestamp=".$this->gameCreationTimestamp);
+        error_log("this->gameID=".$this->gameID);
+        error_log("this->gameUpdateTimestamp=".$this->gameUpdateTimestamp);
+        error_log("this->resolveActionsTimestamp=".$this->resolveActionsTimestamp);
+        error_log("this->shouldBroadcastFullUpdate=".$this->shouldBroadcastFullUpdate);
+
+        if (($currentTime > $this->resolveActionsTimestamp) && ($this->gameID !== null) && ($this->resolveActionsTimestamp !== -1)) {
+          error_log("Server Tick - Resolving actions");
           #Resolve actions instead of broadcasting.
-          $creationAddition = resolveAllActions($this->gameID);
-          if ($creationAddition !== -1) {
-            $this->gameCreationTimestamp = time() + $creationAddition;
-            $this->resolveActionsTimestamp = -1;
-          } else {
+          if (resolveAllActions($this->gameID)) {
             $this->resolveActionsTimestamp = time() + $this->autoresolutionInterval;
+          } else {
+            $this->gameCreationTimestamp = time() + $this->gameCreationInterval;
+            $this->resolveActionsTimestamp = -1;
           }
         } else {
           if (($this->shouldBroadcastFullUpdate) && (count($this->fullUpdateBacklog) > 0)) {
+            error_log("Server Tick - Broadcasting full game to everyone in backlog");
             #Broadcast full updates to anyone who is in the backlog of updates.
             $update = "<update>";
             $update .= getGameInfo($this->gameID, 0, true);
@@ -209,21 +239,27 @@ class multisweeperServer extends WebSocketServer {
             }
 
             $this->fullUpdateBacklog = $tempBackup;
-            $this->shouldBroadcastFullUpdate = false;
+            if (count($this->fullUpdateBacklog) === 0) {
+              $this->shouldBroadcastFullUpdate = false;
+            }
           } else {
+            error_log("Server Tick - Partial updates and other things");
             #Broadcast partial updates if necessary.
             $update = "<update>";
             $shouldUpdate = false;
 
             if (($this->gameCreationTimestamp !== -1) && ($currentTime > $this->gameCreationTimestamp)) {
+              error_log("Server Tick - We think we should create a new game");
               $this->gameID = null;
             }
 
             #If gameID is null
             if ($this->gameID === null) {
+              error_log("Server Tick - Creating new game");
               #Create a new game since we do not have one currently, then add all players to the full update backlog.
               $this->createGame();
             } else {
+              error_log("Server Tick - checking for partial updates");
               #Set our ID to the latest game
               $this->gameID = getLatestGameID();
               $shouldUpdate = false;
@@ -231,8 +267,10 @@ class multisweeperServer extends WebSocketServer {
               if ($this->gameID !== null) {
                 #Get update time for game.
                 $updated = getGameUpdateTime($this->gameID);
+                error_log("Server Tick - Game thinks it was last updated at " . $updated);
                 #If update time is newer
                 if ($updated > $this->gameUpdateTimestamp) {
+                  error_log("Server Tick - Getting partial information from game");
                   #Update our stuff accordingly.
                   $update .= getGameInfo($this->gameID, $this->gameUpdateTimestamp, false);
                   $this->gameUpdateTimestamp = $updated;
@@ -242,7 +280,9 @@ class multisweeperServer extends WebSocketServer {
               
               #Check for chat updates.
               $chatUpdated = getChatUpdateTime();
+              error_log("Server Tick - Chat thinks it was last updated at " . $chatUpdated);
               if ($chatUpdated > $this->chatUpdateTimestamp) {
+                error_log("Server Tick - Getting partial information from chat");
                 $update .= getGameChat($this->chatUpdateTimestamp, false);
                 $this->chatUpdateTimestamp = $chatUpdated;
                 $shouldUpdate = true;
@@ -263,6 +303,7 @@ class multisweeperServer extends WebSocketServer {
           }
         }
         $this->broadcastTimestamp = time();
+        error_log("");
       }
     }
   }
