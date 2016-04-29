@@ -306,6 +306,10 @@ class multisweeperServer extends WebSocketServer {
         $this->broadcastTimestamp = time();
         error_log("");
       }
+    } else {
+      if ($this->resolveActionsTimestamp !== -1) {
+        $this->resolveActionsTimestamp = time() + $this->autoresolutionInterval;
+      }
     }
   }
 
