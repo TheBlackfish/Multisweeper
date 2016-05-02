@@ -37,18 +37,22 @@ function handleChatResponse(success) {
 
 //handleChatUpdate(chatLog)
 //Updates the current chat nodes stored as well as on screen.
-//@param chatLog [DOMDocumentNode] The XML storing the chat updates to put on screen.
-function handleChatUpdate(chatlog) {
-	nodesToAdd = [];
-	chatNodes = chatLog.getElementsByTagName("chat");
+//@param newLog [DOMDocumentNode] The XML storing the chat updates to put on screen.
+function handleChatUpdate(newLog) {
+	var nodesToAdd = [];
+	var chatNodes = newLog.getElementsByTagName("chat");
 	for (var i = 0; i < chatNodes.length; i++) {
-		var tempStr = "<div id='chatMsg" + chatID + "'><p>";
+		var tempStr = "<p><span>";
 		tempStr += chatNodes[i].getElementsByTagName("user")[0].childNodes[0].nodeValue;
-		tempStr += "</p><p>";
-		tempStr += chatNodes[i].getElementsByTagName("message")[0].childNodes[0].nodeValue;
+		tempStr += "</span>: ";
+		tempStr += chatNodes[i].getElementsByTagName("msg")[0].childNodes[0].nodeValue;
 		tempStr += "</p></div>";
-		nodesToAdd.push(tempStr);
-		chatID++;
+
+		if (document.getElementById("chatLog").innerHTML.lastIndexOf(tempStr) === -1) {
+			tempStr = "<div id='" + chatID + "'>" + tempStr;
+			nodesToAdd.push(tempStr);
+			chatID++;
+		}
 	}
 
 	if (nodesToAdd.length > 0) {
@@ -56,9 +60,9 @@ function handleChatUpdate(chatlog) {
 			var remove = chatLog.pop();
 			document.getElementById("chatLog").innerHTML = document.getElementById("chatLog").replace(remove, "");
 		}
-		for (var i = 0; i < nodesToAdd.length; i++) {
+		for (var i = nodesToAdd.length - 1; i >= 0; i--) {
 			var cur = nodesToAdd[i];
-			chatLog.unshift(cur);
+			chatLog.push(cur);
 			document.getElementById("chatLog").innerHTML = cur + document.getElementById("chatLog").innerHTML;
 		}
 	}

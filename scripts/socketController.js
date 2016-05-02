@@ -66,8 +66,8 @@ function handleSocketMessage(message) {
 				mapUpdate = data.getElementsByTagName("update")[0];
 			}
 
-			if (data.getElementsByTagName("chatLog").length > 0) {
-				chatUpdate = data.getElementsByTagName("chatLog")[0];
+			if (data.getElementsByTagName("chatlog").length > 0) {
+				chatUpdate = data.getElementsByTagName("chatlog")[0];
 			}
 
 			if (mapUpdate !== null) {

@@ -33,19 +33,21 @@ function getGameChat($lastUpdateTime = 0, $ignoreUpdateTime = false) {
 		$query->execute();
 		$query->bind_result($username, $message, $isCurrent);
 		while ($query->fetch()) {
-			$temp = "<chat current=" + $isCurrent + ">";
-			$temp += "<user>" + $username + "</user>";
-			$temp += "<msg>" + $message + "</msg>";
-			$temp += "</chat>";
-			$ret += $temp;
+			$temp = "<chat current='" . $isCurrent . "'>";
+			$temp .= "<user>" . $username . "</user>";
+			$temp .= "<msg>" . $message . "</msg>";
+			$temp .= "</chat>";
+			$ret .= $temp;
 		}
 		$query->close();
 	}
 
 	if (strlen($ret) > strlen("<chatlog>")) {
-		$ret += "</chatlog>";
+		$ret .= "</chatlog>";
 		return $ret;
 	}
+
+	error_log("Found chatlog of the following: " . $ret);
 
 	return "";
 }
