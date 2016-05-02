@@ -34,6 +34,8 @@ var interpolatedTileSize = -1;
 
 var finalTileSize = -1;
 
+var minefieldTileVerticalOffset = 0;
+
 //minefieldGraphicsInitialized [boolean]
 //Whether or not the graphics engine has been fully initialized.
 var minefieldGraphicsInitialized = false;
@@ -97,6 +99,8 @@ function drawMinefield() {
 		interpolatedTileSize = Math.floor(minefieldTileSize * steppingScale);
 		finalTileSize = Math.floor(minefieldTileSize * minefieldTileScale);
 
+		minefieldTileVerticalOffset = (canvas.height - (finalTileSize * minefieldHeight))/2;
+
 		canvas.width = minefieldWidth * finalTileSize;
 
 		var field = getMinefield();
@@ -123,7 +127,7 @@ function drawMinefield() {
 function drawTileAtCoordinates(x, y) {
 	if (minefieldGraphicsInitialized) {
 		var realX = x * finalTileSize;
-		var realY = y * finalTileSize;
+		var realY = (y * finalTileSize) + minefieldTileVerticalOffset;
 		
 		var underlay = selectUnderlayForTile(x, y);
 		if (underlay !== null) {
@@ -148,7 +152,7 @@ function drawTileAtCoordinatesOverrideOverlay(x, y, override) {
 	if (minefieldGraphicsInitialized) {
 		if (override in overlayImages) {
 			var realX = x * finalTileSize;
-			var realY = y * finalTileSize;
+			var realY = (y * finalTileSize) + minefieldTileVerticalOffset;
 		
 			var underlay = selectUnderlayForTile(x, y);
 			if (underlay !== null) {

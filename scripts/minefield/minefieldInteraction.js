@@ -120,5 +120,5 @@ function calculateMousePosition(x, y) {
 //@param y - The y-coordinate to translate.
 //@return The tile coordinates in array form.
 function getTileCoordinatesFromRealCoordinates(x, y) {
-	return [Math.floor(x / finalTileSize), Math.floor(y / finalTileSize)];	
+	return [Math.floor(x / finalTileSize), Math.floor((y - minefieldTileVerticalOffset) / finalTileSize)];	
 }
