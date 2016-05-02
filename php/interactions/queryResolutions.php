@@ -7,7 +7,7 @@ require_once($_SERVER['DOCUMENT_ROOT'] . '/multisweeper/php/constants/databaseCo
 #queryResolutions($gameID)
 #Checks if any more players need to submit actions for the game ID provided.
 #@param gameID (int) The ID of the game to check for.
-#@return The number of seconds until the next action resolution if all players are accounted for, or -1 if we are still waiting on action submissions.
+#@return The amount of time before an auto-resolution should be scheduled for, or -1 if no auto-resolution should be set beyond the one set in the main control loop.
 function queryResolutions($gameID) {
 	global $sqlhost, $sqlusername, $sqlpassword;
 

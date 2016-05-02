@@ -14,6 +14,7 @@ require_once($_SERVER['DOCUMENT_ROOT'] . '/multisweeper/php/functional/updateTan
 #resolveAllActions($gameID)
 #Takes all actions from the action queue relating to the game identified by $gameID and applies those actions to the game. All changes are applied to a local copy before uploading to the MySQL database.
 #@param $gameID (Integer) The game ID that this operation is for.
+#@return Whether or not the current game should continue, i.e. if the game is completed this function will return false.
 function resolveAllActions($gameID) {
 	global $sqlhost, $sqlusername, $sqlpassword, $adjacencies;
 

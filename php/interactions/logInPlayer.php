@@ -9,7 +9,7 @@ require_once($_SERVER['DOCUMENT_ROOT'] . '/multisweeper/php/interactions/signUpF
 #logInPlayer($xml)
 #Checks if the xml provided is the proper login credentials for a player. Returns their player ID if correct. Otherwise returns -1 for an invalid player.
 #@param $xml (XML) The login credentials provided.
-#@return The player ID if the login was successful.
+#@return The player ID if the login was successful, or -1 if not successful.
 function logInPlayer($xml) {
 	global $sqlhost, $sqlusername, $sqlpassword;
 	global $numTraps;

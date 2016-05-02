@@ -4,10 +4,14 @@
 	This file controls functionality relating to the UI bar.
 */
 
+//initBar()
+//Initializes the UI bar.
 function initBar() {
 	updateBar();
 }
 
+//updateBar()
+//Updates the bar to fit the window and resize itself.
 function updateBar() {
 	var targetHeight = Math.floor(window.innerHeight / 4);
 	if (targetHeight < 200) {
@@ -19,6 +23,8 @@ function updateBar() {
 	updateOptions();
 }
 
+//updateOptions()
+//Updates which tabs are visible are which are not.
 function updateOptions() {
 	if (getPlayerName() === null) {
 		setTabVisible("loginTab", true);
@@ -33,6 +39,8 @@ function updateOptions() {
 	setTabHeaderPositions();
 }
 
+//setTabHeaderPositions()
+//Sets the distance from the right-hand side of the screen for each visible tab such that they appear to be offset in an orderly manner.
 function setTabHeaderPositions() {
 	var allHeaders = document.getElementsByClassName("tabHeader");
 	var rightDistance = 0;
@@ -46,6 +54,10 @@ function setTabHeaderPositions() {
 	}
 }
 
+//setTabVisible(tabName, state)
+//Takes the tab given and sets it to the state specified.
+//@param tabName - The name of the tab to alter.
+//@param state - The boolean value of the state to set the tab to.
 function setTabVisible(tabName, state) {
 	var cur = document.getElementById(tabName);
 	if (cur !== null) {
@@ -57,6 +69,9 @@ function setTabVisible(tabName, state) {
 	}
 }
 
+//toggleTab(headerElement)
+//Toggles the visibility of a tab given its header element.
+//@param headerElement - The element that comprises the header of the tab to alter.
 function toggleTab(headerElement) {
 	var parent = headerElement.parentElement;
 	if (parent.className.lastIndexOf("extended") !== -1) {

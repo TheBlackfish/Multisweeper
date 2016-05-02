@@ -313,6 +313,8 @@ class multisweeperServer extends WebSocketServer {
     }
   }
 
+  #createGame()
+  #Creates a new game and effectively resets the web server to start running that game.
   public function createGame() {
     if ($this->gameID === null) {
       $newID = createNewDefaultGame();

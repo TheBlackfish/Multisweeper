@@ -18,6 +18,8 @@ var underlayImages = [];
 //The main context for drawing onto the canvas.
 var minefieldContext = null;
 
+//ghostContext [GraphicsContext]
+//The duplicator context for scaling images appropriately.
 var ghostContext = null;
 
 //minefieldImagesLoaded [int]
@@ -28,12 +30,20 @@ var minefieldImagesLoaded = 0;
 //A control variable for tile sizes.
 var minefieldTileSize = 30;
 
+//minefieldTileScale [float]
+//The scale to draw the tiles onto the canvas at.
 var minefieldTileScale = 1;
 
+//interpolatedTileSize [int]
+//The size, in pixels, to draw tiles onto the ghost context.
 var interpolatedTileSize = -1;
 
+//finalTileSize [int]
+//The size, in pixels, of the tiles set to the minefieldTileScale variable.
 var finalTileSize = -1;
 
+//minefieldTileVerticalOffset [int]
+//The vertical offset to draw tiles at.
 var minefieldTileVerticalOffset = 0;
 
 //minefieldGraphicsInitialized [boolean]
