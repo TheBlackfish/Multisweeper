@@ -72,7 +72,7 @@ function handleChatUpdate(newLog) {
 //Formats and presents the table of players currently in the game being played.
 //@param playerXML - The list of players in XML form.
 function populatePlayerListTable(playerXML) {
-	var htmlStr = "<tr><td>Player Name</td><td>Status</td><td>Trap</td></tr>";
+	var htmlStr = "<tr><td><img src='images/blank_icon.png'/></td><td>Player Name</td><td>Status</td><td>Trap</td></tr>";
 
 	var clientPlayerText = "";
 	var livingPlayersText = "";
@@ -81,7 +81,7 @@ function populatePlayerListTable(playerXML) {
 
 	var playerNodes = playerXML.getElementsByTagName("player");
 	for (var i = 0; i < playerNodes.length; i++) {
-		var tempStr = "<tr><td>" + playerNodes[i].childNodes[0].nodeValue + "</td>";
+		var tempStr = "<tr><td><img src='images/blank_icon.png'/></td><td>" + playerNodes[i].childNodes[0].nodeValue + "</td>";
 
 		var statusStr = "Dead";
 		if (playerNodes[i].getAttribute("status") == 1) {
@@ -113,7 +113,7 @@ function populatePlayerListTable(playerXML) {
 		tempStr += "<td>" + trapStr + "</td></tr>";
 
 		if (playerNodes[i].childNodes[0].nodeValue === getPlayerName()) {
-			clientPlayerText += tempStr.replace("<tr><td>", "<tr><td><img src='images/star.png'/>");
+			clientPlayerText += tempStr.replace("<img src='images/blank_icon.png'/>", "<img src='images/star.png'/>");
 		} else {
 			switch (playerNodes[i].getAttribute("status")) {
 				case 0:
@@ -146,7 +146,7 @@ function updatePlayerListForCurrentPlayer() {
 			for (var i = 0; i < listNodes.length; i++) {
 				var currentName = listNodes[i].getElementsByTagName("td")[0];
 				if (currentPlayer === currentName.innerHTML) {
-					currentName.innerHTML = "<img src='images/star.png'/>" + currentName.innerHTML;
+					currentName.innerHTML = "<img src='images/star.png'/>";
 					return;
 				}
 			}
