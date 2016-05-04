@@ -7,7 +7,22 @@
 //initBar()
 //Initializes the UI bar.
 function initBar() {
-	updateBar();
+	initBarIcons();
+	updateBar();	
+}
+
+function initBarIcons() {
+	var allIcons = ["traptools"];
+
+	for (var i = 0; i < allIcons.length; i++) {
+		var newImg = "<img id='" + allIcons[i] + "' src='images/bar_icons/" + allIcons[i] + ".png' class='barIcon'>";
+		document.getElementById("bottomBar").innerHTML += newImg;
+	}
+
+	var images = document.getElementsByClassName("barIcon");
+	for (var i = 0; i < images.length; i++) {
+		images[i].style.top = "-" + images[i].clientHeight + ".px";
+	}
 }
 
 //updateBar()
@@ -21,6 +36,23 @@ function updateBar() {
 	document.getElementById("bottomBar").style.bottom = -targetHeight + "px";
 
 	updateOptions();
+	updateIcons();
+}
+
+function updateIcons() {
+	var leftSide = 4;
+	var toolsIcon = document.getElementById("traptools");
+
+	if (allowedActions.lastIndexOf(2) > -1) {
+		if (!toolsIcon.hasAttribute("style")) {
+			toolsIcon.setAttribute("style", "");
+		}
+		toolsIcon.style.left = leftSide+"px";
+		toolsIcon.style.top = "-" + document.getElementById("traptools").clientHeight + "px";
+		leftSide += toolsIcon.clientWidth + 4;
+	} else {
+		toolsIcon.removeAttribute("style");
+	}
 }
 
 //updateOptions()

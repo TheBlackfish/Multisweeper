@@ -116,5 +116,7 @@ function handleSocketMessage(message) {
 				}
 			}
 		}
+
+		updateIcons();
 	}
 }

@@ -36,6 +36,8 @@ canvas {
 	height: calc(100% - 40px);
 	background-image: url("../images/loadingbg.png");
 	background-repeat: repeat;
+	overflow-x: auto;
+	overflow-y: hidden;
 }
 
 /*
@@ -91,6 +93,12 @@ canvas {
 
 .barTab.inactive {
 	right: -200% !important;
+}
+
+.barIcon {
+	position: relative;
+	left: -100%;
+	transition: left 1s ease-in-out;
 }
 
 /*
