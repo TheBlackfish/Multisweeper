@@ -89,7 +89,7 @@ function handleMinefieldUpdate(xml) {
 		otherPlayers = data["otherPlayers"];
 	}
 
-	drawMinefield();
+	drawMinefieldWithResize();
 	minefieldInitialized = true;
 }
 

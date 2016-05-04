@@ -8,14 +8,58 @@
 //Control variable for if the interactions with the game area have been initialized yet or not.
 var interfaceInitialized = false;
 
+var isMouseDown = false;
+var originalClickPos = null;
+var prevClickPos = null;
+var deltaToDrag = 5;
+var currentDelta = 0;
+var isMouseDragging = false;
+
 //initMinefieldInterface()
 //Adds event listeners to the canvas for various mouse interaction.
 function initMinefieldInterface() {
 	if (!interfaceInitialized) {
-		document.getElementById("gameArea").addEventListener('click', function(evt) {
-			processSelection(evt);	
-		}, false);
+		document.getElementById("gameArea").addEventListener('mousedown', onCanvasMouseDown, false);
+		document.getElementById("gameArea").addEventListener('mousemove', onCanvasMouseMove, false);
+		document.getElementById("gameArea").addEventListener('mouseup', onCanvasMouseUp, false);
 		interfaceInitialized = true;
+	}
+}
+
+function onCanvasMouseDown(evt) {
+	isMouseDown = true;
+	isMouseDragging = false;
+
+	originalClickPos = calculateMousePosition(evt.clientX, evt.clientY);
+	prevClickPos = originalClickPos;
+	currentDelta = 0;
+}
+
+function onCanvasMouseMove(evt) {
+	if (isMouseDown) {
+		var currentPosition = calculateMousePosition(evt.clientX, evt.clientY);
+		if (isMouseDragging) {
+			var change = currentPosition[0] - prevClickPos[0];
+			adjustHorizontalOffset(change);
+		} else {
+			var diff = Math.sqrt(Math.pow(currentPosition[0] - prevClickPos[0], 2) + Math.pow(currentPosition[1] - prevClickPos[1], 2));
+			currentDelta += diff;
+			if (currentDelta > deltaToDrag) {
+				isMouseDragging = true;
+			}
+		}
+		prevClickPos = currentPosition;
+	}
+}
+
+function onCanvasMouseUp(evt) {
+	isMouseDown = false;
+
+	originalClickPos = null;
+	prevClickPos = null;
+
+	if (!isMouseDragging) {
+		processSelection(evt);
 	}
 }
 
@@ -120,5 +164,5 @@ function calculateMousePosition(x, y) {
 //@param y - The y-coordinate to translate.
 //@return The tile coordinates in array form.
 function getTileCoordinatesFromRealCoordinates(x, y) {
-	return [Math.floor(x / finalTileSize), Math.floor((y - minefieldTileVerticalOffset) / finalTileSize)];	
+	return [Math.floor((x - minefieldTileHorizontalOffset) / finalTileSize), Math.floor((y - minefieldTileVerticalOffset) / finalTileSize)];	
 }

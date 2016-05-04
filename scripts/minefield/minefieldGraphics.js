@@ -46,6 +46,14 @@ var finalTileSize = -1;
 //The vertical offset to draw tiles at.
 var minefieldTileVerticalOffset = 0;
 
+var minefieldTileHorizontalOffset = 0;
+
+var minefieldTileFixedHorizontalOffset = 0;
+
+var minefieldFPS = 12/1000;
+
+var minefieldFPSSet = false;
+
 //minefieldGraphicsInitialized [boolean]
 //Whether or not the graphics engine has been fully initialized.
 var minefieldGraphicsInitialized = false;
@@ -98,7 +106,7 @@ function initMinefieldImages() {
 
 //drawMinefield
 //Draws the minefield to the canvas.
-function drawMinefield() {
+function drawMinefieldWithResize() {
 	if (minefieldGraphicsInitialized) {
 		var canvas = document.getElementById("gameArea");
 		canvas.height = canvas.parentElement.clientHeight;
@@ -111,8 +119,23 @@ function drawMinefield() {
 
 		minefieldTileVerticalOffset = (canvas.height - (finalTileSize * minefieldHeight))/2;
 
-		canvas.width = minefieldWidth * finalTileSize;
+		canvas.width = document.getElementById("mainArea").clientWidth;
 
+		minefieldTileFixedHorizontalOffset = (canvas.width - (minefieldWidth * finalTileSize))/2;
+		if (minefieldTileFixedHorizontalOffset <= 0) {
+			minefieldTileFixedHorizontalOffset = 0;
+		}
+
+		drawMinefield();
+	}
+	
+	setTimeout(function() {
+		drawMinefieldWithResize();
+	}, 500);
+}
+
+function drawMinefield() {
+	if (minefieldGraphicsInitialized) {
 		var field = getMinefield();
 		if (field !== null) {
 			for (var i = 0; i < field.length; i++) {
@@ -121,6 +144,13 @@ function drawMinefield() {
 				}
 			}
 			hideLoading();
+
+			if (!minefieldFPSSet) {
+				setInterval(function() {
+					drawMinefield();
+				}, minefieldFPS);
+				minefieldFPSSet = true;
+			}
 			return;
 		}
 	}
@@ -136,7 +166,7 @@ function drawMinefield() {
 //@param y - The y-coordinate to draw the tile at.
 function drawTileAtCoordinates(x, y) {
 	if (minefieldGraphicsInitialized) {
-		var realX = x * finalTileSize;
+		var realX = (x * finalTileSize) + minefieldTileHorizontalOffset + minefieldTileFixedHorizontalOffset;
 		var realY = (y * finalTileSize) + minefieldTileVerticalOffset;
 		
 		var underlay = selectUnderlayForTile(x, y);
@@ -161,7 +191,7 @@ function drawTileAtCoordinates(x, y) {
 function drawTileAtCoordinatesOverrideOverlay(x, y, override) {
 	if (minefieldGraphicsInitialized) {
 		if (override in overlayImages) {
-			var realX = x * finalTileSize;
+			var realX = (x * finalTileSize) + minefieldTileHorizontalOffset + minefieldTileFixedHorizontalOffset;
 			var realY = (y * finalTileSize) + minefieldTileVerticalOffset;
 		
 			var underlay = selectUnderlayForTile(x, y);
@@ -262,5 +292,22 @@ function selectUnderlayForTile(x, y) {
 		return underlayImages["unrevealed"];
 	} else {
 		return underlayImages["revealed"];
+	}
+}
+
+function adjustHorizontalOffset(offset) {
+	console.log("Receiving offset of " + offset);
+	if (minefieldTileFixedHorizontalOffset === 0) {
+		var newOffset = minefieldTileHorizontalOffset + offset;
+		if (newOffset > 0) {
+			newOffset = 0;
+		} else {
+			var maxOffset = document.getElementById("mainArea").clientWidth - (finalTileSize * minefieldWidth);
+			if (newOffset < maxOffset) {
+				newOffset = maxOffset;
+			}
+		}
+		minefieldTileHorizontalOffset = newOffset;
+		console.log("New offset of " + minefieldTileHorizontalOffset);
 	}
 }

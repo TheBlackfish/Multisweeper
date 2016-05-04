@@ -18,9 +18,6 @@ body, html {
 canvas {
 	position: relative;
 	cursor: pointer;
-	top: 50%;	
-	left: 50%;
-	transform: translate(-50%, -50%);
 }
 
 .hidden {
@@ -36,8 +33,6 @@ canvas {
 	height: calc(100% - 40px);
 	background-image: url("../images/loadingbg.png");
 	background-repeat: repeat;
-	overflow-x: auto;
-	overflow-y: hidden;
 }
 
 /*
