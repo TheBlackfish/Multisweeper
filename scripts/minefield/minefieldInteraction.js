@@ -88,6 +88,12 @@ function processSelection(e) {
 			var coord = calculateMousePosition(e.clientX, e.clientY);
 			coord = getTileCoordinatesFromRealCoordinates(coord[0], coord[1]);
 
+			if (coord[0] < 0 || coord[1] < 0) {
+				return;
+			} else if (coord[0] >= minefieldWidth || coord[1] >= minefieldHeight) {
+				return;
+			}
+
 			var s = getSelectedActionArray();
 
 			if (s !== null) {
@@ -164,5 +170,5 @@ function calculateMousePosition(x, y) {
 //@param y - The y-coordinate to translate.
 //@return The tile coordinates in array form.
 function getTileCoordinatesFromRealCoordinates(x, y) {
-	return [Math.floor((x - minefieldTileHorizontalOffset) / finalTileSize), Math.floor((y - minefieldTileVerticalOffset) / finalTileSize)];	
+	return [Math.floor((x - minefieldTileHorizontalOffset - minefieldTileFixedHorizontalOffset) / finalTileSize), Math.floor((y - minefieldTileVerticalOffset) / finalTileSize)];	
 }
