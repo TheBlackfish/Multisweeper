@@ -7,8 +7,6 @@
 //submitAction()
 //Gets action information from various files and sends it to the server for processing.
 function submitAction() {
-	document.getElementById("submitMessage").innerHTML = "Submitting...";
-
 	var selectionTile = getSelectedActionArray();
 
 	if (selectionTile !== null) {
@@ -19,8 +17,6 @@ function submitAction() {
 		xml += '</action>';
 
 		sendSocketRequest(xml);
-	} else {
-		document.getElementById("submitMessage").innerHTML = "Please select a tile to dig above!";
 	}
 }
 
@@ -45,6 +41,4 @@ function handleActionResponse(success, xmlNodes) {
 			}
 		}
 	}
-
-	document.getElementById("submitMessage").innerHTML = text;
 }

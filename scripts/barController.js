@@ -12,7 +12,7 @@ function initBar() {
 }
 
 function initBarIcons() {
-	var allIcons = ["traptools"];
+	var allIcons = ["traptools", "submitButton"];
 
 	for (var i = 0; i < allIcons.length; i++) {
 		var newImg = "<img id='" + allIcons[i] + "' src='images/bar_icons/" + allIcons[i] + ".png' class='barIcon'>";
@@ -22,6 +22,9 @@ function initBarIcons() {
 	var images = document.getElementsByClassName("barIcon");
 	for (var i = 0; i < images.length; i++) {
 		images[i].style.top = "-" + images[i].clientHeight + ".px";
+		if (images[i].id === "submitButton") {
+			images[i].onclick = submitAction;
+		}
 	}
 }
 
@@ -40,7 +43,8 @@ function updateBar() {
 }
 
 function updateIcons() {
-	var leftSide = 4;
+	var leftSide = 20;
+	var submitButton = document.getElementById("submitButton");
 	var toolsIcon = document.getElementById("traptools");
 
 	if (allowedActions.lastIndexOf(2) > -1) {
@@ -48,10 +52,21 @@ function updateIcons() {
 			toolsIcon.setAttribute("style", "");
 		}
 		toolsIcon.style.left = leftSide+"px";
-		toolsIcon.style.top = "-" + document.getElementById("traptools").clientHeight + "px";
-		leftSide += toolsIcon.clientWidth + 4;
+		toolsIcon.style.top = "-" + toolsIcon.clientHeight + "px";
+		leftSide += toolsIcon.width + 20;
 	} else {
 		toolsIcon.removeAttribute("style");
+	}
+
+	if (allowedActions.length > 0) {
+		if (!submitButton.hasAttribute("style")) {
+			submitButton.setAttribute("style", "");
+		}
+		submitButton.style.left = leftSide+"px";
+		submitButton.style.top = "-" + submitButton.clientHeight + "px";
+		leftSide += submitButton.width + 20;
+	} else {
+		submitButton.removeAttribute("style");
 	}
 }
 

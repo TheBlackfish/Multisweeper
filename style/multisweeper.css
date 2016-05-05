@@ -91,9 +91,10 @@ canvas {
 }
 
 .barIcon {
-	position: relative;
+	position: absolute;
 	left: -100%;
 	transition: left 1s ease-in-out;
+	display: inline-block;
 }
 
 /*
