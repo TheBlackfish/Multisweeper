@@ -54,6 +54,8 @@ var minefieldFPS = 12/1000;
 
 var minefieldFPSSet = false;
 
+var minefieldShouldDraw = true;
+
 //minefieldGraphicsInitialized [boolean]
 //Whether or not the graphics engine has been fully initialized.
 var minefieldGraphicsInitialized = false;
@@ -124,7 +126,15 @@ function drawMinefieldWithResize() {
 		minefieldTileFixedHorizontalOffset = (canvas.width - (minefieldWidth * finalTileSize))/2;
 		if (minefieldTileFixedHorizontalOffset <= 0) {
 			minefieldTileFixedHorizontalOffset = 0;
+			var maxOffset = document.getElementById("mainArea").clientWidth - (finalTileSize * minefieldWidth);
+			if (minefieldTileHorizontalOffset < maxOffset) {
+				minefieldTileHorizontalOffset = maxOffset;
+			}
+		} else {
+			minefieldTileHorizontalOffset = 0;
 		}
+
+		minefieldShouldDraw = true;
 
 		drawMinefield();
 	}
@@ -136,21 +146,25 @@ function drawMinefieldWithResize() {
 
 function drawMinefield() {
 	if (minefieldGraphicsInitialized) {
-		var field = getMinefield();
-		if (field !== null) {
-			for (var i = 0; i < field.length; i++) {
-				for (var j = 0; j < field[i].length; j++) {
-					drawTileAtCoordinates(i, j);	
+		if (minefieldShouldDraw) {
+			var field = getMinefield();
+			if (field !== null) {
+				for (var i = 0; i < field.length; i++) {
+					for (var j = 0; j < field[i].length; j++) {
+						drawTileAtCoordinates(i, j);	
+					}
 				}
-			}
-			hideLoading();
+				hideLoading();
 
-			if (!minefieldFPSSet) {
-				setInterval(function() {
-					drawMinefield();
-				}, minefieldFPS);
-				minefieldFPSSet = true;
+				if (!minefieldFPSSet) {
+					setInterval(function() {
+						drawMinefield();
+					}, minefieldFPS);
+					minefieldFPSSet = true;
+				}
+				return;
 			}
+		} else {
 			return;
 		}
 	}
@@ -296,7 +310,6 @@ function selectUnderlayForTile(x, y) {
 }
 
 function adjustHorizontalOffset(offset) {
-	console.log("Receiving offset of " + offset);
 	if (minefieldTileFixedHorizontalOffset === 0) {
 		var newOffset = minefieldTileHorizontalOffset + offset;
 		if (newOffset > 0) {
@@ -307,7 +320,9 @@ function adjustHorizontalOffset(offset) {
 				newOffset = maxOffset;
 			}
 		}
-		minefieldTileHorizontalOffset = newOffset;
-		console.log("New offset of " + minefieldTileHorizontalOffset);
+		if (minefieldTileHorizontalOffset !== newOffset) {
+			minefieldTileHorizontalOffset = newOffset;
+			minefieldShouldDraw = true;
+		}
 	}
 }
