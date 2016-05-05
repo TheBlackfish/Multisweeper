@@ -23,6 +23,8 @@
 //The double array containing all of the known values of tiles, with -1 for unrevealed tiles and -2 for mines.
 var minefield = [];
 
+var minefieldStatus = "?";
+
 //otherPlayers [Double Array]
 //The double array containing all coordinates of other players' actions.
 var otherPlayers = [];
@@ -79,10 +81,12 @@ function handleMinefieldUpdate(xml) {
 		minefield = data["map"];
 		minefieldWidth = data["width"];
 		minefieldHeight = data["height"];
+		minefieldStatus = data["status"];
 		friendlyTanks = data["friendlyTanks"];
 		enemyTanks = data["enemyTanks"];
 		traps = data["traps"];
 		populatePlayerListTable(data["players"]);
+		setInteractionPolicy(minefieldStatus === "OPEN", getPlayerName() !== null, currentPlayerCanLayTraps())
 		setSelectionCoordinates(-1, -1, 0);
 	}
 	if ("otherPlayers" in data && data["otherPlayers"] !== null) {

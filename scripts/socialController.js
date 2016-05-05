@@ -144,7 +144,7 @@ function updatePlayerListForCurrentPlayer() {
 		if (list.innerHTML.lastIndexOf(currentPlayer) !== -1) {
 			var listNodes = list.getElementsByTagName("tr");
 			for (var i = 0; i < listNodes.length; i++) {
-				var currentName = listNodes[i].getElementsByTagName("td")[0];
+				var currentName = listNodes[i].getElementsByTagName("td")[1];
 				if (currentPlayer === currentName.innerHTML) {
 					currentName.innerHTML = "<img src='images/star.png'/>";
 					return;
@@ -156,4 +156,21 @@ function updatePlayerListForCurrentPlayer() {
 			updatePlayerListForCurrentPlayer();
 		}, 300);
 	}
+}
+
+function getRowForCurrentPlayer() {
+	var currentPlayer = getPlayerName();
+	if (currentPlayer !== null) {
+		var list = document.getElementById("playerListTable").getElementsByTagName("tbody")[0];
+		if (list.innerHTML.lastIndexOf(currentPlayer) !== -1) {
+			var listNodes = list.getElementsByTagName("tr");
+			for (var i = 0; i < listNodes.length; i++) {
+				var row = listNodes[i].getElementsByTagName("td");
+				if (row[1] === currentName.innerHTML) {
+					return row;
+				}
+			}
+		}
+	}
+	return null;
 }

@@ -117,3 +117,10 @@ function getPlayerName() {
 		return currentUserName;
 	}
 }
+
+function currentPlayerCanLayTraps() {
+	var currentPlayerInfo = getRowForCurrentPlayer();
+	if (currentPlayerInfo !== null) {
+		return currentPlayerInfo[3].lastIndexOf("!") !== -1;
+	}
+}
