@@ -12,7 +12,7 @@ function initBar() {
 }
 
 function initBarIcons() {
-	var allIcons = ["traptools", "submitButton"];
+	var allIcons = ["traptools", "submitButton", "submissionStatusButton"];
 
 	for (var i = 0; i < allIcons.length; i++) {
 		var newImg = "<img id='" + allIcons[i] + "' src='images/bar_icons/" + allIcons[i] + ".png' class='barIcon'>";
@@ -24,6 +24,8 @@ function initBarIcons() {
 		images[i].style.top = "-" + images[i].clientHeight + ".px";
 		if (images[i].id === "submitButton") {
 			images[i].onclick = submitAction;
+		} else if (images[i].id === "submissionStatusButton") {
+			images[i].src = "images/bar_icons/submissionStatusButton_waiting.png";
 		}
 	}
 }
@@ -44,6 +46,7 @@ function updateBar() {
 
 function updateIcons() {
 	var leftSide = 20;
+	var statusButton = document.getElementById("submissionStatusButton");
 	var submitButton = document.getElementById("submitButton");
 	var toolsIcon = document.getElementById("traptools");
 
@@ -65,7 +68,27 @@ function updateIcons() {
 		submitButton.style.left = leftSide+"px";
 		submitButton.style.top = "-" + submitButton.clientHeight + "px";
 		leftSide += submitButton.width + 20;
+
+		if (!statusButton.hasAttribute("style")) {
+			statusButton.setAttribute("style", "");
+		}
+		statusButton.style.left = leftSide+"px";
+		statusButton.style.top = "-" + statusButton.clientHeight + "px";
+		var img = "images/bar_icons/submissionStatusButton_";
+		switch (playerActionStatus) {
+			case -1:
+				img += "bad";
+				break;
+			case 1:
+				img += "good";
+				break;
+			default:
+				img += "waiting";
+		}
+		statusButton.src = img+".png";
+		leftSide += statusButton.width + 20;
 	} else {
+		statusButton.removeAttribute("style");
 		submitButton.removeAttribute("style");
 	}
 }
@@ -75,12 +98,12 @@ function updateIcons() {
 function updateOptions() {
 	if (getPlayerName() === null) {
 		setTabVisible("loginTab", true);
-		setTabVisible("ordersTab", false);
 		setTabVisible("unitTab", false);
+		setTabVisible("chatTab", false);
 	} else {
 		setTabVisible("loginTab", false);
-		setTabVisible("ordersTab", true);
 		setTabVisible("unitTab", true);
+		setTabVisible("chatTab", true);
 	}
 
 	setTabHeaderPositions();

@@ -86,6 +86,7 @@ function handleMinefieldUpdate(xml) {
 		enemyTanks = data["enemyTanks"];
 		traps = data["traps"];
 		populatePlayerListTable(data["players"]);
+		playerActionStatus = 0;
 		setInteractionPolicy(minefieldStatus === "OPEN", getPlayerName() !== null, currentPlayerCanLayTraps())
 		setSelectionCoordinates(-1, -1, 0);
 	}
