@@ -121,6 +121,6 @@ function getPlayerName() {
 function currentPlayerCanLayTraps() {
 	var currentPlayerInfo = getRowForCurrentPlayer();
 	if (currentPlayerInfo !== null) {
-		return currentPlayerInfo[3].lastIndexOf("!") !== -1;
+		return currentPlayerInfo[3].innerHTML.lastIndexOf("!") !== -1;
 	}
 }

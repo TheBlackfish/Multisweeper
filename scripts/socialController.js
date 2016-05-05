@@ -146,7 +146,7 @@ function updatePlayerListForCurrentPlayer() {
 			for (var i = 0; i < listNodes.length; i++) {
 				var currentName = listNodes[i].getElementsByTagName("td")[1];
 				if (currentPlayer === currentName.innerHTML) {
-					currentName.innerHTML = "<img src='images/star.png'/>";
+					listNodes[i].getElementsByTagName("td")[0].innerHTML = "<img src='images/star.png'/>";
 					return;
 				}
 			}
@@ -166,7 +166,7 @@ function getRowForCurrentPlayer() {
 			var listNodes = list.getElementsByTagName("tr");
 			for (var i = 0; i < listNodes.length; i++) {
 				var row = listNodes[i].getElementsByTagName("td");
-				if (row[1] === currentName.innerHTML) {
+				if (row[1].innerHTML === currentPlayer) {
 					return row;
 				}
 			}
