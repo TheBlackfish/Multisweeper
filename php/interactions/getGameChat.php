@@ -47,8 +47,6 @@ function getGameChat($lastUpdateTime = 0, $ignoreUpdateTime = false) {
 		return $ret;
 	}
 
-	error_log("Found chatlog of the following: " . $ret);
-
 	return "";
 }
 

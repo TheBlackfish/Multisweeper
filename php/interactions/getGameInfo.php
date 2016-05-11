@@ -147,11 +147,7 @@ function getGameInfo($gameID, $lastUpdated = 0, $ignoreUpdateTime = false) {
 
 				$finalRet = str_replace('<?xml version="1.0"?>', "", $ret->asXML());
 				return $finalRet;
-			} else {
-				error_log("We think the game has not been updated since the last update, exiting.");
 			}
-		} else {
-			error_log("Did not find update time for game, some error has occurred.");
 		}
 	}
 
