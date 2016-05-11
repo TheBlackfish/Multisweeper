@@ -25,13 +25,14 @@ function getPlayersForGame($gameID) {
 
 	$ret = array();
 
-	if ($playerStmt = $conn->prepare("SELECT s.status, p.playerID, s.trapType, s.trapCooldown FROM multisweeper.players as p INNER JOIN multisweeper.playerstatus as s ON p.playerID=s.playerID WHERE s.gameID=?")) {
+	if ($playerStmt = $conn->prepare("SELECT s.status, p.playerID, s.afkCount, s.trapType, s.trapCooldown FROM multisweeper.players as p INNER JOIN multisweeper.playerstatus as s ON p.playerID=s.playerID WHERE s.gameID=?")) {
 		$playerStmt->bind_param("i", $gameID);
 		$playerStmt->execute();
-		$playerStmt->bind_result($status, $playerID, $trapType, $trapCooldown);
+		$playerStmt->bind_result($status, $playerID, $afkCount, $trapType, $trapCooldown);
 		while ($playerStmt->fetch()) {
 			$newPlayer = array(
 				'status'		=>	$status,
+				'afkCount'		=>	$afkCount,
 				'trapType'		=>	$trapType,	
 				'trapCooldown'	=>	$trapCooldown,
 				'hasActed'		=>	0
@@ -121,23 +122,49 @@ function savePlayersForGame($data, $gameID) {
 		die("playerController.php - Connection failed: " . $conn->connect_error);
 	}
 
-	if ($saveStmt = $conn->prepare("UPDATE multisweeper.playerStatus SET status=?, trapCooldown=? WHERE gameID=? AND playerID=?")) {
+	if ($saveStmt = $conn->prepare("UPDATE multisweeper.playerStatus SET status=?, afkCount=?, trapCooldown=? WHERE gameID=? AND playerID=?")) {
 		foreach ($data as $playerID => $player) {
 			$status = 0;
+
 			if ($player['status'] !== 0) {
+				$status = 1;
 				if ($player['hasActed'] === 1) {
-					$status = 1;
+					$afkCount = 0;
 				} else {
-					$status = 2;
+					$afkCount = $player['afkCount'] + 1;
+					if ($afkCount > 3) {
+						$status = 2;
+					}
 				}
 			}
 
-			$saveStmt->bind_param("iiii", $status, $player['trapCooldown'], $gameID, $playerID);
+			$saveStmt->bind_param("iiiii", $status, $afkCount, $player['trapCooldown'], $gameID, $playerID);
 			$saveStmt->execute();
 		}
 		$saveStmt->close();
 	} else {
 		error_log("playerController.php - Unable to prepare save statement.");
+		return false;
+	}
+
+	return true;
+}
+
+function forcePlayerAFK($gameID, $playerID) {
+	global $sqlhost, $sqlusername, $sqlpassword;
+
+	#Initialize the connection to the MySQL database.
+	$conn = new mysqli($sqlhost, $sqlusername, $sqlpassword);
+	if ($conn->connect_error) {
+		die("playerController.php - Connection failed: " . $conn->connect_error);
+	}
+
+	if ($saveStmt = $conn->prepare("UPDATE multisweeper.playerStatus SET status=2, afkCount=3 WHERE gameID=? AND playerID=?")) {
+		$saveStmt->bind_param("ii", $gameID, $playerID);
+		$saveStmt->execute();
+		$saveStmt->close();
+	} else {
+		error_log("playerController.php - Unable to prepare AFK statement.");
 		return false;
 	}
 

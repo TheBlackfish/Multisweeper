@@ -6,6 +6,7 @@
 $_SERVER['DOCUMENT_ROOT'] = dirname(dirname(dirname(dirname(__FILE__))));
 
 require_once($_SERVER['DOCUMENT_ROOT'] . '/multisweeper/php/functional/createNewGame.php');
+require_once($_SERVER['DOCUMENT_ROOT'] . '/multisweeper/php/functional/playerController.php');
 require_once($_SERVER['DOCUMENT_ROOT'] . '/multisweeper/php/functional/resolveActions.php');
 require_once($_SERVER['DOCUMENT_ROOT'] . '/multisweeper/php/interactions/getChatUpdateTime.php');
 require_once($_SERVER['DOCUMENT_ROOT'] . '/multisweeper/php/interactions/getGameChat.php');
@@ -179,10 +180,14 @@ class multisweeperServer extends WebSocketServer {
   }
 
   #closed($user)
-  #An empty function. Only necessary due to abstract functionality.
+  #Forces the player to go into AFK status.
   #@param user (MultisweeperUser) The user disconnecting from the server.
   protected function closed ($user) {
-    // Do nothing. No additional clean-up necessary, but this function must be inherited.
+    if ($this->gameID !== null) {
+      if ($user->playerID !== -1) {
+        forcePlayerAFK($this->gameID, $user->playerID);
+      }
+    }
   }
 
   #tick()
