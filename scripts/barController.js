@@ -12,7 +12,7 @@ function initBar() {
 }
 
 function initBarIcons() {
-	var allIcons = ["traptools", "submitButton", "submissionStatusButton"];
+	var allIcons = ["traptools", "submitButton", "submissionStatusButton", "playerIsDead"];
 
 	for (var i = 0; i < allIcons.length; i++) {
 		var newImg = "<img id='" + allIcons[i] + "' src='images/bar_icons/" + allIcons[i] + ".png' class='barIcon'>";
@@ -46,6 +46,7 @@ function updateBar() {
 
 function updateIcons() {
 	var leftSide = 20;
+	var deathIcon = document.getElementById("playerIsDead");
 	var statusButton = document.getElementById("submissionStatusButton");
 	var submitButton = document.getElementById("submitButton");
 	var toolsIcon = document.getElementById("traptools");
@@ -90,6 +91,17 @@ function updateIcons() {
 	} else {
 		statusButton.removeAttribute("style");
 		submitButton.removeAttribute("style");
+	}
+
+	if (currentPlayerIsAlive()) {
+		deathIcon.removeAttribute("style");
+	} else {
+		if (!deathIcon.hasAttribute("style")) {
+			deathIcon.setAttribute("style", "");
+		}
+		deathIcon.style.left = leftSide+"px";
+		deathIcon.style.top = "-" + deathIcon.clientHeight + "px";
+		leftSide += deathIcon.width + 20;
 	}
 }
 
