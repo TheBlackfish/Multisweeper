@@ -63,6 +63,9 @@ function handleLoginResponse(success, error) {
 		document.cookie = expires;
 
 		updatePlayerListForCurrentPlayer();
+		playerActionStatus = 0;
+		setInteractionPolicy(minefieldStatus === "OPEN", (getPlayerName() !== null) && currentPlayerIsAlive(), currentPlayerCanLayTraps())
+		setSelectionCoordinates(-1, -1, 0);
 		updateOptions();
 	} else {
 		if (error !== 0) {
