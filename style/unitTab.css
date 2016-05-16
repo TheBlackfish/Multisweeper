@@ -12,3 +12,7 @@
 #playerList tr td:first-of-type {
 	max-width: 25px;
 }
+
+.scoreRank0 {
+	background-color: #ff00ff;
+}

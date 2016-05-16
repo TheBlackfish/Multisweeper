@@ -81,7 +81,7 @@ function populatePlayerListTable(playerXML) {
 
 	var playerNodes = playerXML.getElementsByTagName("player");
 	for (var i = 0; i < playerNodes.length; i++) {
-		var tempStr = "<tr><td><img src='images/blank_icon.png'/></td><td>" + playerNodes[i].childNodes[0].nodeValue + "</td>";
+		var tempStr = "<tr class='scoreRank0'><td><img src='images/blank_icon.png'/></td><td>" + playerNodes[i].childNodes[0].nodeValue + "</td>";
 
 		//Check medals for current player
 		if (getPlayerName() !== null) {
