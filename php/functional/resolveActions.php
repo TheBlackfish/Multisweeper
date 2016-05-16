@@ -239,6 +239,9 @@ function resolveAllActions($gameID) {
 							} else if ($cur["actionType"] === 1) {
 								if ($visibility[$cur["x"]][$cur["y"]] == 0) {
 									$visibility[$cur["x"]][$cur["y"]] = 1;
+									if ($minefield[$cur["x"]][$cur["y"]] === "M") {
+										$allPlayers = alterPlayerValue($allPlayers, $cur["playerID"], "correctFlags", 1);
+									}
 								}
 							#Action Type 2 is a place trap action.
 							#Place a trap on the space.
@@ -355,6 +358,8 @@ function resolveAllActions($gameID) {
 										}
 									}
 								}
+								$allPlayers = setAllPlayersValue($allPlayers, "status", 0);
+								savePlayerScores($allPlayers);
 							}
 
 							#Update map and visibility values for the game by saving to database.
