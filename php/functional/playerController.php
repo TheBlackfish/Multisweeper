@@ -9,6 +9,7 @@
 	#hasActed - Whether or not the player has acted this action resolution.
 
 require_once($_SERVER['DOCUMENT_ROOT'] . '/multisweeper/php/constants/databaseConstants.php');
+require_once($_SERVER['DOCUMENT_ROOT'] . '/multisweeper/php/functional/medalController.php');
 
 #getPlayersForGame($gameID)
 #This function compiles all player information relating to the game provided into the standard player information array.
@@ -25,10 +26,10 @@ function getPlayersForGame($gameID) {
 
 	$ret = array();
 
-	if ($playerStmt = $conn->prepare("SELECT s.status, p.playerID, s.afkCount, s.trapType, s.trapCooldown, s.digNumber FROM multisweeper.players as p INNER JOIN multisweeper.playerstatus as s ON p.playerID=s.playerID WHERE s.gameID=?")) {
+	if ($playerStmt = $conn->prepare("SELECT s.status, p.playerID, s.afkCount, s.trapType, s.trapCooldown, s.digNumber, s.correctFlags FROM multisweeper.players as p INNER JOIN multisweeper.playerstatus as s ON p.playerID=s.playerID WHERE s.gameID=?")) {
 		$playerStmt->bind_param("i", $gameID);
 		$playerStmt->execute();
-		$playerStmt->bind_result($status, $playerID, $afkCount, $trapType, $trapCooldown, $digNumber);
+		$playerStmt->bind_result($status, $playerID, $afkCount, $trapType, $trapCooldown, $digNumber, $correctFlags);
 		while ($playerStmt->fetch()) {
 			$newPlayer = array(
 				'status'		=>	$status,
@@ -37,7 +38,8 @@ function getPlayersForGame($gameID) {
 				'trapCooldown'	=>	$trapCooldown,
 				'hasActed'		=>	0,
 				'digNumber'		=>	$digNumber,
-				'dugTiles'		=>	array()
+				'dugTiles'		=>	array(),
+				'correctFlags'	=>	$correctFlags
 			);
 			$ret[$playerID] = $newPlayer;
 		}
@@ -70,6 +72,19 @@ function setPlayerValue($allPlayers, $playerID, $key, $value) {
 	} else {
 		error_log("playerController.php - Attempting to set value on playerID that does not exist.");
 	}
+	return $allPlayers;
+}
+
+function setAllPlayersValue($allPlayers, $key, $value) {
+	foreach ($allPlayers as $playerID => $player) {
+		if (array_key_exists($key, $player)) {
+			$player[$key] = $value;
+			$allPlayers[$playerID] = $player;
+		} else {
+			error_log("playerController.php - Attempting to set value with key that is not correct.");
+		}
+	}
+
 	return $allPlayers;
 }
 
@@ -139,7 +154,7 @@ function savePlayersForGame($data, $gameID) {
 		die("playerController.php - Connection failed: " . $conn->connect_error);
 	}
 
-	if ($saveStmt = $conn->prepare("UPDATE multisweeper.playerStatus SET status=?, afkCount=?, trapCooldown=?, digNumber=? WHERE gameID=? AND playerID=?")) {
+	if ($saveStmt = $conn->prepare("UPDATE multisweeper.playerStatus SET status=?, afkCount=?, trapCooldown=?, digNumber=?, correctFlags=? WHERE gameID=? AND playerID=?")) {
 		foreach ($data as $playerID => $player) {
 			$status = 0;
 
@@ -156,10 +171,11 @@ function savePlayersForGame($data, $gameID) {
 			}
 
 			$finalDigNumber = $player['digNumber'] + count($player['dugTiles']);
-			$saveStmt->bind_param("iiiiii", $status, $afkCount, $player['trapCooldown'], $finalDigNumber, $gameID, $playerID);
+			$saveStmt->bind_param("iiiiiii", $status, $afkCount, $player['trapCooldown'], $finalDigNumber, $player['correctFlags'] $gameID, $playerID);
 			if ($saveStmt->execute()) {
 				$data = setPlayerValue($data, $playerID, "status", $status);
 				$data = setPlayerValue($data, $playerID, "afkCount", $afkCount);
+				$data = setPlayerValue($data, $playerID, "digNumber", $finalDigNumber);
 			}
 		}
 		$saveStmt->close();
@@ -189,6 +205,28 @@ function forcePlayerAFK($gameID, $playerID) {
 	}
 
 	return true;
+}
+
+function savePlayerScores($data) {
+	global $sqlhost, $sqlusername, $sqlpassword;
+
+	#Initialize the connection to the MySQL database.
+	$conn = new mysqli($sqlhost, $sqlusername, $sqlpassword);
+	if ($conn->connect_error) {
+		die("playerController.php - Connection failed: " . $conn->connect_error);
+	}
+
+	if ($scoreStmt=$conn->prepare("UPDATE multisweeper.players SET score=score+? WHERE playerID=?")) {
+		foreach ($data as $playerID => $player) {
+			$playerScore = 0;
+			$playerMedals = calculateMedalAttributesForPlayer($player['digNumber']);
+			$playerScore += 4 * $playerMedals['digMedal'];
+			$playerScore += $player['correctFlags'];
+			$scoreStmt->bind_param("ii", $playerScore, $playerID);
+			$scoreStmt->execute();
+		}
+		$scoreStmt->close();
+	}
 }
 
 ?>

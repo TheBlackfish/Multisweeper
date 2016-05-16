@@ -2,7 +2,7 @@
 
 function calculateMedalAttributesForPlayer($digNumber) {
 	$medalMinimums = array(
-		array(0, 5, 10, 20,	35,	55,	80)
+		array(0, 10, 25, 55, 115, 235, 475)
 	);
 
 	$digMedal = 0;

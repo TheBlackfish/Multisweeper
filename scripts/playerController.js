@@ -71,7 +71,7 @@ function handleLoginResponse(success, error) {
 		updateOptions();
 	} else {
 		if (error !== 0) {
-			document.getElementById("logInError") = "<br>" + error;
+			console.log(error);
 		}
 	}
 }
