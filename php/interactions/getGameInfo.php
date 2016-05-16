@@ -4,6 +4,7 @@
 
 require_once($_SERVER['DOCUMENT_ROOT'] . '/multisweeper/php/constants/databaseConstants.php');
 require_once($_SERVER['DOCUMENT_ROOT'] . '/multisweeper/php/functional/initializeMySQL.php');
+require_once($_SERVER['DOCUMENT_ROOT'] . '/multisweeper/php/functional/medalController.php');
 require_once($_SERVER['DOCUMENT_ROOT'] . '/multisweeper/php/functional/minefieldController.php');
 require_once($_SERVER['DOCUMENT_ROOT'] . '/multisweeper/php/functional/translateData.php');
 
@@ -93,10 +94,10 @@ function getGameInfo($gameID, $lastUpdated = 0, $ignoreUpdateTime = false) {
 						}
 						
 						#Add all players in the game and their statuses to the XML.
-						if ($playerQuery = $conn->prepare("SELECT p.username, p.playerID, s.status, s.trapType, s.trapCooldown FROM multisweeper.players as p INNER JOIN multisweeper.playerstatus as s ON p.playerID=s.playerID WHERE s.gameID=?")) {
+						if ($playerQuery = $conn->prepare("SELECT p.username, p.playerID, s.status, s.trapType, s.trapCooldown, s.digNumber FROM multisweeper.players as p INNER JOIN multisweeper.playerstatus as s ON p.playerID=s.playerID WHERE s.gameID=?")) {
 							$playerQuery->bind_param("i", $gameID);
 							$playerQuery->execute();
-							$playerQuery->bind_result($user, $currentID, $status, $trapType, $trapCooldown);
+							$playerQuery->bind_result($user, $currentID, $status, $trapType, $trapCooldown, $digNumber);
 
 							$ret->addChild('players');
 
@@ -105,6 +106,9 @@ function getGameInfo($gameID, $lastUpdated = 0, $ignoreUpdateTime = false) {
 								$playerInfo->addAttribute('status', $status);
 								$playerInfo->addAttribute('trapType', $trapType);
 								$playerInfo->addAttribute('trapCooldown', $trapCooldown);
+
+								$medals = calculateMedalAttributesForPlayer($digNumber);
+								$playerInfo->addAttribute('digMedal', $medals['digMedal']);
 							}
 
 							$playerQuery->close();

@@ -23,10 +23,18 @@ function initBarIcons() {
 	for (var i = 0; i < images.length; i++) {
 		images[i].style.top = "-" + images[i].clientHeight + ".px";
 		if (images[i].id === "submitButton") {
-			images[i].onclick = submitAction;
+			images[i].onclick = function() {
+				submitAction();
+			};
 		} else if (images[i].id === "submissionStatusButton") {
 			images[i].src = "images/bar_icons/submissionStatusButton_waiting.png";
 		}
+	}
+
+	var allMedals = ["digMedal"];
+	for (var i = 0; i < allMedals.length; i++) {
+		var newImg = "<img id='" + allMedals[i] + "' src='images/bar_icons/medals/" + allMedals[i] + "1.png' class='barIcon'>";
+		document.getElementById("bottomBar").innerHTML += newImg;
 	}
 }
 
@@ -50,6 +58,8 @@ function updateIcons() {
 	var statusButton = document.getElementById("submissionStatusButton");
 	var submitButton = document.getElementById("submitButton");
 	var toolsIcon = document.getElementById("traptools");
+
+	var medal_digging = document.getElementById("digMedal");
 
 	if (allowedActions.lastIndexOf(2) > -1) {
 		if (!toolsIcon.hasAttribute("style")) {
@@ -95,6 +105,7 @@ function updateIcons() {
 
 	if (currentPlayerIsAlive()) {
 		deathIcon.removeAttribute("style");
+		
 	} else {
 		if (!deathIcon.hasAttribute("style")) {
 			deathIcon.setAttribute("style", "");
@@ -102,6 +113,18 @@ function updateIcons() {
 		deathIcon.style.left = leftSide+"px";
 		deathIcon.style.top = "-" + deathIcon.clientHeight + "px";
 		leftSide += deathIcon.width + 20;
+	}
+
+	if (currentMedals["dig"] !== 0) {
+		if (!medal_digging.hasAttribute("style")) {
+			medal_digging.setAttribute("style", "");
+		}
+		medal_digging.src = "images/bar_icons/medals/digMedal" + currentMedals["dig"] + ".png";
+		medal_digging.style.left = leftSide+"px";
+		medal_digging.style.top = "-" + medal_digging.clientHeight + "px";
+		leftSide += medal_digging.width + 10;
+	} else {
+		medal_digging.removeAttribute("style");
 	}
 }
 

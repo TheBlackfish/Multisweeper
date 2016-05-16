@@ -70,9 +70,11 @@ function onCanvasMouseUp(evt) {
 //@param canLayTraps [bool] If false, the player cannot lay traps.
 function setInteractionPolicy(gameIsGoing, playerIsAlive, canLayTraps) {
 	if (gameIsGoing && playerIsAlive) {
+		setActionState(0, true);
+		setActionState(1, true);
 		setActionState(2, canLayTraps);
 	} else {
-		for (var i = 0; i < 16; i++) {
+		for (var i = 0; i <= 2; i++) {
 			setActionState(i, false);
 		}
 	}

@@ -83,6 +83,13 @@ function populatePlayerListTable(playerXML) {
 	for (var i = 0; i < playerNodes.length; i++) {
 		var tempStr = "<tr><td><img src='images/blank_icon.png'/></td><td>" + playerNodes[i].childNodes[0].nodeValue + "</td>";
 
+		//Check medals for current player
+		if (getPlayerName() !== null) {
+			if (playerNodes[i].childNodes[0].nodeValue === getPlayerName()) {
+				setMedals(playerNodes[i].getAttribute("digMedal"));
+			}
+		}
+
 		var statusStr = "Dead";
 		if (playerNodes[i].getAttribute("status") == 1) {
 			statusStr = "Alive";

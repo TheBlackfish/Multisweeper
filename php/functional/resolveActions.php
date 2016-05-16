@@ -93,8 +93,6 @@ function resolveAllActions($gameID) {
 					}
 
 					$actionStmt->close();
-
-					$shoveledTiles = array();
 					$queuedTraps = array();
 
 					while (count($actionqueue) > 0) {
@@ -143,7 +141,7 @@ function resolveAllActions($gameID) {
 							if ($cur["actionType"] === 0) {
 								#Check if we have previously shoveled this tile or not.
 								$notShoveled = true;
-								foreach ($shoveledTiles as $key => $shoveled) {
+								foreach (getPlayerValue($allPlayers, $cur["playerID"], "dugTiles") as $key => $shoveled) {
 									if ($cur['x'] == $shoveled[0]) {
 										if ($cur['y'] == $shoveled[1]) {
 											$notShoveled = false;
@@ -152,10 +150,6 @@ function resolveAllActions($gameID) {
 								}
 								if ($notShoveled) {
 									$visibility[$cur["x"]][$cur["y"]] = 2;
-									array_push($shoveledTiles, array(
-										$cur["x"],
-										$cur["y"]
-									));
 									if ($minefield[$cur["x"]][$cur["y"]] === "M") {
 										if ($firstMove) {
 											#Temporarily just remove the mine.
@@ -170,9 +164,21 @@ function resolveAllActions($gameID) {
 											);
 											array_push($actionqueue, $newAction);
 										} else {
-											$allPlayers = alterPlayerValue($allPlayers, $cur["playerID"], 'status', 0);
+											$tempDugTiles = getPlayerValue($allPlayers, $cur["playerID"], "dugTiles");
+											array_push($tempDugTiles, array(
+												$cur["x"],
+												$cur["y"]
+											));
+											$allPlayers = setPlayerValue($allPlayers, $cur["playerID"], "dugTiles", $tempDugTiles);
+											$allPlayers = setPlayerValue($allPlayers, $cur["playerID"], 'status', 0);
 										}
 									} else if ($minefield[$cur["x"]][$cur["y"]] == 0) {
+										$tempDugTiles = getPlayerValue($allPlayers, $cur["playerID"], "dugTiles");
+										array_push($tempDugTiles, array(
+											$cur["x"],
+											$cur["y"]
+										));
+										$allPlayers = setPlayerValue($allPlayers, $cur["playerID"], "dugTiles", $tempDugTiles);
 										foreach ($adjacencies as $adj) {
 											$targetX = $cur["x"] + $adj[0];
 											$targetY = $cur["y"] + $adj[1];
@@ -219,6 +225,13 @@ function resolveAllActions($gameID) {
 												}
 											}
 										}
+									} else {
+										$tempDugTiles = getPlayerValue($allPlayers, $cur["playerID"], "dugTiles");
+										array_push($tempDugTiles, array(
+											$cur["x"],
+											$cur["y"]
+										));
+										$allPlayers = setPlayerValue($allPlayers, $cur["playerID"], "dugTiles", $tempDugTiles);
 									}
 								}
 							#Action Type 1 is a flag action.
@@ -235,7 +248,7 @@ function resolveAllActions($gameID) {
 									$trapVal = getPlayerValue($allPlayers, $cur["playerID"], "trapType");
 									$tempTrap = array($trapVal, $cur["x"], $cur["y"]);
 									array_push($queuedTraps, $tempTrap);
-									$allPlayers = alterPlayerValue($allPlayers, $cur["playerID"], "trapCooldown", getCooldownForTrapType($trapVal));
+									$allPlayers = setPlayerValue($allPlayers, $cur["playerID"], "trapCooldown", getCooldownForTrapType($trapVal));
 								}
 							}
 						} else {
@@ -246,11 +259,11 @@ function resolveAllActions($gameID) {
 							if ($cur['actionType'] === 0) {
 								$oldCooldown = getPlayerValue($allPlayers, $cur['playerID'], 'trapCooldown');
 								if ($oldCooldown > 0) {
-									$allPlayers = alterPlayerValue($allPlayers, $cur['playerID'], 'trapCooldown', $oldCooldown - 1);
+									$allPlayers = setPlayerValue($allPlayers, $cur['playerID'], 'trapCooldown', $oldCooldown - 1);
 								}
 							}
 						}
-						$allPlayers = alterPlayerValue($allPlayers, $cur['playerID'], 'hasActed', 1);
+						$allPlayers = setPlayerValue($allPlayers, $cur['playerID'], 'hasActed', 1);
 					}
 
 					#Resolve traps
@@ -296,79 +309,76 @@ function resolveAllActions($gameID) {
 					}					
 
 					#All players who did submit actions are updated appropriately.
-					if (savePlayersForGame($allPlayers, $gameID)) {
-						#Empty the action queue of actions relating to this specific game.
-						if ($deleteStmt = $conn->prepare("DELETE FROM multisweeper.actionqueue WHERE gameID=?")) {
-							$deleteStmt->bind_param("i", $gameID);
-							$updated = $deleteStmt->execute();
-							if ($updated === false) {
-								error_log("resolveActions.php - Error occurred during action queue clean up. " . $deleteStmt->errno . ": " . $deleteStmt->error);
-								$deleteStmt->close();
-							} else {
-								$deleteStmt->close();
+					$allPlayers = savePlayersForGame($allPlayers, $gameID);
+					#Empty the action queue of actions relating to this specific game.
+					if ($deleteStmt = $conn->prepare("DELETE FROM multisweeper.actionqueue WHERE gameID=?")) {
+						$deleteStmt->bind_param("i", $gameID);
+						$updated = $deleteStmt->execute();
+						if ($updated === false) {
+							error_log("resolveActions.php - Error occurred during action queue clean up. " . $deleteStmt->errno . ": " . $deleteStmt->error);
+							$deleteStmt->close();
+						} else {
+							$deleteStmt->close();
 
-								#Try to determine if the game is complete or not.
-								$gameCompleted = false;
-								if ($baseExploded) {
+							#Try to determine if the game is complete or not.
+							$gameCompleted = false;
+							if ($baseExploded) {
+								$gameCompleted = true;
+								error_log("Game Over - Base blown up!");
+							} else {
+								if (countPlayersWithValue($allPlayers, 'status', 1) > 0) {
 									$gameCompleted = true;
-									error_log("Game Over - Base blown up!");
-								} else {
-									if (countPlayersWithValue($allPlayers, 'status', 1) > 0) {
-										$gameCompleted = true;
-										for ($x = 0; ($x < count($visibility)) && $gameCompleted; $x++) {
-											for ($y = 0; ($y < count($visibility[$x])) && $gameCompleted; $y++) {
-												if ($visibility[$x][$y] == 0) {
-													if ($minefield[$x][$y] === "M") {
-														$gameCompleted = false;
-													}
+									for ($x = 0; ($x < count($visibility)) && $gameCompleted; $x++) {
+										for ($y = 0; ($y < count($visibility[$x])) && $gameCompleted; $y++) {
+											if ($visibility[$x][$y] == 0) {
+												if ($minefield[$x][$y] === "M") {
+													$gameCompleted = false;
 												}
 											}
 										}
-										if ($gameCompleted) {
-											error_log("Game Over - No unrevealed non-mine tiles left!");
-										}
-									} else {
-										$gameCompleted = true;
-										error_log("Game Over - No living players left!");
 									}
-								}
-
-								#If game is done, all unrevealed tiles become visible instead.
-								if ($gameCompleted) {
-									for ($x = 0; ($x < count($visibility)); $x++) {
-										for ($y = 0; ($y < count($visibility[$x])); $y++) {
-											if ($minefield[$x][$y] === "M") {
-												$visibility[$x][$y] = 2;
-											}
-										}
-									}
-								}
-
-								#Update map and visibility values for the game by saving to database.
-								if ($updateStmt = $conn->prepare("UPDATE multisweeper.games SET map=?, visibility=?, friendlyTankCountdown=?, friendlyTanks=?, enemyTankCountdown=?, enemyTanks=?, enemyTankCountdownReset=?, wrecks=?, traps=?, status=?, width=?, height=?, lastUpdated=NOW(), fullUpdate=1 WHERE gameID=?")) {
-									$statusStr = "OPEN";
 									if ($gameCompleted) {
-										$statusStr = "GAME OVER";
-									}
-									$updateStmt->bind_param("ssisisisssiii", translateMinefieldToMySQL($minefield), translateMinefieldToMySQL($visibility), $tankCount, translateTanksToMySQL($friendlyTanks), $enemyTankCount, translateTanksToMySQL($enemyTanks), $enemyTankReset, translateTanksToMySQL($wrecks), translateTrapsToMySQL($traps), $statusStr, count($minefield), count($minefield[0]), $gameID);
-									$updated = $updateStmt->execute();
-									if ($updated === false) {
-										error_log("resolveActions.php - Error occurred during map update. " . $updateStmt->errno . ": " . $updateStmt->error);
-									} 
-									$updateStmt->close();
-
-									if ($gameCompleted) {
-										return false;
+										error_log("Game Over - No unrevealed non-mine tiles left!");
 									}
 								} else {
-									error_log("resolveActions.php - Unable to prepare map update after resolving action queue. " . $conn->errno . ": " . $conn->error);
+									$gameCompleted = true;
+									error_log("Game Over - No living players left!");
 								}
 							}
-						} else {
-							error_log("resolveActions.php - Unable to prepare delete statement. " . $conn->errno . ": " . $conn->error);
+
+							#If game is done, all unrevealed tiles become visible instead.
+							if ($gameCompleted) {
+								for ($x = 0; ($x < count($visibility)); $x++) {
+									for ($y = 0; ($y < count($visibility[$x])); $y++) {
+										if ($minefield[$x][$y] === "M") {
+											$visibility[$x][$y] = 2;
+										}
+									}
+								}
+							}
+
+							#Update map and visibility values for the game by saving to database.
+							if ($updateStmt = $conn->prepare("UPDATE multisweeper.games SET map=?, visibility=?, friendlyTankCountdown=?, friendlyTanks=?, enemyTankCountdown=?, enemyTanks=?, enemyTankCountdownReset=?, wrecks=?, traps=?, status=?, width=?, height=?, lastUpdated=NOW(), fullUpdate=1 WHERE gameID=?")) {
+								$statusStr = "OPEN";
+								if ($gameCompleted) {
+									$statusStr = "GAME OVER";
+								}
+								$updateStmt->bind_param("ssisisisssiii", translateMinefieldToMySQL($minefield), translateMinefieldToMySQL($visibility), $tankCount, translateTanksToMySQL($friendlyTanks), $enemyTankCount, translateTanksToMySQL($enemyTanks), $enemyTankReset, translateTanksToMySQL($wrecks), translateTrapsToMySQL($traps), $statusStr, count($minefield), count($minefield[0]), $gameID);
+								$updated = $updateStmt->execute();
+								if ($updated === false) {
+									error_log("resolveActions.php - Error occurred during map update. " . $updateStmt->errno . ": " . $updateStmt->error);
+								} 
+								$updateStmt->close();
+
+								if ($gameCompleted) {
+									return false;
+								}
+							} else {
+								error_log("resolveActions.php - Unable to prepare map update after resolving action queue. " . $conn->errno . ": " . $conn->error);
+							}
 						}
 					} else {
-						error_log("resolveActions.php - Unable to save player statuses.");
+						error_log("resolveActions.php - Unable to prepare delete statement. " . $conn->errno . ": " . $conn->error);
 					}
 				} else {
 					error_log("resolveActions.php - Unable to prepare action statement for resolving action queue. " . $conn->errno . ": " . $conn->error);

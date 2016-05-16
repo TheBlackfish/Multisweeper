@@ -25,17 +25,19 @@ function getPlayersForGame($gameID) {
 
 	$ret = array();
 
-	if ($playerStmt = $conn->prepare("SELECT s.status, p.playerID, s.afkCount, s.trapType, s.trapCooldown FROM multisweeper.players as p INNER JOIN multisweeper.playerstatus as s ON p.playerID=s.playerID WHERE s.gameID=?")) {
+	if ($playerStmt = $conn->prepare("SELECT s.status, p.playerID, s.afkCount, s.trapType, s.trapCooldown, s.digNumber FROM multisweeper.players as p INNER JOIN multisweeper.playerstatus as s ON p.playerID=s.playerID WHERE s.gameID=?")) {
 		$playerStmt->bind_param("i", $gameID);
 		$playerStmt->execute();
-		$playerStmt->bind_result($status, $playerID, $afkCount, $trapType, $trapCooldown);
+		$playerStmt->bind_result($status, $playerID, $afkCount, $trapType, $trapCooldown, $digNumber);
 		while ($playerStmt->fetch()) {
 			$newPlayer = array(
 				'status'		=>	$status,
 				'afkCount'		=>	$afkCount,
 				'trapType'		=>	$trapType,	
 				'trapCooldown'	=>	$trapCooldown,
-				'hasActed'		=>	0
+				'hasActed'		=>	0,
+				'digNumber'		=>	$digNumber,
+				'dugTiles'		=>	array()
 			);
 			$ret[$playerID] = $newPlayer;
 		}
@@ -49,18 +51,33 @@ function getPlayersForGame($gameID) {
 	return array();
 }
 
-#alterPlayervalue($allPlayers, $playerID, $key, $value)
+#setPlayerValue($allPlayers, $playerID, $key, $value)
 #Changes the associative array for players by altering the k-v pair specified for the player specified.
 #@param $allPlayers - The associative array with all players to alter.
 #@param $playerID - The ID of the player to alter.
 #@param $key - The value to change.
 #@param $value - What to change the value to.
 #@return The updated associative array.
-function alterPlayerValue($allPlayers, $playerID, $key, $value) {
+function setPlayerValue($allPlayers, $playerID, $key, $value) {
 	if (array_key_exists($playerID, $allPlayers)) {
 		$cur = $allPlayers[$playerID];
 		if (array_key_exists($key, $cur)) {
 			$cur[$key] = $value;
+			$allPlayers[$playerID] = $cur;
+		} else {
+			error_log("playerController.php - Attempting to set value with key that is not correct.");
+		}
+	} else {
+		error_log("playerController.php - Attempting to set value on playerID that does not exist.");
+	}
+	return $allPlayers;
+}
+
+function alterPlayerValue($allPlayers, $playerID, $key, $additive) {
+	if (array_key_exists($playerID, $allPlayers)) {
+		$cur = $allPlayers[$playerID];
+		if (array_key_exists($key, $cur)) {
+			$cur[$key] += $value;
 			$allPlayers[$playerID] = $cur;
 		} else {
 			error_log("playerController.php - Attempting to alter value with key that is not correct.");
@@ -122,7 +139,7 @@ function savePlayersForGame($data, $gameID) {
 		die("playerController.php - Connection failed: " . $conn->connect_error);
 	}
 
-	if ($saveStmt = $conn->prepare("UPDATE multisweeper.playerStatus SET status=?, afkCount=?, trapCooldown=? WHERE gameID=? AND playerID=?")) {
+	if ($saveStmt = $conn->prepare("UPDATE multisweeper.playerStatus SET status=?, afkCount=?, trapCooldown=?, digNumber=? WHERE gameID=? AND playerID=?")) {
 		foreach ($data as $playerID => $player) {
 			$status = 0;
 
@@ -138,16 +155,19 @@ function savePlayersForGame($data, $gameID) {
 				}
 			}
 
-			$saveStmt->bind_param("iiiii", $status, $afkCount, $player['trapCooldown'], $gameID, $playerID);
-			$saveStmt->execute();
+			$finalDigNumber = $player['digNumber'] + count($player['dugTiles']);
+			$saveStmt->bind_param("iiiiii", $status, $afkCount, $player['trapCooldown'], $finalDigNumber, $gameID, $playerID);
+			if ($saveStmt->execute()) {
+				$data = setPlayerValue($data, $playerID, "status", $status);
+				$data = setPlayerValue($data, $playerID, "afkCount", $afkCount);
+			}
 		}
 		$saveStmt->close();
 	} else {
 		error_log("playerController.php - Unable to prepare save statement.");
-		return false;
 	}
 
-	return true;
+	return $data;
 }
 
 function forcePlayerAFK($gameID, $playerID) {

@@ -10,6 +10,9 @@ var currentUserName = null;
 
 var currentPassword = null;
 
+var currentMedals = [];
+currentMedals["dig"] = 0;
+
 //checkCookie()
 //Attempts to find any cookies for this page. If they exist and they contain user information, this function will attempt to log that player in on this computer.
 function checkCookie() {
@@ -64,8 +67,7 @@ function handleLoginResponse(success, error) {
 
 		updatePlayerListForCurrentPlayer();
 		playerActionStatus = 0;
-		setInteractionPolicy(minefieldStatus === "OPEN", (getPlayerName() !== null) && currentPlayerIsAlive(), currentPlayerCanLayTraps())
-		setSelectionCoordinates(-1, -1, 0);
+		setInteractionPolicy(minefieldStatus === "OPEN", (getPlayerName() !== null) && currentPlayerIsAlive(), currentPlayerCanLayTraps());
 		updateOptions();
 	} else {
 		if (error !== 0) {
@@ -108,6 +110,11 @@ function getLoginDetails() {
 		ret += "</login>";
 		return ret;
 	}
+}
+
+function setMedals(dig) {
+	currentMedals["dig"] = parseInt(dig);
+	updateIcons();
 }
 
 //getPlayerName()
