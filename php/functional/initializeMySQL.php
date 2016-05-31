@@ -13,7 +13,8 @@ function checkMySQL() {
 	}
 
 	if ($query = $conn->prepare("SELECT v FROM multisweeper.globalvars WHERE k=?")) {
-		$query->bind_param("s", "mysqlInitialized");
+		$var = "mysqlInitialized";
+		$query->bind_param("s", $var);
 		$query->execute();
 		$shouldInit = false;
 		if ($query->num_rows === 0) {

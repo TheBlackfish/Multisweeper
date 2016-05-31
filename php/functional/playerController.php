@@ -92,7 +92,7 @@ function alterPlayerValue($allPlayers, $playerID, $key, $additive) {
 	if (array_key_exists($playerID, $allPlayers)) {
 		$cur = $allPlayers[$playerID];
 		if (array_key_exists($key, $cur)) {
-			$cur[$key] += $value;
+			$cur[$key] += $additive;
 			$allPlayers[$playerID] = $cur;
 		} else {
 			error_log("playerController.php - Attempting to alter value with key that is not correct.");
