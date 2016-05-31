@@ -171,7 +171,7 @@ function savePlayersForGame($data, $gameID) {
 			}
 
 			$finalDigNumber = $player['digNumber'] + count($player['dugTiles']);
-			$saveStmt->bind_param("iiiiiii", $status, $afkCount, $player['trapCooldown'], $finalDigNumber, $player['correctFlags'] $gameID, $playerID);
+			$saveStmt->bind_param("iiiiiii", $status, $afkCount, $player['trapCooldown'], $finalDigNumber, $player['correctFlags'], $gameID, $playerID);
 			if ($saveStmt->execute()) {
 				$data = setPlayerValue($data, $playerID, "status", $status);
 				$data = setPlayerValue($data, $playerID, "afkCount", $afkCount);

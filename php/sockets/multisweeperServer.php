@@ -6,6 +6,7 @@
 $_SERVER['DOCUMENT_ROOT'] = dirname(dirname(dirname(dirname(__FILE__))));
 
 require_once($_SERVER['DOCUMENT_ROOT'] . '/multisweeper/php/functional/createNewGame.php');
+require_once($_SERVER['DOCUMENT_ROOT'] . '/multisweeper/php/functional/initializeMySQL.php');
 require_once($_SERVER['DOCUMENT_ROOT'] . '/multisweeper/php/functional/playerController.php');
 require_once($_SERVER['DOCUMENT_ROOT'] . '/multisweeper/php/functional/resolveActions.php');
 require_once($_SERVER['DOCUMENT_ROOT'] . '/multisweeper/php/interactions/getChatUpdateTime.php');
@@ -26,7 +27,7 @@ require_once($_SERVER['DOCUMENT_ROOT'] . '/multisweeper/php/sockets/multisweeper
 class multisweeperServer extends WebSocketServer {
   //protected $maxBufferSize = 1048576; //1MB... overkill for an echo server, but potentially plausible for other applications.
 
-  public $shouldDebug = false;
+  public $shouldDebug = true;
 
   #userClass (String)
   #The string denoting what class the user object should be.
@@ -356,6 +357,7 @@ foreach ($argv as $arg) {
 }
 
 try {
+  checkMySQL();
   $server->createGame();
   $server->run();
 }

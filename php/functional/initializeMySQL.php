@@ -5,6 +5,8 @@ require_once($_SERVER['DOCUMENT_ROOT'] . '/multisweeper/php/constants/databaseCo
 #checkMySQL()
 #Checks the global variables table to see if MySQL has been fully initialized. If not, will call initMySQL().
 function checkMySQL() {
+	global $sqlhost, $sqlusername, $sqlpassword;
+
 	$conn = new mysqli($sqlhost, $sqlusername, $sqlpassword);
 	if ($conn->connect_error) {
 		die("Connection failed: " . $conn->connect_error);
@@ -13,17 +15,26 @@ function checkMySQL() {
 	if ($query = $conn->prepare("SELECT v FROM multisweeper.globalvars WHERE k=?")) {
 		$query->bind_param("s", "mysqlInitialized");
 		$query->execute();
+		$shouldInit = false;
 		if ($query->num_rows === 0) {
+			$shouldInit = true;
+		}
+		$query->close();
+		if ($shouldInit) {
 			initMySQL();
 		}
 	} else {
 		error_log("Could not prepare MySQL check statement.");
+		error_log("Trying to init anyways, since this seems to be related to not being initialized yet.");
+		initMySQL();
 	}
 }
 
 #initMySQL()
 #Calls various MySQL queries to create all of the necessary tables. A global variable will be set if the creation encounters no errors.
 function initMySQL() {
+	global $sqlhost, $sqlusername, $sqlpassword;
+
 	$conn = new mysqli($sqlhost, $sqlusername, $sqlpassword);
 	if ($conn->connect_error) {
 		die("initMySQL.php - Connection failed: " . $conn->connect_error);
@@ -51,18 +62,20 @@ function initMySQL() {
 
 	$gameTableStatement = "CREATE TABLE multisweeper.games (
 	  	`gameID` int(11) NOT NULL AUTO_INCREMENT,
-	  	`map` varchar(20000) NOT NULL,
-	  	`visibility` varchar(20000) NOT NULL,
-	  	`height` int(11) NOT NULL,
-	  	`width` int(11) NOT NULL,
-	 	`status` varchar(45) NOT NULL,
-	  	`friendlyTankCountdown` int(4) NOT NULL DEFAULT '3',
-	  	`friendlyTanks` varchar(2000) NOT NULL,
-	  	`enemyTankCountdown` int(6) NOT NULL DEFAULT '15',
-	  	`enemyTankCountdownReset` int(6) NOT NULL DEFAULT '15',
-	  	`enemyTanks` varchar(2000) NOT NULL,
-	  	`wrecks` varchar(2000) NOT NULL,
-	  	`traps` varchar(2000) NOT NULL,
+  		`map` varchar(20000) NOT NULL,
+  		`visibility` varchar(20000) NOT NULL,
+  		`height` int(11) NOT NULL,
+  		`width` int(11) NOT NULL,
+  		`status` varchar(45) NOT NULL,
+  		`friendlyTankCountdown` int(4) NOT NULL DEFAULT '3',
+  		`friendlyTanks` varchar(2000) NOT NULL,
+  		`enemyTankCountdown` int(6) NOT NULL DEFAULT '15',
+  		`enemyTankCountdownReset` int(6) NOT NULL DEFAULT '15',
+  		`enemyTanks` varchar(2000) NOT NULL,
+  		`wrecks` varchar(2000) NOT NULL,
+  		`traps` varchar(2000) NOT NULL,
+  		`lastUpdated` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  		`fullUpdate` tinyint(1) NOT NULL DEFAULT '1',
 	  	PRIMARY KEY (`gameID`)
 	)";
 
@@ -73,12 +86,13 @@ function initMySQL() {
 	)";
 
 	$playerTableStatement = "CREATE TABLE IF NOT EXISTS multisweeper.players (
-		`playerID` INT NOT NULL AUTO_INCREMENT, 
+		`playerID` INT(11) NOT NULL AUTO_INCREMENT, 
 		`username` VARCHAR(45) NOT NULL, 
 		`password` varchar(128) NOT NULL,
 		`salt` varchar(32) NOT NULL, 
+		`totalScore` int(11) NOT NULL DEFAULT '0',
 		PRIMARY KEY (`playerID`), 
-		UNIQUE INDEX `username_UNIQUE` (`username` ASC)
+		UNIQUE KEY `username_UNIQUE` (`username`)
 	)";
 
 	$signupTableStatement = "CREATE TABLE IF NOT EXISTS multisweeper.upcomingsignup (
@@ -96,6 +110,8 @@ function initMySQL() {
 		`afkCount` int(4) NOT NULL DEFAULT '0',
 		`trapType` int(4) NOT NULL DEFAULT '0',
 		`trapCooldown` int(6) NOT NULL DEFAULT '0',
+		`digNumber` int(11) NOT NULL DEFAULT '0',
+		`correctFlags` int(11) NOT NULL DEFAULT '0',
 		KEY `gameID_idx` (`gameID`),
 		KEY `playerID_idx` (`playerID`),
 		CONSTRAINT `gameID` FOREIGN KEY (`gameID`) REFERENCES `games` (`gameID`) ON DELETE NO ACTION ON UPDATE NO ACTION,
@@ -245,7 +261,9 @@ function initMySQL() {
 
 	if ($noErrors) {
 		if ($query = $conn->prepare("INSERT INTO `multisweeper`.`globalvars` (k, v) VALUES (?, ?)")) {
-			$query->bind_param("ss", "mysqlInitialized", "true");
+			$str_one = "mysqlInitialized";
+			$str_two = "true";
+			$query->bind_param("ss", $str_one, $str_two);
 			$query->execute();
 		} else {
 			error_log("initMySQL.php - Failed to prepare final insertion statement. " . $conn->errno . ": " . $conn->error);
