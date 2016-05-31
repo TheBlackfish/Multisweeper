@@ -97,6 +97,11 @@ canvas {
 	display: inline-block;
 }
 
+#submitButton {
+	z-index: 1000;
+	cursor: pointer;
+}
+
 /*
 	Tab Header
 */

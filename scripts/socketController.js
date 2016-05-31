@@ -45,7 +45,6 @@ function sendSocketRequest(request) {
 //Takes an XML from the socket and parses it out into the game logic.
 //@param message [String] The XML from the websocket server.
 function handleSocketMessage(message) {
-	console.log(message);
 	var data = null;
 	if (window.DOMParser) {
 		var parser = new window.DOMParser();

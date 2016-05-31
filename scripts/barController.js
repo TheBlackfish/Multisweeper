@@ -21,11 +21,9 @@ function initBarIcons() {
 
 	var images = document.getElementsByClassName("barIcon");
 	for (var i = 0; i < images.length; i++) {
-		images[i].style.top = "-" + images[i].clientHeight + ".px";
+		images[i].style.top = "-" + images[i].clientHeight + "px";
 		if (images[i].id === "submitButton") {
-			images[i].onclick = function() {
-				submitAction();
-			};
+			images[i].setAttribute("onclick", "submitAction();");
 		} else if (images[i].id === "submissionStatusButton") {
 			images[i].src = "images/bar_icons/submissionStatusButton_waiting.png";
 		}
