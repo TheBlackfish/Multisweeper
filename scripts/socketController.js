@@ -57,9 +57,11 @@ function handleSocketMessage(message) {
 		var typeOfMessage = data.documentElement.tagName;
 		if (typeOfMessage === null) {
 			console.log("Data is not properly formed XML, returning.");
+		} else if (typeOfMessage === "loading") {
+			setLoadingIconStatus(parseInt(data.documentElement.childNodes[0].nodeValue) === 1);
 		} else if (typeOfMessage === "update") {
 			//Handle update XML
-			var mapUpdate = null, chatUpdate = null;
+			var mapUpdate = null, chatUpdate = null, loadingUpdate = false;
 
 			if (data.getElementsByTagName("update").length > 0) {
 				mapUpdate = data.getElementsByTagName("update")[0];
@@ -67,6 +69,10 @@ function handleSocketMessage(message) {
 
 			if (data.getElementsByTagName("chatlog").length > 0) {
 				chatUpdate = data.getElementsByTagName("chatlog")[0];
+			}
+
+			if (data.getElementsByTagName("loading").length > 0) {
+				loadingUpdate = true;
 			}
 
 			if (mapUpdate !== null) {

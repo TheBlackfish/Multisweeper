@@ -207,6 +207,18 @@ class multisweeperServer extends WebSocketServer {
       $currentTime = time();
       $diff = $currentTime - $this->broadcastTimestamp;
 
+      #Broadcast to all users our loading status.
+      $loadingIcon = 0;
+      if (($this->resolveActionsTimestamp - $currentTime) <= 5) {
+        $loadingIcon = 1;
+      }
+      $statusMsg = "<loading>" . $loadingIcon . "</loading>";
+      foreach ($this->users as $user) {
+        if ($user->handshake) {
+          $this->send($user, $statusMsg);
+        }
+      }
+
       if ($diff > $this->broadcastInterval) {
         #Diagnostics
         $this->debugLog("Diagnosing tick");
