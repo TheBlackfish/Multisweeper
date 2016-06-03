@@ -8,9 +8,19 @@
 //Control variable for if the interactions with the game area have been initialized yet or not.
 var interfaceInitialized = false;
 
+//isMouseDown [boolean]
+//Control variable tracking if the mouse button is currently down or not.
 var isMouseDown = false;
+
+//originalClickPos [Array<int>]
+//This stores the initial point of clickage for dragging purposes.
 var originalClickPos = null;
+
+//prevClickPos [Array<int>]
+//This stores the mouse position between updates to track overall changes to the mouse position and dragging.
 var prevClickPos = null;
+
+//
 var deltaToDrag = 5;
 var currentDelta = 0;
 var isMouseDragging = false;
@@ -26,6 +36,9 @@ function initMinefieldInterface() {
 	}
 }
 
+//onCanvasMouseDown(evt)
+//Sets various settings when the canvas is clicked.
+//@param evt (MouseEvent) The mouse click event.
 function onCanvasMouseDown(evt) {
 	isMouseDown = true;
 	isMouseDragging = false;
@@ -35,6 +48,9 @@ function onCanvasMouseDown(evt) {
 	currentDelta = 0;
 }
 
+//onCanvasMouseMove(evt)
+//Changes variables based on mouse movement when the mouse is down.
+//@param evt (MouseEvent) The mousemove event.
 function onCanvasMouseMove(evt) {
 	if (isMouseDown) {
 		var currentPosition = calculateMousePosition(evt.clientX, evt.clientY);
@@ -52,6 +68,9 @@ function onCanvasMouseMove(evt) {
 	}
 }
 
+//onCanvasMouseUp(evt)
+//Sets various settings when the user unclicks away from the canvas.
+//@param evt (MouseEvent) The mouseup event.
 function onCanvasMouseUp(evt) {
 	isMouseDown = false;
 

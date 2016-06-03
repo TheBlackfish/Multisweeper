@@ -27,7 +27,7 @@ require_once($_SERVER['DOCUMENT_ROOT'] . '/multisweeper/php/sockets/multisweeper
 class multisweeperServer extends WebSocketServer {
   //protected $maxBufferSize = 1048576; //1MB... overkill for an echo server, but potentially plausible for other applications.
 
-  public $shouldDebug = true;
+  public $shouldDebug = false;
 
   #userClass (String)
   #The string denoting what class the user object should be.
@@ -351,6 +351,9 @@ class multisweeperServer extends WebSocketServer {
     }
   }
 
+  #debugLog($str)
+  #If debugging is enabled, this logs the message provided to the error log.
+  #@param str - The message to output to the error log.
   protected function debugLog($str) {
     if ($this->shouldDebug) {
       error_log($str);

@@ -46,14 +46,24 @@ var finalTileSize = -1;
 //The vertical offset to draw tiles at.
 var minefieldTileVerticalOffset = 0;
 
+//minefieldTileHorizontalOffset [int]
+//The current scrolling offset to draw tiles at along the x-axis.
 var minefieldTileHorizontalOffset = 0;
 
+//minefieldTileFixedHorizontalOffset [int]
+//If the minefield to draw is smaller than the canvas, this sets it to a fixed point along the x-axis.
 var minefieldTileFixedHorizontalOffset = 0;
 
+//minefieldFPS [double]
+//The time (in milliseconds) between each draw of the minefield.
 var minefieldFPS = 12/1000;
 
+//minefieldFPSSet [bool]
+//If true, this will draw the minefield whenever minefieldFPS milliseconds have passed.
 var minefieldFPSSet = false;
 
+//minefieldShouldDraw [bool]
+//The control variable of if the minefield should draw or not.
 var minefieldShouldDraw = true;
 
 //minefieldGraphicsInitialized [boolean]
@@ -106,8 +116,8 @@ function initMinefieldImages() {
 	}
 }
 
-//drawMinefield
-//Draws the minefield to the canvas.
+//drawMinefieldWithResize()
+//Draws the minefield to the canvas while also resizing the tile sizes used to draw tiles.
 function drawMinefieldWithResize() {
 	if (minefieldGraphicsInitialized) {
 		var canvas = document.getElementById("gameArea");
@@ -144,6 +154,8 @@ function drawMinefieldWithResize() {
 	}, 500);
 }
 
+//drawMinefield()
+//Draws the minefield to the canvas using the current tile size settings and offsets.
 function drawMinefield() {
 	if (minefieldGraphicsInitialized) {
 		if (minefieldShouldDraw) {
@@ -309,6 +321,9 @@ function selectUnderlayForTile(x, y) {
 	}
 }
 
+//adjustHorizontalOffset(offset)
+//Alters the horizontal offset of the minefield on the screen by the amount given in offset.
+//@param offset (int) The amount to alter the horizontal offset by.
 function adjustHorizontalOffset(offset) {
 	if (minefieldTileFixedHorizontalOffset === 0) {
 		var newOffset = minefieldTileHorizontalOffset + offset;

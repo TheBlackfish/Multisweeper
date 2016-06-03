@@ -54,7 +54,7 @@ function getPlayersForGame($gameID) {
 }
 
 #setPlayerValue($allPlayers, $playerID, $key, $value)
-#Changes the associative array for players by altering the k-v pair specified for the player specified.
+#Changes the associative array for players by setting the k-v pair specified for the player specified.
 #@param $allPlayers - The associative array with all players to alter.
 #@param $playerID - The ID of the player to alter.
 #@param $key - The value to change.
@@ -75,6 +75,12 @@ function setPlayerValue($allPlayers, $playerID, $key, $value) {
 	return $allPlayers;
 }
 
+#setAllPlayersValue($allPlayers, $key, $value)
+#Changes the associative array for players by setting the k-v pair specified all players.
+#@param $allPlayers - The associative array with all players to alter.
+#@param $key - The value to change.
+#@param $value - What to change the value to.
+#@return The updated associative array.
 function setAllPlayersValue($allPlayers, $key, $value) {
 	foreach ($allPlayers as $playerID => $player) {
 		if (array_key_exists($key, $player)) {
@@ -88,6 +94,13 @@ function setAllPlayersValue($allPlayers, $key, $value) {
 	return $allPlayers;
 }
 
+#setPlayerValue($allPlayers, $playerID, $key, $value)
+#Changes the associative array for players by adjusting the k-v pair specified for the player specified by adding $additive to the current value in the array.
+#@param $allPlayers - The associative array with all players to alter.
+#@param $playerID - The ID of the player to alter.
+#@param $key - The value to change.
+#@param $additive - What to adjust the value by.
+#@return The updated associative array.
 function alterPlayerValue($allPlayers, $playerID, $key, $additive) {
 	if (array_key_exists($playerID, $allPlayers)) {
 		$cur = $allPlayers[$playerID];
@@ -186,6 +199,11 @@ function savePlayersForGame($data, $gameID) {
 	return $data;
 }
 
+#forcePlayerAFK($gameID, $playerID)
+#This makes a player go AFK forcefully by bypassing the AFK count system. Useful for when a player disconnects from the server.
+#@param gameID - The ID of the game for MySQL purposes.
+#@param playerID - The ID of the player who is AFK.
+#@return Whether or not the operation was successful.
 function forcePlayerAFK($gameID, $playerID) {
 	global $sqlhost, $sqlusername, $sqlpassword;
 
@@ -207,6 +225,9 @@ function forcePlayerAFK($gameID, $playerID) {
 	return true;
 }
 
+#savePlayerScores($data)
+#Takes in player data and updates the score values stored in MySQL based on the accomplishments of the player thus far.
+#@param data - The associative array containing player data to update scores to.
 function savePlayerScores($data) {
 	global $sqlhost, $sqlusername, $sqlpassword;
 

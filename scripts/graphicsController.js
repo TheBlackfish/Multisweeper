@@ -12,6 +12,9 @@ function hideLoading() {
 	}
 }
 
+//setLoadingIconStatus(status)
+//Shows or hides the loading icon based on the status given.
+//@param status (Boolean) Whether or not to show the loading icon.
 function setLoadingIconStatus(status) {
 	var icon = document.getElementById("loadingIcon");
 	if (status) {

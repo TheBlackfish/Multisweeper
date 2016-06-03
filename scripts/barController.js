@@ -11,6 +11,8 @@ function initBar() {
 	updateBar();	
 }
 
+//initBarIcons()
+//Initialize all the icons on the bottom bar.
 function initBarIcons() {
 	var allIcons = ["traptools", "submitButton", "submissionStatusButton", "playerIsDead"];
 
@@ -50,6 +52,8 @@ function updateBar() {
 	updateIcons();
 }
 
+//updateIcons()
+//Updates icons on the bottom bar based on the current state. This includes moving some or all on or off screen and changing image source files when necessary.
 function updateIcons() {
 	var leftSide = 20;
 	var deathIcon = document.getElementById("playerIsDead");

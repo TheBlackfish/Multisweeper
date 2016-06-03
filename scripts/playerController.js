@@ -8,8 +8,12 @@
 //The name of the currently logged-in player.
 var currentUserName = null;
 
+//currentPassword [String]
+//The password of the currently logged-in player.
 var currentPassword = null;
 
+//currentMedals [Array]
+//The associative array holding all medal values for the current player.
 var currentMedals = [];
 currentMedals["dig"] = 0;
 
@@ -112,6 +116,9 @@ function getLoginDetails() {
 	}
 }
 
+//setMedals(dig)
+//Sets the current levels of medals to display.
+//@param dig (int) The level of the dig medal to display.
 function setMedals(dig) {
 	currentMedals["dig"] = parseInt(dig);
 	updateIcons();
@@ -128,6 +135,9 @@ function getPlayerName() {
 	}
 }
 
+//currentPlayerCanLayTraps()
+//Control function that determines if the current player can play traps.
+//@return Whether or not the player can play traps.
 function currentPlayerCanLayTraps() {
 	var currentPlayerInfo = getRowForCurrentPlayer();
 	if (currentPlayerInfo !== null) {
@@ -136,6 +146,9 @@ function currentPlayerCanLayTraps() {
 	return false;
 }
 
+//currentPlayerIsAlive()
+//Control function that determines if the current player is alive in the current game or not.
+//@return Whether or not the player is dead in the current game.
 function currentPlayerIsAlive() {
 	var currentPlayerInfo = getRowForCurrentPlayer();
 	if (currentPlayerInfo !== null) {

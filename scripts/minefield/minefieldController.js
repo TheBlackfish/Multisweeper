@@ -23,6 +23,8 @@
 //The double array containing all of the known values of tiles, with -1 for unrevealed tiles and -2 for mines.
 var minefield = [];
 
+//minefieldStatus [String]
+//The string literal that literally describes the status of the minefield. Right now it starts at "?" but can be set for "OPEN" or "CLOSED".
 var minefieldStatus = "?";
 
 //otherPlayers [Double Array]

@@ -1,5 +1,7 @@
 <?php
 
+#This file holds all functionality related to initializing the MySQL server for usage, as well as confirmation of said initialization.
+
 require_once($_SERVER['DOCUMENT_ROOT'] . '/multisweeper/php/constants/databaseConstants.php');
 
 #checkMySQL()
