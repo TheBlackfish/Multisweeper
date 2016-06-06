@@ -91,6 +91,7 @@ class multisweeperServer extends WebSocketServer {
     #Turn the message into XML to parse.
     $this->debugLog("Server Process - Processing this: " . $message);
     $parsedMsg = simplexml_load_string($message);
+    $validLogin = true;
     if ($parsedMsg !== false) {
 
       $response = "<response>";
@@ -109,7 +110,7 @@ class multisweeperServer extends WebSocketServer {
           if (isset($parsedMsg->login)) {
             $this->debugLog("Server Process - Logging player in");
             #Call logInPlayer.php to set player info for this user.
-            $user->playerID = logInPlayer($parsedMsg->login);
+            $user->playerID = logInPlayer($parsedMsg->login, true);
 
             #Count how many users are logged into this playerID.
             $count = 0;
@@ -125,9 +126,19 @@ class multisweeperServer extends WebSocketServer {
             }
           }
         }
+      } else if (isset($user->playerID)) {
+        if (isset($parsedMsg->login)) {
+          $checkAgainst = logInPlayer($parsedMsg->login, false);
+          if ($user->playerID !== $checkAgainst) {
+            $validLogin = false;
+            $response .= "<loginError>You are not the same player you logged in as.</loginError>";
+          }
+        } else {
+          $response .= "<loginError>No login information provided.</loginError>";
+        }
       }
       
-      if ($user->playerID !== -1) {
+      if (($user->playerID !== -1) && $validLogin) {
         $this->debugLog("Server Process - Player is logged in");
         $this->debugLog("Server Processing Diagnostics");
         $this->debugLog("this->gameCreationTimestamp=".$this->gameCreationTimestamp);

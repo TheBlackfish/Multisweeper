@@ -165,6 +165,9 @@ function updatePlayerListForCurrentPlayer() {
 	}
 }
 
+//getRowForCurrentPlayer() 
+//Returns the social information for the current player.
+//@return The HTMLElement containing the current player's information.
 function getRowForCurrentPlayer() {
 	var currentPlayer = getPlayerName();
 	if (currentPlayer !== null) {

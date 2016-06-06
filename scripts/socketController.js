@@ -27,6 +27,7 @@ function initSocket() {
 //Sends a message to the websocket server.
 //@param request [String] The string representing XML to send to the server.
 function sendSocketRequest(request) {
+	console.log(request);
 	if (socket.readyState === 1) {
 		var xml = "<request>";
 		xml += getLoginDetails();

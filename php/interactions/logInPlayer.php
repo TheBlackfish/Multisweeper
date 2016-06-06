@@ -9,8 +9,9 @@ require_once($_SERVER['DOCUMENT_ROOT'] . '/multisweeper/php/interactions/signUpF
 #logInPlayer($xml)
 #Checks if the xml provided is the proper login credentials for a player. Returns their player ID if correct. Otherwise returns -1 for an invalid player.
 #@param $xml (XML) The login credentials provided.
+#@param $fullLogInProcess (Boolean) If true, the server will attempt to add the logged in player to the current game as well as the next game.
 #@return The player ID if the login was successful, or -1 if not successful.
-function logInPlayer($xml) {
+function logInPlayer($xml, $fullLogInProcess) {
 	global $sqlhost, $sqlusername, $sqlpassword;
 	global $numTraps;
 
@@ -44,43 +45,45 @@ function logInPlayer($xml) {
 			}
 
 			if ($playerID != null) {
-				#Check if player is currently a part of the most recent game.
-				if ($statusStmt = $conn->prepare("SELECT g.gameID FROM multisweeper.playerstatus AS p INNER JOIN (SELECT gameID FROM multisweeper.games ORDER BY gameID DESC LIMIT 1) as g ON p.gameID = g.gameID WHERE playerID=?")) {
-					$gameID = null;
-					$statusStmt->bind_param("i", $playerID);
-					$statusStmt->execute();
-					$statusStmt->bind_result($gid);
-					while ($statusStmt->fetch()) {
-						$gameID = $gid;
-					}
-					$statusStmt->close();
-					if ($gameID === null) {
-						#Sign player up for game.
-						if ($gameIDStmt = $conn->prepare("SELECT gameID FROM multisweeper.games ORDER BY gameID DESC LIMIT 1")) {
-							$gameIDStmt->execute();
-							$gameIDStmt->bind_result($gid);
-							while ($gameIDStmt->fetch()) {
-								$gameID = $gid;
-							}
-							$gameIDStmt->close();
-							if ($gameID !== null) {
-								if ($signupStmt = $conn->prepare("INSERT INTO multisweeper.playerstatus (gameID, playerID, trapType, awaitingAction) VALUES (?, ?, ?, 1)")) {
-									$trapID = ($gameID + $playerID) % $numTraps;
-									$signupStmt->bind_param("iii", $gameID, $playerID, $trapID);
-									$signupStmt->execute();
-									$signupStmt->close();
+				if ($fullLogInProcess) {
+					#Check if player is currently a part of the most recent game.
+					if ($statusStmt = $conn->prepare("SELECT g.gameID FROM multisweeper.playerstatus AS p INNER JOIN (SELECT gameID FROM multisweeper.games ORDER BY gameID DESC LIMIT 1) as g ON p.gameID = g.gameID WHERE playerID=?")) {
+						$gameID = null;
+						$statusStmt->bind_param("i", $playerID);
+						$statusStmt->execute();
+						$statusStmt->bind_result($gid);
+						while ($statusStmt->fetch()) {
+							$gameID = $gid;
+						}
+						$statusStmt->close();
+						if ($gameID === null) {
+							#Sign player up for game.
+							if ($gameIDStmt = $conn->prepare("SELECT gameID FROM multisweeper.games ORDER BY gameID DESC LIMIT 1")) {
+								$gameIDStmt->execute();
+								$gameIDStmt->bind_result($gid);
+								while ($gameIDStmt->fetch()) {
+									$gameID = $gid;
+								}
+								$gameIDStmt->close();
+								if ($gameID !== null) {
+									if ($signupStmt = $conn->prepare("INSERT INTO multisweeper.playerstatus (gameID, playerID, trapType, awaitingAction) VALUES (?, ?, ?, 1)")) {
+										$trapID = ($gameID + $playerID) % $numTraps;
+										$signupStmt->bind_param("iii", $gameID, $playerID, $trapID);
+										$signupStmt->execute();
+										$signupStmt->close();
+									} else {
+										error_log("loginPlayer.php - Unable to prepare sign up statement after logging in. " . $conn->errno . ": " . $conn->error);
+									}
 								} else {
-									error_log("loginPlayer.php - Unable to prepare sign up statement after logging in. " . $conn->errno . ": " . $conn->error);
+									error_log("loginPlayer.php - Unable to retrieve latest game ID. " . $conn->errno . ": " . $conn->error);
 								}
 							} else {
-								error_log("loginPlayer.php - Unable to retrieve latest game ID. " . $conn->errno . ": " . $conn->error);
+								error_log("loginPlayer.php - Unable to prepare game ID retrieval statement after logging in. " . $conn->errno . ": " . $conn->error);
 							}
-						} else {
-							error_log("loginPlayer.php - Unable to prepare game ID retrieval statement after logging in. " . $conn->errno . ": " . $conn->error);
-						}
-					} 
-				} else {
-					error_log("loginPlayer.php - Unable to prepare checking statement after logging in. " . $conn->errno . ": " . $conn->error);
+						} 
+					} else {
+						error_log("loginPlayer.php - Unable to prepare checking statement after logging in. " . $conn->errno . ": " . $conn->error);
+					}
 				}
 				signUpForNextGame($playerID);
 				return $playerID;
