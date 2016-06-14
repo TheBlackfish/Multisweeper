@@ -141,7 +141,7 @@ function getPlayerName() {
 function currentPlayerCanLayTraps() {
 	var currentPlayerInfo = getRowForCurrentPlayer();
 	if (currentPlayerInfo !== null) {
-		return currentPlayerInfo[3].innerHTML.lastIndexOf("!") !== -1;
+		return currentPlayerInfo.canLayTraps;
 	}
 	return false;
 }
@@ -152,7 +152,7 @@ function currentPlayerCanLayTraps() {
 function currentPlayerIsAlive() {
 	var currentPlayerInfo = getRowForCurrentPlayer();
 	if (currentPlayerInfo !== null) {
-		return currentPlayerInfo[2].innerHTML !== "Dead";
+		return currentPlayerInfo.status !== "Dead";
 	}
 	return false;
 }

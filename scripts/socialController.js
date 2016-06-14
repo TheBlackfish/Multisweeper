@@ -167,7 +167,7 @@ function updatePlayerListForCurrentPlayer() {
 
 //getRowForCurrentPlayer() 
 //Returns the social information for the current player.
-//@return The HTMLElement containing the current player's information.
+//@return The associative array containing the player's information based on the social tab.
 function getRowForCurrentPlayer() {
 	var currentPlayer = getPlayerName();
 	if (currentPlayer !== null) {
@@ -177,7 +177,11 @@ function getRowForCurrentPlayer() {
 			for (var i = 0; i < listNodes.length; i++) {
 				var row = listNodes[i].getElementsByTagName("td");
 				if (row[1].innerHTML === currentPlayer) {
-					return row;
+					var ret = [];
+					ret.name = row[1].innerHTML;
+					ret.status = row[2].innerHTML;
+					ret.canLayTrap = (row[3].innerHTML.lastIndexOf("!") !== -1);
+					return ret;
 				}
 			}
 		}
