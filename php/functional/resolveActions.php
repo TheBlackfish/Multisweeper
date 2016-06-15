@@ -2,14 +2,14 @@
 
 #This file contains the function 'resolveAllActions' to help resolve actions in the action queue appropriately.
 
-require_once($_SERVER['DOCUMENT_ROOT'] . '/multisweeper/php/constants/databaseConstants.php');
-require_once($_SERVER['DOCUMENT_ROOT'] . '/multisweeper/php/constants/mineGameConstants.php');
-require_once($_SERVER['DOCUMENT_ROOT'] . '/multisweeper/php/functional/minefieldExpander.php');
-require_once($_SERVER['DOCUMENT_ROOT'] . '/multisweeper/php/functional/minefieldPopulater.php');
-require_once($_SERVER['DOCUMENT_ROOT'] . '/multisweeper/php/functional/playerController.php');
-require_once($_SERVER['DOCUMENT_ROOT'] . '/multisweeper/php/functional/translateData.php');
-require_once($_SERVER['DOCUMENT_ROOT'] . '/multisweeper/php/functional/trapController.php');
-require_once($_SERVER['DOCUMENT_ROOT'] . '/multisweeper/php/functional/updateTanks.php');
+require_once($_SERVER['DOCUMENT_ROOT'] . '/sweepelite/php/constants/databaseConstants.php');
+require_once($_SERVER['DOCUMENT_ROOT'] . '/sweepelite/php/constants/mineGameConstants.php');
+require_once($_SERVER['DOCUMENT_ROOT'] . '/sweepelite/php/functional/minefieldExpander.php');
+require_once($_SERVER['DOCUMENT_ROOT'] . '/sweepelite/php/functional/minefieldPopulater.php');
+require_once($_SERVER['DOCUMENT_ROOT'] . '/sweepelite/php/functional/playerController.php');
+require_once($_SERVER['DOCUMENT_ROOT'] . '/sweepelite/php/functional/translateData.php');
+require_once($_SERVER['DOCUMENT_ROOT'] . '/sweepelite/php/functional/trapController.php');
+require_once($_SERVER['DOCUMENT_ROOT'] . '/sweepelite/php/functional/updateTanks.php');
 
 #resolveAllActions($gameID)
 #Takes all actions from the action queue relating to the game identified by $gameID and applies those actions to the game. All changes are applied to a local copy before uploading to the MySQL database.
@@ -25,7 +25,7 @@ function resolveAllActions($gameID) {
 	}
 
 	#Get map information, both the minefield and the visibility, for this game.
-	if ($stmt = $conn->prepare("SELECT map, visibility, height, width, friendlyTankCountdown, friendlyTanks, enemyTankCountdown, enemyTankCountdownReset, enemyTanks, wrecks, traps FROM multisweeper.games WHERE gameID=?")) {
+	if ($stmt = $conn->prepare("SELECT map, visibility, height, width, friendlyTankCountdown, friendlyTanks, enemyTankCountdown, enemyTankCountdownReset, enemyTanks, wrecks, traps FROM sweepelite.games WHERE gameID=?")) {
 		$stmt->bind_param("i", $gameID);
 		$stmt->execute();
 		$stmt->bind_result($m, $v, $h, $w, $tankCount, $t, $enemyTankCount, $enemyTankReset, $e, $wr, $tr);
@@ -75,7 +75,7 @@ function resolveAllActions($gameID) {
 
 			if (count($allPlayers) > 0) {
 				#Retrieve all actions in the action queue for this game and throw them into unique objects in an array for easy access during resolution.
-				if ($actionStmt = $conn->prepare("SELECT playerID, actionType, xCoord, yCoord FROM multisweeper.actionqueue WHERE gameID=?")) {
+				if ($actionStmt = $conn->prepare("SELECT playerID, actionType, xCoord, yCoord FROM sweepelite.actionqueue WHERE gameID=?")) {
 					$actionqueue = array();
 
 					$actionStmt->bind_param("i", $gameID);
@@ -314,7 +314,7 @@ function resolveAllActions($gameID) {
 					#All players who did submit actions are updated appropriately.
 					$allPlayers = savePlayersForGame($allPlayers, $gameID);
 					#Empty the action queue of actions relating to this specific game.
-					if ($deleteStmt = $conn->prepare("DELETE FROM multisweeper.actionqueue WHERE gameID=?")) {
+					if ($deleteStmt = $conn->prepare("DELETE FROM sweepelite.actionqueue WHERE gameID=?")) {
 						$deleteStmt->bind_param("i", $gameID);
 						$updated = $deleteStmt->execute();
 						if ($updated === false) {
@@ -363,7 +363,7 @@ function resolveAllActions($gameID) {
 							}
 
 							#Update map and visibility values for the game by saving to database.
-							if ($updateStmt = $conn->prepare("UPDATE multisweeper.games SET map=?, visibility=?, friendlyTankCountdown=?, friendlyTanks=?, enemyTankCountdown=?, enemyTanks=?, enemyTankCountdownReset=?, wrecks=?, traps=?, status=?, width=?, height=?, lastUpdated=NOW(), fullUpdate=1 WHERE gameID=?")) {
+							if ($updateStmt = $conn->prepare("UPDATE sweepelite.games SET map=?, visibility=?, friendlyTankCountdown=?, friendlyTanks=?, enemyTankCountdown=?, enemyTanks=?, enemyTankCountdownReset=?, wrecks=?, traps=?, status=?, width=?, height=?, lastUpdated=NOW(), fullUpdate=1 WHERE gameID=?")) {
 								$statusStr = "OPEN";
 								if ($gameCompleted) {
 									$statusStr = "GAME OVER";

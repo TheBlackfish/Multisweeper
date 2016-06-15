@@ -2,9 +2,9 @@
 
 #This file contains various helper function to help with minefield control.
 
-require_once($_SERVER['DOCUMENT_ROOT'] . '/multisweeper/php/constants/databaseConstants.php');
-require_once($_SERVER['DOCUMENT_ROOT'] . '/multisweeper/php/constants/mineGameConstants.php');
-require_once($_SERVER['DOCUMENT_ROOT'] . '/multisweeper/php/functional/translateData.php');
+require_once($_SERVER['DOCUMENT_ROOT'] . '/sweepelite/php/constants/databaseConstants.php');
+require_once($_SERVER['DOCUMENT_ROOT'] . '/sweepelite/php/constants/mineGameConstants.php');
+require_once($_SERVER['DOCUMENT_ROOT'] . '/sweepelite/php/functional/translateData.php');
 
 #getMinefieldWithVisibility($gameID, $minefield, $visibility)
 #Takes a minefield and visibility maps (both as double arrays), and returns a properly formatted minefield with visibility applied, as well as player actions.
@@ -69,7 +69,7 @@ function getPlayerActionsForGame($gameID) {
 
 	$result = array();
 
-	if ($query = $conn->prepare("SELECT xCoord, yCoord FROM multisweeper.actionqueue WHERE gameID=?")) {
+	if ($query = $conn->prepare("SELECT xCoord, yCoord FROM sweepelite.actionqueue WHERE gameID=?")) {
 		$query->bind_param("i", $gameID);
 		$query->execute();
 		$query->bind_result($xCoord, $yCoord);

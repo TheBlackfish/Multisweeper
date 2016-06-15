@@ -1,37 +1,37 @@
 #!/usr/bin/env php
 <?php
 
-#This file contains the functionality for the multisweeperServer and should be called from the command line in order to start an instance of the server.
+#This file contains the functionality for the sweepeliteServer and should be called from the command line in order to start an instance of the server.
 
 $_SERVER['DOCUMENT_ROOT'] = dirname(dirname(dirname(dirname(__FILE__))));
 
-require_once($_SERVER['DOCUMENT_ROOT'] . '/multisweeper/php/functional/createNewGame.php');
-require_once($_SERVER['DOCUMENT_ROOT'] . '/multisweeper/php/functional/initializeMySQL.php');
-require_once($_SERVER['DOCUMENT_ROOT'] . '/multisweeper/php/functional/playerController.php');
-require_once($_SERVER['DOCUMENT_ROOT'] . '/multisweeper/php/functional/resolveActions.php');
-require_once($_SERVER['DOCUMENT_ROOT'] . '/multisweeper/php/interactions/getChatUpdateTime.php');
-require_once($_SERVER['DOCUMENT_ROOT'] . '/multisweeper/php/interactions/getGameChat.php');
-require_once($_SERVER['DOCUMENT_ROOT'] . '/multisweeper/php/interactions/getGameInfo.php');
-require_once($_SERVER['DOCUMENT_ROOT'] . '/multisweeper/php/interactions/getGameUpdateTime.php');
-require_once($_SERVER['DOCUMENT_ROOT'] . '/multisweeper/php/interactions/getLatestGameID.php');
-require_once($_SERVER['DOCUMENT_ROOT'] . '/multisweeper/php/interactions/logInPlayer.php');
-require_once($_SERVER['DOCUMENT_ROOT'] . '/multisweeper/php/interactions/queryResolutions.php');
-require_once($_SERVER['DOCUMENT_ROOT'] . '/multisweeper/php/interactions/registerPlayer.php');
-require_once($_SERVER['DOCUMENT_ROOT'] . '/multisweeper/php/interactions/submitAction.php');
-require_once($_SERVER['DOCUMENT_ROOT'] . '/multisweeper/php/interactions/submitGameChat.php');
-require_once($_SERVER['DOCUMENT_ROOT'] . '/multisweeper/php/phpwebsocket/websockets.php');
-require_once($_SERVER['DOCUMENT_ROOT'] . '/multisweeper/php/sockets/multisweeperUser.php');
+require_once($_SERVER['DOCUMENT_ROOT'] . '/sweepelite/php/functional/createNewGame.php');
+require_once($_SERVER['DOCUMENT_ROOT'] . '/sweepelite/php/functional/initializeMySQL.php');
+require_once($_SERVER['DOCUMENT_ROOT'] . '/sweepelite/php/functional/playerController.php');
+require_once($_SERVER['DOCUMENT_ROOT'] . '/sweepelite/php/functional/resolveActions.php');
+require_once($_SERVER['DOCUMENT_ROOT'] . '/sweepelite/php/interactions/getChatUpdateTime.php');
+require_once($_SERVER['DOCUMENT_ROOT'] . '/sweepelite/php/interactions/getGameChat.php');
+require_once($_SERVER['DOCUMENT_ROOT'] . '/sweepelite/php/interactions/getGameInfo.php');
+require_once($_SERVER['DOCUMENT_ROOT'] . '/sweepelite/php/interactions/getGameUpdateTime.php');
+require_once($_SERVER['DOCUMENT_ROOT'] . '/sweepelite/php/interactions/getLatestGameID.php');
+require_once($_SERVER['DOCUMENT_ROOT'] . '/sweepelite/php/interactions/logInPlayer.php');
+require_once($_SERVER['DOCUMENT_ROOT'] . '/sweepelite/php/interactions/queryResolutions.php');
+require_once($_SERVER['DOCUMENT_ROOT'] . '/sweepelite/php/interactions/registerPlayer.php');
+require_once($_SERVER['DOCUMENT_ROOT'] . '/sweepelite/php/interactions/submitAction.php');
+require_once($_SERVER['DOCUMENT_ROOT'] . '/sweepelite/php/interactions/submitGameChat.php');
+require_once($_SERVER['DOCUMENT_ROOT'] . '/sweepelite/php/phpwebsocket/websockets.php');
+require_once($_SERVER['DOCUMENT_ROOT'] . '/sweepelite/php/sockets/seUser.php');
 
-#multisweeperServer
-#This class handles all Multisweeper logic, including handling incoming connections (implemented by WebSocketServer) and game logic.
-class multisweeperServer extends WebSocketServer {
+#sweepeliteServer
+#This class handles all sweepelite logic, including handling incoming connections (implemented by WebSocketServer) and game logic.
+class sweepeliteServer extends WebSocketServer {
   //protected $maxBufferSize = 1048576; //1MB... overkill for an echo server, but potentially plausible for other applications.
 
   public $shouldDebug = false;
 
   #userClass (String)
   #The string denoting what class the user object should be.
-  protected $userClass = 'MultisweeperUser';
+  protected $userClass = 'sweepeliteUser';
 
   #gameID (int)
   #The int denoting the ID of the current game being played.
@@ -85,7 +85,7 @@ class multisweeperServer extends WebSocketServer {
       #If present and the user is logged in, the server will attempt to submit the actions described from the XML.
     #chat
       #If present and the user is logged in, the server will add the chat message described to the database.
-  #@param user (MultisweeperUser) The user submitting the message to the server.
+  #@param user (sweepeliteUser) The user submitting the message to the server.
   #@param message (XML) The XML describing the 
   protected function process ($user, $message) {
     #Turn the message into XML to parse.
@@ -185,7 +185,7 @@ class multisweeperServer extends WebSocketServer {
   
   #connected($user)
   #Pushes the user into the full update backlog for later updates.
-  #@param user (MultisweeperUser) The user connecting to the server.
+  #@param user (sweepeliteUser) The user connecting to the server.
   protected function connected ($user) {
     //Send a full update to the user.
     array_push($this->fullUpdateBacklog, $user);
@@ -195,7 +195,7 @@ class multisweeperServer extends WebSocketServer {
 
   #closed($user)
   #Forces the player to go into AFK.
-  #@param user (MultisweeperUser) The user disconnecting from the server.
+  #@param user (sweepeliteUser) The user disconnecting from the server.
   protected function closed ($user) {
     if ($this->gameID !== null) {
       if ($user->playerID !== -1) {
@@ -205,7 +205,7 @@ class multisweeperServer extends WebSocketServer {
   }
 
   #tick()
-  #Handles all game logic related to maintaining the multisweeper game and broadcasting to all users. Every tick it compares the current time to the last broadcast timestamp and if the difference is greater than the set threshold, the server will then do one of the following actions based on the current situation:
+  #Handles all game logic related to maintaining the sweepelite game and broadcasting to all users. Every tick it compares the current time to the last broadcast timestamp and if the difference is greater than the set threshold, the server will then do one of the following actions based on the current situation:
     #If the game should resolve its actions based on time going past the resolution threshold, the server will resolve all actions for its current game.
     #Or else if there are players in the backlog who require a full update on the current game, the server will compile that information and broadcast it to the appropriate players.
     #Or else if the previous game is null or complete and after the alotted time, we create a new game and push all users to the full update backlog.
@@ -374,7 +374,7 @@ class multisweeperServer extends WebSocketServer {
 
 #This code here runs the server.
 
-$server = new multisweeperServer("0.0.0.0","13002");
+$server = new sweepeliteServer("0.0.0.0","13002");
 
 foreach ($argv as $arg) {
   if ($arg === "-debug") {

@@ -5,7 +5,7 @@
 #These get inserted into the action queue, then the player status for that game is updated so that we are no longer waiting for an action from the player specified.
 #If all players in the game who are alive have then submitted actions, the game is updated via the action queue.
 
-require_once($_SERVER['DOCUMENT_ROOT'] . '/multisweeper/php/constants/databaseConstants.php');
+require_once($_SERVER['DOCUMENT_ROOT'] . '/sweepelite/php/constants/databaseConstants.php');
 
 #submitAction($playerID, $gameID, $xml)
 #Takes in an XML describing an action from the player specified for the game specified. This action is then parsed and inserted into the action queue.
@@ -30,7 +30,7 @@ function submitAction($playerID, $gameID, $xml) {
 			}
 
 			#Delete any previous actions from this player
-			if ($deleteStmt = $conn->prepare("DELETE FROM multisweeper.actionqueue WHERE playerID=? AND gameID=?")) {
+			if ($deleteStmt = $conn->prepare("DELETE FROM sweepelite.actionqueue WHERE playerID=? AND gameID=?")) {
 				$deleteStmt->bind_param("ii", $xml->playerID, $gameID);
 				$deleteStmt->execute();
 				$deleteStmt->close();
@@ -39,7 +39,7 @@ function submitAction($playerID, $gameID, $xml) {
 			}
 
 			#Check if player can actually submit actions or not
-			if ($openGameStmt = $conn->prepare("SELECT status FROM multisweeper.games WHERE gameID=?")) {
+			if ($openGameStmt = $conn->prepare("SELECT status FROM sweepelite.games WHERE gameID=?")) {
 				$openGameStmt->bind_param("i", $gameID);
 				$openGameStmt->execute();
 				$openGameStmt->bind_result($gameStatus);
@@ -47,7 +47,7 @@ function submitAction($playerID, $gameID, $xml) {
 				$openGameStmt->close();
 
 				if ($gameStatus === "OPEN") {
-					if ($aliveStmt = $conn->prepare("SELECT COUNT(*) FROM multisweeper.playerstatus WHERE gameID=? AND playerID=? AND status!=0")) {
+					if ($aliveStmt = $conn->prepare("SELECT COUNT(*) FROM sweepelite.playerstatus WHERE gameID=? AND playerID=? AND status!=0")) {
 						$aliveStmt->bind_param("ii", $gameID, $playerID);
 						$aliveStmt->execute();
 						$aliveStmt->bind_result($count);
@@ -56,7 +56,7 @@ function submitAction($playerID, $gameID, $xml) {
 
 						if ($count > 0) {
 							#Add the current action they have queued up instead.
-							if ($insertStmt = $conn->prepare("INSERT INTO multisweeper.actionqueue (playerID, gameID, xCoord, yCoord, actionType) VALUES (?, ?, ?, ?, ?)")) {
+							if ($insertStmt = $conn->prepare("INSERT INTO sweepelite.actionqueue (playerID, gameID, xCoord, yCoord, actionType) VALUES (?, ?, ?, ?, ?)")) {
 								$insertStmt->bind_param("iiiii", $playerID, $gameID, $xml->xCoord, $xml->yCoord, $xml->actionType);
 								$updated = $insertStmt->execute();
 								if (!$updated) {
@@ -68,7 +68,7 @@ function submitAction($playerID, $gameID, $xml) {
 									$error = $result->addChild('action', "Action submitted!");
 									
 									#Update current player status to set current player's action awaiting status to false
-									if ($updateStmt = $conn->prepare("UPDATE multisweeper.playerstatus SET awaitingAction=0 WHERE playerID=? AND gameID=?")) {
+									if ($updateStmt = $conn->prepare("UPDATE sweepelite.playerstatus SET awaitingAction=0 WHERE playerID=? AND gameID=?")) {
 										$updateStmt->bind_param("ii", $playerID, $gameID);
 										$updateStmt->execute();
 										$updateStmt->close();
@@ -84,7 +84,7 @@ function submitAction($playerID, $gameID, $xml) {
 							error_log("submitAction.php - Player not allowed to submit actions.");
 
 							#Find out why player is not allowed to submit actions.
-							if ($deadStmt = $conn->prepare("SELECT COUNT(*) FROM multisweeper.playerstatus WHERE gameID=? AND playerID=? AND status=0")) {
+							if ($deadStmt = $conn->prepare("SELECT COUNT(*) FROM sweepelite.playerstatus WHERE gameID=? AND playerID=? AND status=0")) {
 								$deadStmt->bind_param("ii", $xml->playerID, $gameID);
 								$deadStmt->execute();
 								$deadStmt->bind_result($count);

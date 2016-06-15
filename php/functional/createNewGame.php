@@ -2,10 +2,10 @@
 
 #This file creates a new game, uploads it to the MySQL database, and then adds all players currently signed up for it to the playerStatus table.
 
-require_once($_SERVER['DOCUMENT_ROOT'] . '/multisweeper/php/constants/databaseConstants.php');
-require_once($_SERVER['DOCUMENT_ROOT'] . '/multisweeper/php/constants/mineGameConstants.php');
-require_once($_SERVER['DOCUMENT_ROOT'] . '/multisweeper/php/functional/minefieldPopulater.php');
-require_once($_SERVER['DOCUMENT_ROOT'] . '/multisweeper/php/functional/translateData.php');
+require_once($_SERVER['DOCUMENT_ROOT'] . '/sweepelite/php/constants/databaseConstants.php');
+require_once($_SERVER['DOCUMENT_ROOT'] . '/sweepelite/php/constants/mineGameConstants.php');
+require_once($_SERVER['DOCUMENT_ROOT'] . '/sweepelite/php/functional/minefieldPopulater.php');
+require_once($_SERVER['DOCUMENT_ROOT'] . '/sweepelite/php/functional/translateData.php');
 
 #createNewDefaultGame()
 #Returns a newly created game with the generic starting stats.
@@ -34,7 +34,7 @@ function createNewGame($width, $height, $numMines) {
 	}
 
 	#Deletes all variables for upcoming game times.
-	if ($deleteTimeStmt = $conn->prepare("DELETE FROM multisweeper.globalvars WHERE k='nextGameTime'")) {
+	if ($deleteTimeStmt = $conn->prepare("DELETE FROM sweepelite.globalvars WHERE k='nextGameTime'")) {
 		$deleteTimeStmt->execute();
 		$deleteTimeStmt->close();
 	} else {
@@ -42,7 +42,7 @@ function createNewGame($width, $height, $numMines) {
 	}
 
 	#Retrieve all players currently in the sign-up queue and create statuses for them.
-	if ($playerStmt = $conn->prepare("SELECT playerID FROM multisweeper.upcomingsignup")) {
+	if ($playerStmt = $conn->prepare("SELECT playerID FROM sweepelite.upcomingsignup")) {
 		$playerIDs = array();
 		$playerStmt->execute();
 		$playerStmt->bind_result($curID);
@@ -68,7 +68,7 @@ function createNewGame($width, $height, $numMines) {
 		$visibility = str_pad("", strlen($result), "0");
 
 		#Attempt to upload the newly created game into the MySQL database.
-		if ($insertStmt = $conn->prepare("INSERT INTO multisweeper.games (map, visibility, height, width, status) VALUES (?,?,?,?,'OPEN')")) {
+		if ($insertStmt = $conn->prepare("INSERT INTO sweepelite.games (map, visibility, height, width, status) VALUES (?,?,?,?,'OPEN')")) {
 			$insertStmt->bind_param("ssii", $result, $visibility, $height, $width);
 			$inserted = $insertStmt->execute();
 		
@@ -76,7 +76,7 @@ function createNewGame($width, $height, $numMines) {
 				$insertStmt->close();
 
 				#Retrieve the unique ID of the game just uploaded to the MySQL database.
-				if ($idStmt = $conn->prepare("SELECT gameID FROM multisweeper.games WHERE map=? AND status='OPEN' LIMIT 1")) {
+				if ($idStmt = $conn->prepare("SELECT gameID FROM sweepelite.games WHERE map=? AND status='OPEN' LIMIT 1")) {
 					$idStmt->bind_param("s", $result);
 					$idStmt->execute();
 					$idStmt->bind_result($gameID);
@@ -85,7 +85,7 @@ function createNewGame($width, $height, $numMines) {
 
 					if ($gameID !== null) {
 						#Upload all created statuses to the database.
-						if ($statusStmt = $conn->prepare("INSERT INTO multisweeper.playerstatus (gameID, playerID, trapType, awaitingAction) VALUES (?, ?, ?, 1)")) {
+						if ($statusStmt = $conn->prepare("INSERT INTO sweepelite.playerstatus (gameID, playerID, trapType, awaitingAction) VALUES (?, ?, ?, 1)")) {
 							for ($i=0; $i < count($playerIDs); $i++) { 
 								$trapID = ($gameID + $playerIDs[$i]) % $numTraps;
 								$statusStmt->bind_param("iii", $gameID, $playerIDs[$i], $trapID);
@@ -94,7 +94,7 @@ function createNewGame($width, $height, $numMines) {
 							$statusStmt->close();
 
 							#Delete everyone from the sign-up queue.
-							if ($deleteStmt = $conn->prepare("TRUNCATE multisweeper.upcomingsignup")) {
+							if ($deleteStmt = $conn->prepare("TRUNCATE sweepelite.upcomingsignup")) {
 								#$deleteStmt->execute();
 								$deleteStmt->close();
 

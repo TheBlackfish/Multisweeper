@@ -2,7 +2,7 @@
 
 #This file takes an input containing chat message information and uploads it to the server.
 
-require_once($_SERVER['DOCUMENT_ROOT'] . '/multisweeper/php/constants/databaseConstants.php');
+require_once($_SERVER['DOCUMENT_ROOT'] . '/sweepelite/php/constants/databaseConstants.php');
 
 #submitGameChat($playerID, $xml)
 #Takes the chat message described in the XML provided and uploads it to the database.
@@ -21,7 +21,7 @@ function submitGameChat($playerID, $xml) {
 				die("submitGameChat.php - Connection failed: " . $conn->connect_error);
 			}
 
-			if ($chatQuery = $conn->prepare("INSERT INTO multisweeper.chatmessages (playerID, message, time) VALUES (?, ?, NOW())")) {
+			if ($chatQuery = $conn->prepare("INSERT INTO sweepelite.chatmessages (playerID, message, time) VALUES (?, ?, NOW())")) {
 				$chatQuery->bind_param("is", $playerID, $xml->msg);
 				$chatQuery->execute();
 				$chatQuery->close();

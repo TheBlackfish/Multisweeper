@@ -1,7 +1,7 @@
 <?php
 
-require_once($_SERVER['DOCUMENT_ROOT'] . '/multisweeper/php/constants/mineGameConstants.php');
-require_once($_SERVER['DOCUMENT_ROOT'] . '/multisweeper/php/functional/updateWrecks.php');
+require_once($_SERVER['DOCUMENT_ROOT'] . '/sweepelite/php/constants/mineGameConstants.php');
+require_once($_SERVER['DOCUMENT_ROOT'] . '/sweepelite/php/functional/updateWrecks.php');
 
 #addFriendlyTank($map, $visibility)
 #Adds a friendly tank to the leftmost column to the map provided. This addition will never go onto a visible mine or flags, and will try 3 times to not place on an unrevealed mine. If not possible, the tank will be placed on a random row instead, regardless of mines or flags.

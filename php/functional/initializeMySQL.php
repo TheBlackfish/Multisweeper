@@ -2,8 +2,8 @@
 
 #This file holds all functionality related to initializing the MySQL server for usage, as well as confirmation of said initialization.
 
-require_once($_SERVER['DOCUMENT_ROOT'] . '/multisweeper/php/constants/databaseConstants.php');
-require_once($_SERVER['DOCUMENT_ROOT'] . '/multisweeper/php/functional/security.php');
+require_once($_SERVER['DOCUMENT_ROOT'] . '/sweepelite/php/constants/databaseConstants.php');
+require_once($_SERVER['DOCUMENT_ROOT'] . '/sweepelite/php/functional/security.php');
 
 #checkMySQL()
 #Checks the global variables table to see if MySQL has been fully initialized. If not, will call initMySQL().
@@ -15,7 +15,7 @@ function checkMySQL() {
 		die("Connection failed: " . $conn->connect_error);
 	}
 
-	if ($query = $conn->prepare("SELECT v FROM multisweeper.globalvars WHERE k=?")) {
+	if ($query = $conn->prepare("SELECT v FROM sweepelite.globalvars WHERE k=?")) {
 		$var = "mysqlInitialized";
 		$query->bind_param("s", $var);
 		$query->execute();
@@ -44,7 +44,7 @@ function initMySQL() {
 		die("initMySQL.php - Connection failed: " . $conn->connect_error);
 	}
 
-	$actionTableStatement = "CREATE TABLE IF NOT EXISTS multisweeper.actionqueue (
+	$actionTableStatement = "CREATE TABLE IF NOT EXISTS sweepelite.actionqueue (
 		`gameID` int(11) NOT NULL, 
 		`playerID` int(11) NOT NULL, 
 		`actionType` int(2) NOT NULL, 
@@ -56,7 +56,7 @@ function initMySQL() {
 		CONSTRAINT `playerIDx` FOREIGN KEY (`playerID`) REFERENCES `players` (`playerID`) ON DELETE CASCADE ON UPDATE CASCADE
 	)";
 
-	$chatTableStatement = "CREATE TABLE IF NOT EXISTS multisweeper.chatmessages (
+	$chatTableStatement = "CREATE TABLE IF NOT EXISTS sweepelite.chatmessages (
 		`playerID` int(11) NOT NULL, 
 		`message` varchar(500) NOT NULL DEFAULT 'ERROR', 
 		`time` datetime NOT NULL, 
@@ -64,7 +64,7 @@ function initMySQL() {
 		KEY `playerID_idx` (`playerID`), CONSTRAINT `chatPlayerID` FOREIGN KEY (`playerID`) REFERENCES `players` (`playerID`) ON DELETE CASCADE ON UPDATE CASCADE
 	)";
 
-	$gameTableStatement = "CREATE TABLE multisweeper.games (
+	$gameTableStatement = "CREATE TABLE sweepelite.games (
 	  	`gameID` int(11) NOT NULL AUTO_INCREMENT,
   		`map` varchar(20000) NOT NULL,
   		`visibility` varchar(20000) NOT NULL,
@@ -83,13 +83,13 @@ function initMySQL() {
 	  	PRIMARY KEY (`gameID`)
 	)";
 
-	$globalTableStatement = "CREATE TABLE IF NOT EXISTS multisweeper.globalvars (
+	$globalTableStatement = "CREATE TABLE IF NOT EXISTS sweepelite.globalvars (
 		`k` varchar(60) NOT NULL, 
 		`v` varchar(60) NOT NULL, 
 		UNIQUE KEY `key_UNIQUE` (`k`)
 	)";
 
-	$playerTableStatement = "CREATE TABLE IF NOT EXISTS multisweeper.players (
+	$playerTableStatement = "CREATE TABLE IF NOT EXISTS sweepelite.players (
 		`playerID` INT(11) NOT NULL AUTO_INCREMENT, 
 		`username` VARCHAR(45) NOT NULL, 
 		`password` varchar(128) NOT NULL,
@@ -102,16 +102,16 @@ function initMySQL() {
 	$fakePassword = bin2hex(mcrypt_create_iv(16, MCRYPT_DEV_URANDOM));
 	$fakeSalt = sec_getNewSalt();
 
-	$highestScoreStatement = "INSERT INTO multisweeper.players (username, password, salt, totalScore) VALUES ('highestScore', " . sec_getHashedValue($fakePassword, $fakeSalt) . ", " . $fakeSalt . ", 1000)";
+	$highestScoreStatement = "INSERT INTO sweepelite.players (username, password, salt, totalScore) VALUES ('highestScore', " . sec_getHashedValue($fakePassword, $fakeSalt) . ", " . $fakeSalt . ", 1000)";
 
-	$signupTableStatement = "CREATE TABLE IF NOT EXISTS multisweeper.upcomingsignup (
+	$signupTableStatement = "CREATE TABLE IF NOT EXISTS sweepelite.upcomingsignup (
 		`playerID` int(11) NOT NULL,
  		UNIQUE KEY `playerID_UNIQUE` (`playerID`),
   		KEY `playerIDy_idx` (`playerID`),
   		CONSTRAINT `playerIDy` FOREIGN KEY (`playerID`) REFERENCES `players` (`playerID`) ON DELETE CASCADE ON UPDATE CASCADE
 	)";
 
-	$statusTableStatement = "CREATE TABLE multisweeper.playerstatus (
+	$statusTableStatement = "CREATE TABLE sweepelite.playerstatus (
 		`status` int(2) NOT NULL DEFAULT '1',
 		`awaitingAction` bit(1) NOT NULL,
 		`gameID` int(11) NOT NULL,
@@ -280,7 +280,7 @@ function initMySQL() {
 	}
 
 	if ($noErrors) {
-		if ($query = $conn->prepare("INSERT INTO `multisweeper`.`globalvars` (k, v) VALUES (?, ?)")) {
+		if ($query = $conn->prepare("INSERT INTO `sweepelite`.`globalvars` (k, v) VALUES (?, ?)")) {
 			$str_one = "mysqlInitialized";
 			$str_two = "true";
 			$query->bind_param("ss", $str_one, $str_two);

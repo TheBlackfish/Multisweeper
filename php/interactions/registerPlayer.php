@@ -2,8 +2,8 @@
 
 #This file takes the registration information for a new player passed to it and attempts to create that player in the MySQL database.
 
-require_once($_SERVER['DOCUMENT_ROOT'] . '/multisweeper/php/constants/databaseConstants.php');
-require_once($_SERVER['DOCUMENT_ROOT'] . '/multisweeper/php/functional/security.php');
+require_once($_SERVER['DOCUMENT_ROOT'] . '/sweepelite/php/constants/databaseConstants.php');
+require_once($_SERVER['DOCUMENT_ROOT'] . '/sweepelite/php/functional/security.php');
 
 #registerPlayer($xml)
 #Takes a login credentials for a new player and registers them in the player database.
@@ -38,7 +38,7 @@ function registerPlayer($xml) {
 			}
 
 			#Check if username already taken
-			if ($checkStmt = $conn->prepare("SELECT COUNT(*) FROM multisweeper.players WHERE username=?")) {
+			if ($checkStmt = $conn->prepare("SELECT COUNT(*) FROM sweepelite.players WHERE username=?")) {
 				$checkStmt->bind_param("s", $xml->username);
 				$checkStmt->execute();
 				$checkStmt->bind_result($count);
@@ -46,7 +46,7 @@ function registerPlayer($xml) {
 
 				if ($count == 0) {
 					#Register the player in the MySQL database.
-					if ($registerStmt = $conn->prepare("INSERT INTO multisweeper.players (username, password, salt) VALUES (?,?,?)")) {
+					if ($registerStmt = $conn->prepare("INSERT INTO sweepelite.players (username, password, salt) VALUES (?,?,?)")) {
 
 						$salt = sec_getNewSalt();
 						$saltedPW = sec_getHashedValue($xml->password, $salt);

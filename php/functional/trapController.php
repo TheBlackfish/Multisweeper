@@ -13,8 +13,8 @@
 		#Activates when there is a tank within the line in front of it.
 		#Destroys all tanks in front of it and leaves wreckages at the end of the map.
 
-require_once($_SERVER['DOCUMENT_ROOT'] . '/multisweeper/php/constants/mineGameConstants.php');
-require_once($_SERVER['DOCUMENT_ROOT'] . '/multisweeper/php/functional/updateWrecks.php');
+require_once($_SERVER['DOCUMENT_ROOT'] . '/sweepelite/php/constants/mineGameConstants.php');
+require_once($_SERVER['DOCUMENT_ROOT'] . '/sweepelite/php/functional/updateWrecks.php');
 
 #addTrap($traps, $type, $x, $y)
 #Updates the trap array provided with the new trap.

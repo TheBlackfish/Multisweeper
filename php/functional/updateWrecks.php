@@ -3,7 +3,7 @@
 #This file contains all of the functionality relating to wreckages.
 #All wreckages are stored in a double array as coordinates.
 
-require_once($_SERVER['DOCUMENT_ROOT'] . '/multisweeper/php/constants/mineGameConstants.php');
+require_once($_SERVER['DOCUMENT_ROOT'] . '/sweepelite/php/constants/mineGameConstants.php');
 
 #addWreck($map, $allWrecks, $sourceCoordinates)
 #Adds a wreckage to the map randomly one space away from the source coordinates provided.

@@ -2,7 +2,7 @@
 
 #This file contains functionality relating to retrieving game ID's.
 
-require_once($_SERVER['DOCUMENT_ROOT'] . '/multisweeper/php/constants/databaseConstants.php');
+require_once($_SERVER['DOCUMENT_ROOT'] . '/sweepelite/php/constants/databaseConstants.php');
 
 #getLatestGameID()
 #Retrieves the most recent game ID from the MySQL database.
@@ -16,7 +16,7 @@ function getLatestGameID() {
 	}
 
 	#Select all information about the game from the game's status columns in the MySQL database and parse it into XML form. 
-	if ($query = $conn->prepare("SELECT gameID FROM multisweeper.games ORDER BY gameID DESC LIMIT 1")) {
+	if ($query = $conn->prepare("SELECT gameID FROM sweepelite.games ORDER BY gameID DESC LIMIT 1")) {
 		$gameID = null;
 		$query->execute();
 		$query->bind_result($gameID);

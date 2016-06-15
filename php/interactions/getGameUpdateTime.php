@@ -2,7 +2,7 @@
 
 #This file contains functionality relating to retrieving the last updated time for game updates.
 
-require_once($_SERVER['DOCUMENT_ROOT'] . '/multisweeper/php/constants/databaseConstants.php');
+require_once($_SERVER['DOCUMENT_ROOT'] . '/sweepelite/php/constants/databaseConstants.php');
 
 #getGameUpdateTime($gameID)
 #Returns the most recent Unix timestamp of the game requested.
@@ -17,7 +17,7 @@ function getGameUpdateTime($gameID) {
 	}
 
 	#Select all information about the game from the game's status columns in the MySQL database and parse it into XML form. 
-	if ($query = $conn->prepare("SELECT UNIX_TIMESTAMP(lastUpdated) FROM multisweeper.games WHERE gameID=?")) {
+	if ($query = $conn->prepare("SELECT UNIX_TIMESTAMP(lastUpdated) FROM sweepelite.games WHERE gameID=?")) {
 		$lastUpdated = null;
 
 		$query->bind_param("i", $gameID);

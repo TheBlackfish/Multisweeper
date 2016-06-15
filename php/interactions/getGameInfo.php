@@ -2,11 +2,11 @@
 
 #This file returns the most recent game's information to the user.
 
-require_once($_SERVER['DOCUMENT_ROOT'] . '/multisweeper/php/constants/databaseConstants.php');
-require_once($_SERVER['DOCUMENT_ROOT'] . '/multisweeper/php/functional/initializeMySQL.php');
-require_once($_SERVER['DOCUMENT_ROOT'] . '/multisweeper/php/functional/medalController.php');
-require_once($_SERVER['DOCUMENT_ROOT'] . '/multisweeper/php/functional/minefieldController.php');
-require_once($_SERVER['DOCUMENT_ROOT'] . '/multisweeper/php/functional/translateData.php');
+require_once($_SERVER['DOCUMENT_ROOT'] . '/sweepelite/php/constants/databaseConstants.php');
+require_once($_SERVER['DOCUMENT_ROOT'] . '/sweepelite/php/functional/initializeMySQL.php');
+require_once($_SERVER['DOCUMENT_ROOT'] . '/sweepelite/php/functional/medalController.php');
+require_once($_SERVER['DOCUMENT_ROOT'] . '/sweepelite/php/functional/minefieldController.php');
+require_once($_SERVER['DOCUMENT_ROOT'] . '/sweepelite/php/functional/translateData.php');
 
 #getGameInfo($gameID, $lastUpdated, $ignoreUpdateTime)
 #Retrieves relevant information about the game specified by $gameID since the Unix timestamp provided. This information comes back as a formatted XML.
@@ -27,7 +27,7 @@ function getGameInfo($gameID, $lastUpdated = 0, $ignoreUpdateTime = false) {
 		return "";
 	}
 
-	if ($timeStmt = $conn->prepare("SELECT UNIX_TIMESTAMP(lastUpdated), fullUpdate FROM multisweeper.games WHERE gameID = ?")) {
+	if ($timeStmt = $conn->prepare("SELECT UNIX_TIMESTAMP(lastUpdated), fullUpdate FROM sweepelite.games WHERE gameID = ?")) {
 		$updatedTime = null;
 		$timeStmt->bind_param("i", $gameID);
 		$timeStmt->execute();
@@ -44,7 +44,7 @@ function getGameInfo($gameID, $lastUpdated = 0, $ignoreUpdateTime = false) {
 
 				if ($fullUpdate || $ignoreUpdateTime) {
 					#Select all information about the game from the game's status columns in the MySQL database and parse it into XML form. 
-					if ($query = $conn->prepare("SELECT map, visibility, friendlyTanks, enemyTanks, wrecks, traps, height, width, status FROM multisweeper.games WHERE gameID = ?")) {
+					if ($query = $conn->prepare("SELECT map, visibility, friendlyTanks, enemyTanks, wrecks, traps, height, width, status FROM sweepelite.games WHERE gameID = ?")) {
 						$query->bind_param("i", $gameID);
 						$query->execute();
 						$query->bind_result($map, $vis, $friendlyTanks, $enemyTanks, $wrecks, $traps, $height, $width, $status);
@@ -93,14 +93,14 @@ function getGameInfo($gameID, $lastUpdated = 0, $ignoreUpdateTime = false) {
 							}
 						}
 						
-						if ($hsStmt = $conn->prepare("SELECT MAX(totalScore) FROM multisweeper.players")) {
+						if ($hsStmt = $conn->prepare("SELECT MAX(totalScore) FROM sweepelite.players")) {
 							$hsStmt->execute();
 							$hsStmt->bind_result($hs);
 							$hsStmt->fetch();
 							$hsStmt->close();
 
 							#Add all players in the game and their statuses to the XML.
-							if ($playerQuery = $conn->prepare("SELECT p.username, p.playerID, s.status, s.trapType, s.trapCooldown, s.digNumber, p.totalScore FROM multisweeper.players as p INNER JOIN multisweeper.playerstatus as s ON p.playerID=s.playerID WHERE s.gameID=?")) {
+							if ($playerQuery = $conn->prepare("SELECT p.username, p.playerID, s.status, s.trapType, s.trapCooldown, s.digNumber, p.totalScore FROM sweepelite.players as p INNER JOIN sweepelite.playerstatus as s ON p.playerID=s.playerID WHERE s.gameID=?")) {
 								$playerQuery->bind_param("i", $gameID);
 								$playerQuery->execute();
 								$playerQuery->bind_result($user, $currentID, $status, $trapType, $trapCooldown, $digNumber, $totalScore);
@@ -137,7 +137,7 @@ function getGameInfo($gameID, $lastUpdated = 0, $ignoreUpdateTime = false) {
 
 								$playerQuery->close();
 
-								if ($gameTimeStmt = $conn->prepare("SELECT v FROM multisweeper.globalvars WHERE k='nextGameTime'")) {
+								if ($gameTimeStmt = $conn->prepare("SELECT v FROM sweepelite.globalvars WHERE k='nextGameTime'")) {
 									$gameTimeStmt->execute();
 									$gameTimeStmt->bind_result($time);
 									while ($gameTimeStmt->fetch()) {
@@ -156,7 +156,7 @@ function getGameInfo($gameID, $lastUpdated = 0, $ignoreUpdateTime = false) {
 						}						
 
 						if (!$ignoreUpdateTime) {
-							if ($updateQuery = $conn->prepare("UPDATE multisweeper.games SET fullUpdate=0 WHERE gameID=?")) {
+							if ($updateQuery = $conn->prepare("UPDATE sweepelite.games SET fullUpdate=0 WHERE gameID=?")) {
 								$updateQuery->bind_param("i", $gameID);
 								$updateQuery->execute();
 								$updateQuery->close();

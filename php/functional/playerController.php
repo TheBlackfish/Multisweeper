@@ -12,8 +12,8 @@
 	#correctFlags - How many planted flags were correct.
 	#score - The score of the player.
 
-require_once($_SERVER['DOCUMENT_ROOT'] . '/multisweeper/php/constants/databaseConstants.php');
-require_once($_SERVER['DOCUMENT_ROOT'] . '/multisweeper/php/functional/medalController.php');
+require_once($_SERVER['DOCUMENT_ROOT'] . '/sweepelite/php/constants/databaseConstants.php');
+require_once($_SERVER['DOCUMENT_ROOT'] . '/sweepelite/php/functional/medalController.php');
 
 #getPlayersForGame($gameID)
 #This function compiles all player information relating to the game provided into the standard player information array.
@@ -30,7 +30,7 @@ function getPlayersForGame($gameID) {
 
 	$ret = array();
 
-	if ($playerStmt = $conn->prepare("SELECT s.status, p.playerID, s.afkCount, s.trapType, s.trapCooldown, s.digNumber, s.correctFlags FROM multisweeper.players as p INNER JOIN multisweeper.playerstatus as s ON p.playerID=s.playerID WHERE s.gameID=?")) {
+	if ($playerStmt = $conn->prepare("SELECT s.status, p.playerID, s.afkCount, s.trapType, s.trapCooldown, s.digNumber, s.correctFlags FROM sweepelite.players as p INNER JOIN sweepelite.playerstatus as s ON p.playerID=s.playerID WHERE s.gameID=?")) {
 		$playerStmt->bind_param("i", $gameID);
 		$playerStmt->execute();
 		$playerStmt->bind_result($status, $playerID, $afkCount, $trapType, $trapCooldown, $digNumber, $correctFlags);
@@ -172,7 +172,7 @@ function savePlayersForGame($data, $gameID) {
 		die("playerController.php - Connection failed: " . $conn->connect_error);
 	}
 
-	if ($saveStmt = $conn->prepare("UPDATE multisweeper.playerStatus SET status=?, afkCount=?, trapCooldown=?, digNumber=?, correctFlags=? WHERE gameID=? AND playerID=?")) {
+	if ($saveStmt = $conn->prepare("UPDATE sweepelite.playerStatus SET status=?, afkCount=?, trapCooldown=?, digNumber=?, correctFlags=? WHERE gameID=? AND playerID=?")) {
 		foreach ($data as $playerID => $player) {
 			$status = 0;
 
@@ -218,7 +218,7 @@ function forcePlayerAFK($gameID, $playerID) {
 		die("playerController.php - Connection failed: " . $conn->connect_error);
 	}
 
-	if ($saveStmt = $conn->prepare("UPDATE multisweeper.playerStatus SET status=2, afkCount=3 WHERE gameID=? AND playerID=?")) {
+	if ($saveStmt = $conn->prepare("UPDATE sweepelite.playerStatus SET status=2, afkCount=3 WHERE gameID=? AND playerID=?")) {
 		$saveStmt->bind_param("ii", $gameID, $playerID);
 		$saveStmt->execute();
 		$saveStmt->close();
@@ -242,7 +242,7 @@ function savePlayerScores($data) {
 		die("playerController.php - Connection failed: " . $conn->connect_error);
 	}
 
-	if ($scoreStmt=$conn->prepare("UPDATE multisweeper.players SET totalScore=totalScore+? WHERE playerID=?")) {
+	if ($scoreStmt=$conn->prepare("UPDATE sweepelite.players SET totalScore=totalScore+? WHERE playerID=?")) {
 		foreach ($data as $playerID => $player) {
 			$playerScore = 0;
 			$playerMedals = calculateMedalAttributesForPlayer($player['digNumber']);

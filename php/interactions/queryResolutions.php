@@ -2,7 +2,7 @@
 
 #This file handles querying for automatic action resolutions.
 
-require_once($_SERVER['DOCUMENT_ROOT'] . '/multisweeper/php/constants/databaseConstants.php');
+require_once($_SERVER['DOCUMENT_ROOT'] . '/sweepelite/php/constants/databaseConstants.php');
 
 #queryResolutions($gameID)
 #Checks if any more players need to submit actions for the game ID provided.
@@ -17,7 +17,7 @@ function queryResolutions($gameID) {
 		return -1;
 	}
 
-	if ($statusStmt = $conn->prepare("SELECT status, awaitingAction FROM multisweeper.playerstatus WHERE gameID=?")) {
+	if ($statusStmt = $conn->prepare("SELECT status, awaitingAction FROM sweepelite.playerstatus WHERE gameID=?")) {
 		$allActed = true;
 
 		$statusStmt->bind_param("i", $gameID);

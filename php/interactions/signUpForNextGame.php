@@ -2,7 +2,7 @@
 
 #This file takes a player's log-in information and registers the player for the next game.
 
-require_once($_SERVER['DOCUMENT_ROOT'] . '/multisweeper/php/constants/databaseConstants.php');
+require_once($_SERVER['DOCUMENT_ROOT'] . '/sweepelite/php/constants/databaseConstants.php');
 
 #signUpForNextGame($playerID)
 #Inserts the player specified into the next game.
@@ -16,7 +16,7 @@ function signUpForNextGame($playerID) {
 		return false;
 	}
 
-	if ($insertStmt = $conn->prepare("INSERT IGNORE INTO multisweeper.upcomingsignup (playerID) VALUES (?)")) {
+	if ($insertStmt = $conn->prepare("INSERT IGNORE INTO sweepelite.upcomingsignup (playerID) VALUES (?)")) {
 		$insertStmt->bind_param("i", $playerID);
 		$insertStmt->execute();
 		$insertStmt->close();

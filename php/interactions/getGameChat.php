@@ -2,7 +2,7 @@
 
 #This file returns the most recent chat messages to the client.
 
-require_once($_SERVER['DOCUMENT_ROOT'] . '/multisweeper/php/constants/databaseConstants.php');
+require_once($_SERVER['DOCUMENT_ROOT'] . '/sweepelite/php/constants/databaseConstants.php');
 
 #getGameChat($lastUpdateTime, $ignoreUpdateTime)
 #Returns the XML containing all of the chat messages entered since the last update time parameter.
@@ -28,7 +28,7 @@ function getGameChat($lastUpdateTime = 0, $ignoreUpdateTime = false) {
 	$compDate->setTimestamp($lastUpdateTime);
 	$compDate = $compDate->format('Y-m-d H:i:s');
 
-	if ($query = $conn->prepare("SELECT b.username, a.message, a.forCurrentGame FROM multisweeper.chatmessages as a INNER JOIN multisweeper.players as b ON a.playerID = b.playerID WHERE a.time > ? ORDER BY a.time DESC LIMIT 50")) {
+	if ($query = $conn->prepare("SELECT b.username, a.message, a.forCurrentGame FROM sweepelite.chatmessages as a INNER JOIN sweepelite.players as b ON a.playerID = b.playerID WHERE a.time > ? ORDER BY a.time DESC LIMIT 50")) {
 		$query->bind_param("s", $compDate);
 		$query->execute();
 		$query->bind_result($username, $message, $isCurrent);

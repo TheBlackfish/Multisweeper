@@ -2,7 +2,7 @@
 
 #This file contains functionality relating to retrieving the last updated time for chat messages.
 
-require_once($_SERVER['DOCUMENT_ROOT'] . '/multisweeper/php/constants/databaseConstants.php');
+require_once($_SERVER['DOCUMENT_ROOT'] . '/sweepelite/php/constants/databaseConstants.php');
 
 #getChatUpdateTime()
 #Returns the most recent Unix timestamp of chat messages.
@@ -16,7 +16,7 @@ function getChatUpdateTime() {
 	}
 
 	#Select all information about the game from the game's status columns in the MySQL database and parse it into XML form. 
-	if ($query = $conn->prepare("SELECT UNIX_TIMESTAMP(time) FROM multisweeper.chatmessages ORDER BY time DESC LIMIT 1")) {
+	if ($query = $conn->prepare("SELECT UNIX_TIMESTAMP(time) FROM sweepelite.chatmessages ORDER BY time DESC LIMIT 1")) {
 		$lastUpdated = null;
 
 		$query->execute();

@@ -1,6 +1,6 @@
 <?php
 
-require_once($_SERVER['DOCUMENT_ROOT'] . '/multisweeper/php/functional/minefieldPopulater.php'); 
+require_once($_SERVER['DOCUMENT_ROOT'] . '/sweepelite/php/functional/minefieldPopulater.php'); 
 
 #expandMinefield($minefield, $visibility, $widthToAdd, $minesToAdd)
 #Takes the given parameters and expands the minefield given to have its original width plus the width to add.
