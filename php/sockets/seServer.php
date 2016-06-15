@@ -103,6 +103,7 @@ class sweepeliteServer extends WebSocketServer {
         if (isset($parsedMsg->registration)) {
           #Call registerPlayer.php
           $registered = registerPlayer($parsedMsg->registration);
+          array_push($this->fullUpdateBacklog, $user);
         }
 
         if ($registered) {
