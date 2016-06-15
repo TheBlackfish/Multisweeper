@@ -93,39 +93,67 @@ function getGameInfo($gameID, $lastUpdated = 0, $ignoreUpdateTime = false) {
 							}
 						}
 						
-						#Add all players in the game and their statuses to the XML.
-						if ($playerQuery = $conn->prepare("SELECT p.username, p.playerID, s.status, s.trapType, s.trapCooldown, s.digNumber FROM multisweeper.players as p INNER JOIN multisweeper.playerstatus as s ON p.playerID=s.playerID WHERE s.gameID=?")) {
-							$playerQuery->bind_param("i", $gameID);
-							$playerQuery->execute();
-							$playerQuery->bind_result($user, $currentID, $status, $trapType, $trapCooldown, $digNumber);
+						if ($hsStmt = $conn->prepare("SELECT MAX(totalScore) FROM multisweeper.players")) {
+							$hsStmt->execute();
+							$hsStmt->bind_result($hs);
+							$hsStmt->fetch();
+							$hsStmt->close();
 
-							$ret->addChild('players');
+							#Add all players in the game and their statuses to the XML.
+							if ($playerQuery = $conn->prepare("SELECT p.username, p.playerID, s.status, s.trapType, s.trapCooldown, s.digNumber, p.totalScore FROM multisweeper.players as p INNER JOIN multisweeper.playerstatus as s ON p.playerID=s.playerID WHERE s.gameID=?")) {
+								$playerQuery->bind_param("i", $gameID);
+								$playerQuery->execute();
+								$playerQuery->bind_result($user, $currentID, $status, $trapType, $trapCooldown, $digNumber, $totalScore);
 
-							while ($playerQuery->fetch()) {
-								$playerInfo = $ret->players->addChild('player', $user);
-								$playerInfo->addAttribute('status', $status);
-								$playerInfo->addAttribute('trapType', $trapType);
-								$playerInfo->addAttribute('trapCooldown', $trapCooldown);
+								$ret->addChild('players');
 
-								$medals = calculateMedalAttributesForPlayer($digNumber);
-								$playerInfo->addAttribute('digMedal', $medals['digMedal']);
-							}
+								while ($playerQuery->fetch()) {
+									$playerInfo = $ret->players->addChild('player', $user);
+									$playerInfo->addAttribute('status', $status);
+									$playerInfo->addAttribute('trapType', $trapType);
+									$playerInfo->addAttribute('trapCooldown', $trapCooldown);
 
-							$playerQuery->close();
+									$medals = calculateMedalAttributesForPlayer($digNumber);
+									$playerInfo->addAttribute('digMedal', $medals['digMedal']);
 
-							if ($gameTimeStmt = $conn->prepare("SELECT v FROM multisweeper.globalvars WHERE k='nextGameTime'")) {
-								$gameTimeStmt->execute();
-								$gameTimeStmt->bind_result($time);
-								while ($gameTimeStmt->fetch()) {
-									$ret->addChild('nextGameTime', $time);
+									$scoreRank = 5;
+									//Calculate score rank
+									if ($totalScore >= $hs) {
+										$scoreRank = 6;
+									} else if ($totalScore === 0) {
+										$scoreRank = 0;
+									} else if ($totalScore < ($hs * 0.2)) {
+										$scoreRank = 1;
+									} else if ($totalScore < ($hs * 0.4)) {
+										$scoreRank = 2;
+									} else if ($totalScore < ($hs * 0.6)) {
+										$scoreRank = 3;
+									} else if ($totalScore < ($hs * 0.8)) {
+										$scoreRank = 4;
+									}
+
+									$playerInfo->addAttribute('scoreRank', $scoreRank);
+								}
+
+								$playerQuery->close();
+
+								if ($gameTimeStmt = $conn->prepare("SELECT v FROM multisweeper.globalvars WHERE k='nextGameTime'")) {
+									$gameTimeStmt->execute();
+									$gameTimeStmt->bind_result($time);
+									while ($gameTimeStmt->fetch()) {
+										$ret->addChild('nextGameTime', $time);
+									}
+								} else {
+									error_log("getGameInfo.php - Unable to prepare next game time statement. " . $conn->errno . ": " . $conn->error);
 								}
 							} else {
-								error_log("getGameInfo.php - Unable to prepare next game time statement. " . $conn->errno . ": " . $conn->error);
+								error_log("getGameInfo.php - Unable to prepare player gathering statement. " . $conn->errno . ": " . $conn->error);
+								$ret->addChild('error', "Internal error occurred, please try again later.");
 							}
 						} else {
-							error_log("getGameInfo.php - Unable to prepare player gathering statement. " . $conn->errno . ": " . $conn->error);
+							error_log("getGameInfo.php - Unable to prepare high score gathering statement. " . $conn->errno . ": " . $conn->error);
 							$ret->addChild('error', "Internal error occurred, please try again later.");
-						}
+						}						
 
 						if (!$ignoreUpdateTime) {
 							if ($updateQuery = $conn->prepare("UPDATE multisweeper.games SET fullUpdate=0 WHERE gameID=?")) {

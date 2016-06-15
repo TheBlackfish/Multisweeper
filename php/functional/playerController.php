@@ -7,6 +7,10 @@
 	#trapType - The index of the trap the player is currently using.
 	#trapCooldown - The amount of digs the player needs to perform to get their trap back.
 	#hasActed - Whether or not the player has acted this action resolution.
+	#digNumber - The number of tiles the player has dug.
+	#dugTiles - A tracking array for making sure we don't dig the same tile twice.
+	#correctFlags - How many planted flags were correct.
+	#score - The score of the player.
 
 require_once($_SERVER['DOCUMENT_ROOT'] . '/multisweeper/php/constants/databaseConstants.php');
 require_once($_SERVER['DOCUMENT_ROOT'] . '/multisweeper/php/functional/medalController.php');
@@ -41,6 +45,7 @@ function getPlayersForGame($gameID) {
 				'dugTiles'		=>	array(),
 				'correctFlags'	=>	$correctFlags
 			);
+
 			$ret[$playerID] = $newPlayer;
 		}
 		$playerStmt->close();
@@ -237,7 +242,7 @@ function savePlayerScores($data) {
 		die("playerController.php - Connection failed: " . $conn->connect_error);
 	}
 
-	if ($scoreStmt=$conn->prepare("UPDATE multisweeper.players SET score=score+? WHERE playerID=?")) {
+	if ($scoreStmt=$conn->prepare("UPDATE multisweeper.players SET totalScore=totalScore+? WHERE playerID=?")) {
 		foreach ($data as $playerID => $player) {
 			$playerScore = 0;
 			$playerMedals = calculateMedalAttributesForPlayer($player['digNumber']);

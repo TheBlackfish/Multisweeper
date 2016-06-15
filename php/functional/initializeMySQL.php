@@ -3,6 +3,7 @@
 #This file holds all functionality related to initializing the MySQL server for usage, as well as confirmation of said initialization.
 
 require_once($_SERVER['DOCUMENT_ROOT'] . '/multisweeper/php/constants/databaseConstants.php');
+require_once($_SERVER['DOCUMENT_ROOT'] . '/multisweeper/php/functional/security.php');
 
 #checkMySQL()
 #Checks the global variables table to see if MySQL has been fully initialized. If not, will call initMySQL().
@@ -98,6 +99,11 @@ function initMySQL() {
 		UNIQUE KEY `username_UNIQUE` (`username`)
 	)";
 
+	$fakePassword = bin2hex(mcrypt_create_iv(16, MCRYPT_DEV_URANDOM));
+	$fakeSalt = sec_getNewSalt();
+
+	$highestScoreStatement = "INSERT INTO multisweeper.players (username, password, salt, totalScore) VALUES ('highestScore', " . sec_getHashedValue($fakePassword, $fakeSalt) . ", " . $fakeSalt . ", 1000)";
+
 	$signupTableStatement = "CREATE TABLE IF NOT EXISTS multisweeper.upcomingsignup (
 		`playerID` int(11) NOT NULL,
  		UNIQUE KEY `playerID_UNIQUE` (`playerID`),
@@ -179,6 +185,17 @@ function initMySQL() {
 	}
 
 	if ($playerTableCreated) {
+		if ($query = $conn->prepare($highestScoreStatement)) {
+			if ($query->execute()) {
+				error_log("initMySQL.php - Highest score implemented.");
+			} else {
+				$noErrors = false;
+				error_log("initMySQL.php - Highest score not implemented.");
+				error_log("Please run the following MySQL query manually:");
+				error_log($highestScoreStatement);
+			}
+			$query->close();
+		}
 		if ($query = $conn->prepare($signupTableStatement)) {
 			if ($query->execute()) {
 				error_log("initMySQL.php - Upcoming sign-up table successfully created.");

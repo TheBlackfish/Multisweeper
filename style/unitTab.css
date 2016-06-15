@@ -6,7 +6,12 @@
 
 #playerList table {
 	width: calc(100% - 8px);
-	margin: 4px;	
+	margin: 4px;
+	border-collapse: collapse;	
+}
+
+#playerList tr {
+	border: 1px solid black;
 }
 
 #playerList tr td:first-of-type {
@@ -14,5 +19,29 @@
 }
 
 .scoreRank0 {
-	background-color: #ff00ff;
+	background-color: #ffffff;
+}
+
+.scoreRank1 {
+	background-color: #dfdfdf;
+}
+
+.scoreRank2 {
+	background-color: #c0c0c0;
+}
+
+.scoreRank3 {
+	background-color: #dfca5f;
+}
+
+.scoreRank4 {
+	background-color: #ffd700;
+}
+
+.scoreRank5 {
+	background-color: #bb9354;
+}
+
+.scoreRank6 {
+	background-color: #7853a2;
 }
