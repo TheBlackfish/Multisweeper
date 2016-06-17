@@ -242,6 +242,7 @@ function resolveAllActions($gameID) {
 									if ($minefield[$cur["x"]][$cur["y"]] === "M") {
 										$allPlayers = alterPlayerValue($allPlayers, $cur["playerID"], "correctFlags", 1);
 									}
+									$allPlayers = alterPlayerValue($allPlayers, $cur["playerID"], "flagNumber", 1);
 								}
 							#Action Type 2 is a place trap action.
 							#Place a trap on the space.

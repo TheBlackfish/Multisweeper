@@ -86,7 +86,7 @@ function populatePlayerListTable(playerXML) {
 		//Check medals for current player
 		if (getPlayerName() !== null) {
 			if (playerNodes[i].childNodes[0].nodeValue === getPlayerName()) {
-				setMedals(playerNodes[i].getAttribute("digMedal"));
+				setMedals(playerNodes[i].getAttribute("digMedal"), playerNodes[i].getAttribute("flagMedal"));
 			}
 		}
 

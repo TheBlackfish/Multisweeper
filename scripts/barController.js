@@ -31,7 +31,7 @@ function initBarIcons() {
 		}
 	}
 
-	var allMedals = ["digMedal"];
+	var allMedals = ["digMedal", "flagMedal"];
 	for (var i = 0; i < allMedals.length; i++) {
 		var newImg = "<img id='" + allMedals[i] + "' src='images/bar_icons/medals/" + allMedals[i] + "1.png' class='barIcon'>";
 		document.getElementById("bottomBar").innerHTML += newImg;
@@ -62,6 +62,7 @@ function updateIcons() {
 	var toolsIcon = document.getElementById("traptools");
 
 	var medal_digging = document.getElementById("digMedal");
+	var medal_flag = document.getElementById("flagMedal");
 
 	if (allowedActions.lastIndexOf(2) > -1) {
 		if (!toolsIcon.hasAttribute("style")) {
@@ -127,6 +128,18 @@ function updateIcons() {
 		leftSide += medal_digging.width + 10;
 	} else {
 		medal_digging.removeAttribute("style");
+	}
+
+	if (currentMedals["flag"] !== 0) {
+		if (!medal_flag.hasAttribute("style")) {
+			medal_flag.setAttribute("style", "");
+		}
+		medal_flag.src = "images/bar_icons/medals/flagMedal" + currentMedals["flag"] + ".png";
+		medal_flag.style.left = leftSide+"px";
+		medal_flag.style.top = "-" + medal_flag.clientHeight + "px";
+		leftSide += medal_flag.width + 10;
+	} else {
+		medal_flag.removeAttribute("style");
 	}
 }
 

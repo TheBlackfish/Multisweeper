@@ -30,10 +30,10 @@ function getPlayersForGame($gameID) {
 
 	$ret = array();
 
-	if ($playerStmt = $conn->prepare("SELECT s.status, p.playerID, s.afkCount, s.trapType, s.trapCooldown, s.digNumber, s.correctFlags FROM sweepelite.players as p INNER JOIN sweepelite.playerstatus as s ON p.playerID=s.playerID WHERE s.gameID=?")) {
+	if ($playerStmt = $conn->prepare("SELECT s.status, p.playerID, s.afkCount, s.trapType, s.trapCooldown, s.digNumber, s.flagNumber s.correctFlags FROM sweepelite.players as p INNER JOIN sweepelite.playerstatus as s ON p.playerID=s.playerID WHERE s.gameID=?")) {
 		$playerStmt->bind_param("i", $gameID);
 		$playerStmt->execute();
-		$playerStmt->bind_result($status, $playerID, $afkCount, $trapType, $trapCooldown, $digNumber, $correctFlags);
+		$playerStmt->bind_result($status, $playerID, $afkCount, $trapType, $trapCooldown, $digNumber, $flagNumber, $correctFlags);
 		while ($playerStmt->fetch()) {
 			$newPlayer = array(
 				'status'		=>	$status,
@@ -43,6 +43,7 @@ function getPlayersForGame($gameID) {
 				'hasActed'		=>	0,
 				'digNumber'		=>	$digNumber,
 				'dugTiles'		=>	array(),
+				'flagNumber'	=>	$flagNumber,
 				'correctFlags'	=>	$correctFlags
 			);
 
@@ -172,7 +173,7 @@ function savePlayersForGame($data, $gameID) {
 		die("playerController.php - Connection failed: " . $conn->connect_error);
 	}
 
-	if ($saveStmt = $conn->prepare("UPDATE sweepelite.playerStatus SET status=?, afkCount=?, trapCooldown=?, digNumber=?, correctFlags=? WHERE gameID=? AND playerID=?")) {
+	if ($saveStmt = $conn->prepare("UPDATE sweepelite.playerStatus SET status=?, afkCount=?, trapCooldown=?, digNumber=?, flagNumber=?, correctFlags=? WHERE gameID=? AND playerID=?")) {
 		foreach ($data as $playerID => $player) {
 			$status = 0;
 
@@ -189,7 +190,7 @@ function savePlayersForGame($data, $gameID) {
 			}
 
 			$finalDigNumber = $player['digNumber'] + count($player['dugTiles']);
-			$saveStmt->bind_param("iiiiiii", $status, $afkCount, $player['trapCooldown'], $finalDigNumber, $player['correctFlags'], $gameID, $playerID);
+			$saveStmt->bind_param("iiiiiii", $status, $afkCount, $player['trapCooldown'], $finalDigNumber, $player['flagNumber'], $player['correctFlags'], $gameID, $playerID);
 			if ($saveStmt->execute()) {
 				$data = setPlayerValue($data, $playerID, "status", $status);
 				$data = setPlayerValue($data, $playerID, "afkCount", $afkCount);
@@ -246,8 +247,9 @@ function savePlayerScores($data) {
 		foreach ($data as $playerID => $player) {
 			$playerScore = 0;
 			$playerMedals = calculateMedalAttributesForPlayer($player['digNumber']);
-			$playerScore += 4 * $playerMedals['digMedal'];
-			$playerScore += $player['correctFlags'];
+			$playerScore += 3 * $playerMedals['digMedal'];
+			$playerScore += 2 * $playerMedals['flagMedal']
+			$playerScore += 4 * $player['correctFlags'];
 			$scoreStmt->bind_param("ii", $playerScore, $playerID);
 			$scoreStmt->execute();
 		}

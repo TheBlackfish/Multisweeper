@@ -16,6 +16,7 @@ var currentPassword = null;
 //The associative array holding all medal values for the current player.
 var currentMedals = [];
 currentMedals["dig"] = 0;
+currentMedals["flag"] = 0;
 
 //checkCookie()
 //Attempts to find any cookies for this page. If they exist and they contain user information, this function will attempt to log that player in on this computer.
@@ -119,8 +120,9 @@ function getLoginDetails() {
 //setMedals(dig)
 //Sets the current levels of medals to display.
 //@param dig (int) The level of the dig medal to display.
-function setMedals(dig) {
+function setMedals(dig, flag) {
 	currentMedals["dig"] = parseInt(dig);
+	currentMedals["flag"] = parseInt(flag);
 	updateIcons();
 }
 

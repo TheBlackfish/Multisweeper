@@ -100,10 +100,10 @@ function getGameInfo($gameID, $lastUpdated = 0, $ignoreUpdateTime = false) {
 							$hsStmt->close();
 
 							#Add all players in the game and their statuses to the XML.
-							if ($playerQuery = $conn->prepare("SELECT p.username, p.playerID, s.status, s.trapType, s.trapCooldown, s.digNumber, p.totalScore FROM sweepelite.players as p INNER JOIN sweepelite.playerstatus as s ON p.playerID=s.playerID WHERE s.gameID=?")) {
+							if ($playerQuery = $conn->prepare("SELECT p.username, p.playerID, s.status, s.trapType, s.trapCooldown, s.digNumber, s.flagNumber, p.totalScore FROM sweepelite.players as p INNER JOIN sweepelite.playerstatus as s ON p.playerID=s.playerID WHERE s.gameID=?")) {
 								$playerQuery->bind_param("i", $gameID);
 								$playerQuery->execute();
-								$playerQuery->bind_result($user, $currentID, $status, $trapType, $trapCooldown, $digNumber, $totalScore);
+								$playerQuery->bind_result($user, $currentID, $status, $trapType, $trapCooldown, $digNumber, $flagNumber, $totalScore);
 
 								$ret->addChild('players');
 
@@ -113,8 +113,9 @@ function getGameInfo($gameID, $lastUpdated = 0, $ignoreUpdateTime = false) {
 									$playerInfo->addAttribute('trapType', $trapType);
 									$playerInfo->addAttribute('trapCooldown', $trapCooldown);
 
-									$medals = calculateMedalAttributesForPlayer($digNumber);
+									$medals = calculateMedalAttributesForPlayer($digNumber, $flagNumber);
 									$playerInfo->addAttribute('digMedal', $medals['digMedal']);
+									$playerInfo->addAttribute('flagMedal', $medals['flagMedal']);
 
 									$scoreRank = 5;
 									//Calculate score rank
